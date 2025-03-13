@@ -2,14 +2,14 @@ import google.cloud.storage
 import google.cloud.storage.blob
 
 
-def blob_download(bucket_name: str, blob_name_src: str, file_name_dst: str):
+def blob_download(bucket_name: str, blob_name: str, file_path_dst: str):
     """
     Downloads a blob from the bucket.
     """
     client = google.cloud.storage.Client()
     bucket = client.bucket(bucket_name)
-    blob = bucket.blob(blob_name_src)
-    blob.download_to_filename(file_name_dst)
+    blob = bucket.blob(blob_name)
+    blob.download_to_filename(file_path_dst)
 
     return 0
 
@@ -39,7 +39,7 @@ def blob_upload(bucket_name: str, file_name_src: str, blob_name_dst: str) -> int
     return generation_match_val
 
 
-def blobs_list(bucket_name: str, prefix: str, delimiter: str=None) -> list[google.cloud.storage.blob.Blob]:
+def blobs_list(bucket_name: str, prefix: str, delimiter: str) -> list[google.cloud.storage.blob.Blob]:
     """"
     Lists all the blobs in the bucket that begin with the prefix.
 
@@ -66,4 +66,6 @@ def blobs_list(bucket_name: str, prefix: str, delimiter: str=None) -> list[googl
 
     client = google.cloud.storage.Client()
     blobs = client.list_blobs(bucket_name, prefix=prefix, delimiter=delimiter)
-    return [b for b in blobs]
+    blobs_list = [b for b in blobs]
+
+    return blobs_list

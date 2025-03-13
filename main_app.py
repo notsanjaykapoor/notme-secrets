@@ -2,6 +2,7 @@ import os
 
 import dot_init # noqa: F401
 
+import asyncio
 import contextlib
 import fastapi
 import fastapi.middleware.cors
@@ -20,6 +21,7 @@ import routers.auth.logout
 import routers.secrets.secrets_list
 import routers.secrets.secrets_manage
 import services.database
+import services.secrets
 import services.users
 
 logger = log.init("app")
@@ -35,9 +37,17 @@ async def lifespan(app: fastapi.FastAPI):
     # migrate database
     services.database.session.migrate()
 
+    # start sync task
+    task = asyncio.create_task(services.secrets.sync_task())
+
     logger.info("api.startup completed")
 
     yield
+
+    # stop sync task
+    task.cancel()
+    await task
+
 
 # create app object
 app = fastapi.FastAPI(lifespan=lifespan)
