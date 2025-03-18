@@ -10,3 +10,4 @@ def cache_dir() -> str:
     _host, cache_dir, _ = services.secrets.file_uri_parse(source_uri=fs_uri)
 
     return cache_dir
+

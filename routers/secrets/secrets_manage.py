@@ -66,12 +66,18 @@ def secrets_org_create(
     dir_uri= os.environ.get("SECRETS_FS_URI")
     _, source_dir, _ = services.secrets.file_uri_parse(source_uri=dir_uri)
 
-    file_path = f"{source_dir}{org}/{secret_struct.name}.gpg"
+    file_gpg_path = f"{source_dir}{org}/{secret_struct.name}.gpg"
+    file_new_path = f"{file_gpg_path}.new"
 
-    with open(file_path, "wb") as f:
+    # write xxx.gpg.new file first, followed by xxx.gpg file
+
+    with open(file_new_path, "w") as f:
+        pass
+
+    with open(file_gpg_path, "wb") as f:
         f.write(crypt_struct.data)
 
-    logger.info(f"{context.rid_get()} secrets org '{org}' create file '{file_path}' ok")
+    logger.info(f"{context.rid_get()} secrets org '{org}' create file '{file_gpg_path}' ok")
 
     response = fastapi.responses.JSONResponse(content={"response": "ok"})
     response.headers["HX-Redirect"] = f"/secrets/orgs/{org}"

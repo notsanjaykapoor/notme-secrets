@@ -2,7 +2,20 @@ import google.cloud.storage
 import google.cloud.storage.blob
 
 
-def blob_download(bucket_name: str, blob_name: str, file_path_dst: str):
+def blob_delete(bucket_name: str, blob_name: str) -> int:
+    """
+    Delete a blob from the bucket.
+    """
+    client = google.cloud.storage.Client()
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob(blob_name)
+
+    blob.delete(if_generation_match=blob.generation)
+
+    return 0
+
+
+def blob_download(bucket_name: str, blob_name: str, file_path_dst: str) -> int:
     """
     Downloads a blob from the bucket.
     """
@@ -13,6 +26,16 @@ def blob_download(bucket_name: str, blob_name: str, file_path_dst: str):
 
     return 0
 
+
+def blob_get(bucket_name: str, blob_name: str) -> google.cloud.storage.blob.Blob | None:
+    """
+    Delete a blob from the bucket.
+    """
+    client = google.cloud.storage.Client()
+    bucket = client.bucket(bucket_name)
+    blob = bucket.get_blob(blob_name) # download blob meta
+
+    return blob
 
 def blob_upload(bucket_name: str, file_name_src: str, blob_name_dst: str) -> int:
     """

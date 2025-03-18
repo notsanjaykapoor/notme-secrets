@@ -20,11 +20,26 @@ async def sync_task():
 
     logger.info(f"{context.rid_get()} sync manager orgs '{org_names}', cache dir '{cache_dir}' starting")
 
+    sync_counter = 0
+
     while True:
         for org in org_names:
-            sync_result = services.storage.gcs.sync(bucket_name=bucket_name, org_name=org, cache_dir=cache_dir, sync_mode="rw")
+            # sync download - gcs changes to local fs
+            download_result = services.storage.gcs.sync_download(bucket_name=bucket_name, org_name=org, cache_dir=cache_dir, sync_mode="rw")
 
-            if sync_result.files_synced:
-                logger.info(f"{context.rid_get()} sync manager org '{org}' - {len(sync_result.files_synced)} files synced")
+            if download_result.files_synced:
+                logger.info(f"{context.rid_get()} sync manager org '{org}' - files downloaded {len(download_result.files_synced)}")
+
+            if download_result.files_deleted:
+                logger.info(f"{context.rid_get()} sync manager org '{org}' - files deleted {len(download_result.files_deleted)}")
+
+            if sync_counter % 5 == 0:
+                # sync upload - local fs changes to gcs
+                upload_result = services.storage.gcs.sync_upload(bucket_name=bucket_name, org_name=org, cache_dir=cache_dir, sync_mode="rw")
+
+                if upload_result.files_synced:
+                    logger.info(f"{context.rid_get()} sync manager org '{org}' - files uploaded {len(upload_result.files_synced)}")
+
+            sync_counter += 1
 
         await asyncio.sleep(5)

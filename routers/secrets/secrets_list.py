@@ -28,7 +28,7 @@ app = fastapi.APIRouter(
 
 
 @app.get("/secrets", response_class=fastapi.responses.HTMLResponse)
-def secrets_orgs_list(
+def orgs_list(
     request: fastapi.Request,
     user_id: int = fastapi.Depends(main_shared.get_user_id),
     db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
@@ -71,7 +71,7 @@ def secrets_orgs_list(
 
 
 @app.get("/secrets/orgs/{org}", response_class=fastapi.responses.HTMLResponse)
-def secrets_orgs_show(
+def secrets_list(
     request: fastapi.Request,
     org: str,
     query: str="",
@@ -140,7 +140,7 @@ def secrets_orgs_show(
 
 
 @app.get("/secrets/orgs/{org}/{name}/blur", response_class=fastapi.responses.HTMLResponse)
-def secrets_org_blur(
+def secrets_blur(
     request: fastapi.Request,
     org: str,
     name: str,
@@ -173,7 +173,7 @@ def secrets_org_blur(
 
 
 @app.get("/secrets/orgs/{org}/{name}/decrypt", response_class=fastapi.responses.HTMLResponse)
-def secrets_org_decrypt(
+def secrets_decrypt(
     request: fastapi.Request,
     org: str,
     name: str,
