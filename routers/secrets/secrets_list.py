@@ -45,11 +45,13 @@ def orgs_list(
 
         logger.info(f"{context.rid_get()} secrets orgs list bucket '{bucket_name}' ok - orgs count {len(org_names)}")
     except Exception as e:
-        orgs_list = []
+        org_names = []
         logger.error(f"{context.rid_get()} secrets orgs list exception '{e}'")
 
     if len(org_names) == 1:
-        return fastapi.responses.RedirectResponse(f"/secrets/orgs/{org_names[0]}")
+        org_name = org_names[0]
+        logger.info(f"{context.rid_get()} secrets orgs list bucket '{bucket_name}' ok - redirect to org '{org_name}")
+        return fastapi.responses.RedirectResponse(f"/secrets/orgs/{org_name}")
 
     user = services.users.get_by_id(db_session=db_session, id=user_id)
 
