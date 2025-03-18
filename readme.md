@@ -35,7 +35,7 @@ make dev
 
 #### Password Manager
 
-The password interface uses the [pass](https://www.passwordstore.org/) tool to store passwords in gpg encrypted files.  The password user interface enables creating new passwords and showing existing passwords:
+The password interface uses the [pass](https://www.passwordstore.org/) tool to store passwords in gpg encrypted files.  The password user interface allows creating new passwords and showing existing passwords.  Each password is stored in a gpg encrypted file.  Main storage for all passwords is an s3 compatible bucket.  This repo uses Google Cloud Storage.  The app will cache passwords on startup and sync them continuously in the background as they change (in typical scenarios, this is a heavy read and light write system).
 
 ![Password List Example](https://ik.imagekit.io/notme001/readme/passw_list_example.png "passw list example")
 
