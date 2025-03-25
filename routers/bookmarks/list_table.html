@@ -1,0 +1,93 @@
+<div class="flex flex-row mt-5">
+    <div class="w-1/12"></div>
+    <div class="w-10/12">
+        {% if query_code == 0 %}
+        <p class="text-xs font-bold text-black-700">
+            {{query_result}}
+        </p>
+        {% else %}
+        <p class="text-xs font-bold text-red-700">
+            {{query_result}}
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="flex flex-row mt-10">
+    <div class="w-1/12"></div>
+    <div class="w-8/12">
+        {% for category in categories_all_list %}
+        {% if category in categories_cur_list %}
+        {% set cat_color = "bg-sky-300" %}
+        {% else %}
+        {% set cat_color = "bg-blue-700" %}
+        {% endif %}
+
+        <a href="/bookmarks?query=cats:{{category}}">
+            <button class="rounded-full text-xs font-bold text-white {{cat_color}} py-1 px-2">{{category}}</button>
+        </a>
+        {% endfor %}
+    </div>
+    <div class="w-2/12 flex items-center justify-end text-xs">
+        {% for category in categories_cur_list %}
+        <a href="/bookmarks/new?cats={{category}}" title="new {{category}} bookmark">
+            <button class="rounded-full text-xs font-bold text-white bg-orange-600 py-1 px-2">{{category}} +</button>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="flex flex-row mt-10">
+    <div class="w-1/12"></div>
+    <div class="w-10/12">
+        {% for tag in tags_all_list %}
+        {% if tag in tags_cur_list %}
+        {% set tag_color = "bg-sky-400 opacity-50" %}
+        {% else %}
+        {% set tag_color = "bg-sky-400" %}
+        {% endif %}
+
+        <a href="/bookmarks?query=cats:{{categories_cur_str}} tags:{{tag}}">
+            <button class="rounded-full text-xs font-bold text-white {{tag_color}} py-1 px-2">{{tag}}</button>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="flex flex-row mt-10">
+    <div class="w-1/12"></div>
+    <table class="w-10/12">
+        <thead class="font-normal text-left text-xs leading-6 text-zinc-800">
+            <tr class="">
+                <th class="p-4">name</th>
+                <th class="p-4">categories</th>
+                <th class="p-4">tags</th>
+                <th class="p-4">notes</th>
+                <th class="p-4 "></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bm in bookmarks_list %}
+            <tr class="group hover:bg-zinc-50 odd:bg-white even:bg-slate-50 text-left text-xs">
+                <td class="p-4">
+                    <a class="font-bold text-blue-700" href="{{bm.uri}}" target="_blank">
+                        {{ bm.name }}
+                    </a>
+                </td>
+                <td class="p-4 font-normal">{{ bm.categories_string }}</td>
+                <td class="p-4 font-normal">{{ bm.tags_string }}</td>
+                <td class="p-4 font-normal">{{ bm.notes_len }}</td>
+                <td class="p-4 flex justify-end font-normal">
+                    <a class="font-bold mr-3" href="/bookmarks/{{bm.id}}/edit">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                            class="size-4 text-sky-400">
+                            <path
+                                d="m2.695 14.762-1.262 3.155a.5.5 0 0 0 .65.65l3.155-1.262a4 4 0 0 0 1.343-.886L17.5 5.501a2.121 2.121 0 0 0-3-3L3.58 13.419a4 4 0 0 0-.885 1.343Z" />
+                        </svg>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

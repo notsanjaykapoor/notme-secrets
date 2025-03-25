@@ -1,0 +1,17 @@
+<div class="w-8/12 text-xs">
+    <input type="textarea" id="bm-name-input" name="name" placeholder="edit name" value="{{bm.name}}" autocomplete="off"
+        hx-get="{{bm_name_path}}" hx-target="#bm-name" hx-trigger="input changed delay:750ms, search"
+        class="peer px-0 h-full w-full border-b bg-transparent pt-4 pb-1.5 font-sans font-bold text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-blue-gray-200 focus:border-sky-400 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50">
+</div>
+
+<div class="flex flex-row mx-auto mt-5">
+    <div class="w-8/12 invisible italic text-xs font-light opacity-50 text-zinc-400" id="bm-name-status"></div>
+</div>
+
+<script>
+    name_elem = document.getElementById("bm-name-status")
+    document.getElementById("bm-name-input").addEventListener("keyup", (event) => {
+        name_elem.innerText = "changes"
+        name_elem.classList.remove("invisible")
+    })
+</script>

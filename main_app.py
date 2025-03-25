@@ -18,6 +18,8 @@ import main_shared
 import routers.auth.login
 import routers.auth.login_oauth
 import routers.auth.logout
+import routers.bookmarks.bookmarks_list
+import routers.bookmarks.bookmarks_manage
 import routers.secrets.secrets_list
 import routers.secrets.secrets_manage
 import services.database
@@ -55,6 +57,8 @@ app = fastapi.FastAPI(lifespan=lifespan)
 app.include_router(routers.auth.login.app)
 app.include_router(routers.auth.login_oauth.app)
 app.include_router(routers.auth.logout.app)
+app.include_router(routers.bookmarks.bookmarks_list.app)
+app.include_router(routers.bookmarks.bookmarks_manage.app)
 app.include_router(routers.secrets.secrets_list.app)
 app.include_router(routers.secrets.secrets_manage.app)
 
@@ -118,7 +122,7 @@ def home(
     if user_id == 0:
         return fastapi.responses.RedirectResponse("/login")
 
-    return fastapi.responses.RedirectResponse("/secrets")
+    return fastapi.responses.RedirectResponse("/bookmarks")
 
     # user = services.users.get_by_id(db_session=db_session, id=user_id)
 

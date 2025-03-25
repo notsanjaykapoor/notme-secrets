@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="flex flex-col mx-auto mt-10">
+    <h3 class="mx-auto font-bold">
+        {{ app_name }}
+    </h3>
+    <div class="mt-2 mx-auto text-xs text-zinc-400">
+        @{{ app_version }}
+    </div>
+</div>
+
+<div class="flex flex-col mt-10">
+    <div class="sm:mx-20 xs:mx-5 text-xs text-zinc-400">
+        <a href="/bookmarks" class="text-blue-700 font-bold">
+            bookmarks
+        </a>
+        &nbsp;/&nbsp;
+        new
+    </div>
+</div>
+
+<form id="secret-form" hx-post="/bookmarks/create" hx-ext="json-enc" hx-target="#bookmark-create-response"
+    class="mt-20">
+    <div class="flex flex-col">
+        <div class="font-normal mx-auto text-xs">
+            <input type="text" name="name" value="{{name}}" placeholder="name - required" required autocomplete="off"
+                class="peer px-0 py-2.5 mx-0 min-w-80 h-full w-full border-b bg-transparent font-sans text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-blue-gray-200 focus:border-sky-400 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50">
+        </div>
+    </div>
+    <div class="flex flex-col mt-10">
+        <div class="font-normal mx-auto text-xs">
+            <input type="text" name="uri" value="" placeholder="bookmark url with http(s) - required" required
+                autocomplete="off"
+                class="peer px-0 py-2.5 mx-0 h-full min-w-80 w-full border-b bg-transparent font-sans text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-blue-gray-200 focus:border-sky-400 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50">
+        </div>
+    </div>
+    <div class="flex flex-col mt-10">
+        <div class="font-normal mx-auto text-xs">
+            <input type="text" name="categories" value="{{cats_str}}"
+                placeholder="categories list, comma separated - optional" autocomplete="off"
+                class="peer px-0 py-2.5 mx-0 h-full min-w-80 w-full border-b bg-transparent font-sans text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-blue-gray-200 focus:border-sky-400 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50">
+        </div>
+    </div>
+    <div class="flex flex-col justify-between mx-auto mt-20">
+        <div class="mx-auto font-normal text-xs">
+            <button type="submit"
+                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg ml-10 text-xs px-5 py-2.5 me-2 mb-2 hover:bg-blue-700 focus:outline-none">
+                Save
+            </button>
+        </div>
+    </div>
+</form>
+
+<div id="bookmark-create-response">
+
+</div>
+
+
+{% endblock %}

@@ -1,5 +1,3 @@
-import os
-
 import fastapi
 import fastapi.responses
 import fastapi.templating
@@ -104,7 +102,7 @@ def secrets_list(
         logger.info(f"{context.rid_get()} secrets org '{org}' query '{query}' ok")
     except Exception as e:
         secrets_list = []
-        query_code = 400
+        query_code = 500
         query_result = f"exception {e}"
 
         logger.error(f"{context.rid_get()} secrets org '{org}' query '{query}' exception '{e}'")

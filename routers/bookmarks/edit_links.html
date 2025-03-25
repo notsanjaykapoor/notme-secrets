@@ -1,0 +1,21 @@
+<div class="w-5/12 text-xs">
+    {% for link in bm.links %}
+    <div class="flex flex-row items-center mb-5">
+        <a href="{{link}}" class="text-blue-700 font-bold" target="_blank">
+            {{link}}
+        </a>
+        <a class="ml-5" href="" hx-get="{{bm_links_path}}/del?link={{link}}" hx-target="#bm-links">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="text-red-600 size-4">
+                <path fill-rule="evenodd"
+                    d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM6.75 9.25a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Z"
+                    clip-rule="evenodd" />
+            </svg>
+        </a>
+    </div>
+    {% endfor %}
+    <div class="flex flex-row items-center mt-5">
+        <input type="search" id="bm-link-input" name="link" placeholder="add link" value="" autocomplete="off"
+            hx-get="{{bm_links_path}}/add" hx-target="#bm-links" hx-trigger="search"
+            class="peer px-0 h-full w-full border-b bg-transparent pt-4 pb-1.5 font-sans font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-blue-gray-200 focus:border-sky-400 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50">
+    </div>
+</div>

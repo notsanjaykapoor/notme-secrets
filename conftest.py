@@ -89,3 +89,24 @@ def user_1_fixture(db_session: sqlmodel.Session):
     yield user
 
     services.database.truncate_tables(db_session=db_session, table_names=["users"])
+
+
+@pytest.fixture(name="bm_1")
+def bookmark_1_fixture(db_session: sqlmodel.Session, user_1: models.User):
+    bm = models.Bookmark(
+        categories=["category-1"],
+        name="bookmark-1",
+        tags=["tag-1"],
+        user_id=user_1.id,
+        uri="https://www.google.com",
+    )
+
+    db_session.add(bm)
+    db_session.commit()
+
+    assert bm.id
+
+    yield bm
+
+    services.database.truncate_tables(db_session=db_session, table_names=["bookmarks"])
+    services.database.truncate_tables(db_session=db_session, table_names=["users"])
