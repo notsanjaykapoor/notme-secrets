@@ -9,7 +9,6 @@ sys.path.insert(1, os.path.join(sys.path[0], ".."))
 import dot_init
 
 import click
-import sqlmodel
 
 import services.database.session
 

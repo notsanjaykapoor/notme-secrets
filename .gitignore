@@ -9,7 +9,9 @@ __pycache__/
 
 sqlite*
 
+data/
 env/
 logs/
 **/*secret*.yml
-./secrets/
+secrets/
+test/data/
