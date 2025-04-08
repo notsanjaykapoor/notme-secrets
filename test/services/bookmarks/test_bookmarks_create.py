@@ -4,7 +4,7 @@ import sqlmodel
 
 import models
 import services.bookmarks
-
+import services.database
 
 def test_bookmarks_create(db_session: sqlmodel.Session, user_1: models.User):
     # create with valid name and uri

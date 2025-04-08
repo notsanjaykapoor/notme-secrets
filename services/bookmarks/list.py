@@ -11,7 +11,7 @@ import services.mql
 @dataclasses.dataclass
 class Struct:
     code: int
-    objects: list[models.User]
+    objects: list[models.Bookmark]
     categories: list[str]
     tags: list[str]
     count: int
