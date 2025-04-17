@@ -5,27 +5,24 @@ import gnupg
 
 def file_uri_parse(source_uri: str) -> tuple[str, str, str]:
     """
-    parse file uri into its components:
+    Parse a file uri into its component parts.
 
-    'file://localhost//users/dir/file is parsed as:
-      - 'localhost' as source_host
-      - '/users/dir as source_dir
-      - 'file' as source_path
+    example file uri - file:///users/notme/foo/bar.txt is parsed into components:
+
+    path - /users/notme/foo/bar.txt
+    dir - /users/notme/foo/
+    file - bar.txt
     """
-    if not (match := re.match(r'^file:\/\/([^\/]+)\/(.+)$', source_uri)):
+    if not (match := re.match(r'^file:\/\/(\/.+)$', source_uri)):
         raise ValueError(f"invalid source_uri {source_uri}")
 
-    source_host, source_file_dir = (match[1], match[2])
+    source_path = match[1]
 
-    if source_file_dir.endswith("/"):
-        source_dir = source_file_dir
-        source_file = ""
-    else:
-        match = re.match(r'^(.+)\/(.+)$$', source_file_dir)
-        source_dir = match[1]
-        source_file = match[2] 
+    match = re.match(r'^(.+)\/([^\/]*)$', source_path)
+    source_dir = f"{match[1]}/"
+    source_file = match[2]
 
-    return source_host, source_dir, source_file
+    return source_path, source_dir, source_file
 
 
 def gpg_get(gpg_dir: str) -> gnupg.GPG:

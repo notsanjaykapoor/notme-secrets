@@ -14,7 +14,7 @@ import services.users
 # set env vars
 os.environ["APP_ENV"] = "tst"
 os.environ["SECRETS_BUCKET_URI"] = "gs://notme-secrets-tst"
-os.environ["SECRETS_FS_URI"] = "file://localhost//Users/sanjaykapoor/notme/notme-secrets/test/data/bucket-cache/"
+os.environ["SECRETS_FS_URI"] = "file:///Users/sanjaykapoor/notme/notme-secrets/test/data/bucket-cache/"
 
 test_db_name = os.environ.get("DATABASE_TEST_URL")
 connect_args: dict = {}
