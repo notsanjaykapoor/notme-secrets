@@ -22,6 +22,8 @@ import routers.bookmarks.bookmarks_list
 import routers.bookmarks.bookmarks_manage
 import routers.secrets.secrets_list
 import routers.secrets.secrets_manage
+import routers.turnstile
+import routers.turnstile.turnstile
 import services.database
 import services.secrets
 import services.users
@@ -61,6 +63,7 @@ app.include_router(routers.bookmarks.bookmarks_list.app)
 app.include_router(routers.bookmarks.bookmarks_manage.app)
 app.include_router(routers.secrets.secrets_list.app)
 app.include_router(routers.secrets.secrets_manage.app)
+app.include_router(routers.turnstile.turnstile.app)
 
 # mount traditional static directory
 app.mount("/static", fastapi.staticfiles.StaticFiles(directory="static"), name="static")
