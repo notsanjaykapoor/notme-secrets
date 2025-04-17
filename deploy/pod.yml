@@ -1,0 +1,10 @@
+kind: pod
+spec:
+  containers: # only 1 allowed
+    - name: notme-secrets-prd
+      command: make prd
+      env: .env.fashion
+      image: docker.io/notsanjay/notme-secrets:latest
+      network: notme # docker network
+      ports:
+        - 9009

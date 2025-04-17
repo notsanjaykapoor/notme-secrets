@@ -4,16 +4,13 @@ PIP = pip
 PYTHON = $(VENV)/bin/python3
 SHELL = /bin/bash
 
-.PHONY: build clean console dev deploy install prd test
+.PHONY: build clean console dev install prd test
 
 build:
-	./scripts/vps/vps-utils build
+	./scripts/docker-utils build
 
 console:
 	python
-
-deploy:
-	./scripts/vps/vps-utils deploy --host 5.161.208.47 --user root
 
 dev: 
 	. $(VENV)/bin/activate && ./bin/app-server --port 9009
