@@ -1,25 +1,30 @@
-import os
+import sqlmodel
 
 import models
-import services.secrets
 
 
-def get_by_name(org: str, name: str) -> models.Secret | None:
-    dir_uri= os.environ.get("SECRETS_FS_URI")
-    source_host, source_dir, _ = services.secrets.file_uri_parse(source_uri=dir_uri)
+def get_by_id(db_session: sqlmodel.Session, id: int) -> models.Secret | None:
+    """ """
+    db_select = sqlmodel.select(models.Secret).where(models.Secret.id == id)
+    db_object = db_session.exec(db_select).first()
 
-    file_path = f"{source_dir}{org}/{name}"
+    return db_object
 
-    if not file_path.endswith("gpg"):
-        file_path = f"{file_path}.gpg"
 
-    if not os.path.exists(file_path):
-        return None
-    
-    secret = models.Secret(
-        name=name,
-        path=file_path,
-        uri=f"file://{source_host}/{file_path}"
+def get_by_id_user(db_session: sqlmodel.Session, id: int, user_id: int) -> models.Secret | None:
+    """ """
+    db_select = sqlmodel.select(models.Secret).where(models.Secret.id == id).where(models.Secret.user_id == user_id)
+    db_object = db_session.exec(db_select).first()
+
+    return db_object
+
+
+def get_by_name_user(db_session: sqlmodel.Session, name: str, user_id: int) -> models.Secret | None:
+    db_select = sqlmodel.select(models.Secret).where(
+        models.Secret.name == name
+    ).where(
+        models.Secret.user_id == user_id
     )
+    db_object = db_session.exec(db_select).first()
 
-    return secret
+    return db_object

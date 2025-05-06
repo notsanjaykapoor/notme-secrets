@@ -14,9 +14,11 @@ class Struct:
     errors: list[str]
 
 
-def sync_download(bucket_name: str, org_name: str, cache_dir: str, sync_mode: str, match_glob: str="") -> Struct:
+def sync_download(bucket_name: str, folder_name: str, cache_dir: str, sync_mode: str, match_glob: str="") -> Struct:
     """
-    Sync gcs bucket (org) with local cache dir. 
+    Sync gcs bucket folder with local cache dir.
+
+
     """
     struct = Struct(
         code=0,
@@ -30,14 +32,14 @@ def sync_download(bucket_name: str, org_name: str, cache_dir: str, sync_mode: st
     if not cache_dir.endswith("/"):
         cache_dir = f"{cache_dir}/"
 
-    cache_org_dir = f"{cache_dir}/{org_name}/"
+    # cache_folder_dir = f"{cache_dir}{folder_name}/"
 
-    os.makedirs(cache_org_dir, exist_ok=True)
+    os.makedirs(cache_dir, exist_ok=True)
 
-    cache_files_map = _cache_files_map(cache_files=os.listdir(cache_org_dir))
+    cache_files_map = _cache_files_map(cache_files=os.listdir(cache_dir))
     cache_files_seen = []
 
-    blobs_list = services.storage.gcs.files_list(bucket_name=bucket_name, org_name=org_name)
+    blobs_list = services.storage.gcs.files_list(bucket_name=bucket_name, folder_name=folder_name)
 
     for blob in blobs_list:
         secret_file = blob.name.split("/")[-1]
@@ -62,7 +64,12 @@ def sync_download(bucket_name: str, org_name: str, cache_dir: str, sync_mode: st
 
         if "w" in sync_mode:
             # secret is not cached, get gcs secret file
-            _get_result = services.storage.gcs.file_get(bucket_name=bucket_name, org_name=org_name, file_name=secret_file)
+            _get_result = services.storage.gcs.file_download(
+                bucket_name=bucket_name,
+                folder_name=folder_name,
+                file_name=secret_file,
+                cache_dir=cache_dir,
+            )
 
             cache_files_seen.append(secret_file)
             struct.files_synced.append(secret_file)
@@ -72,10 +79,10 @@ def sync_download(bucket_name: str, org_name: str, cache_dir: str, sync_mode: st
             if cache_file_struct and cache_file_struct.name != secret_file_version:
                 # secret version file is cached, but its old
                 cache_file_old = cache_file_struct.name
-                os.remove(f"{cache_org_dir}{cache_file_old}")
+                os.remove(f"{cache_dir}{cache_file_old}")
 
             # create cached secret version file
-            file = open(f"{cache_org_dir}{secret_file_version}", "w")
+            file = open(f"{cache_dir}{secret_file_version}", "w")
             file.close()
 
     # check for deleted gcs secret files
@@ -91,10 +98,10 @@ def sync_download(bucket_name: str, org_name: str, cache_dir: str, sync_mode: st
                 continue
 
             # find all related files and delete
-            cache_files_del_list = [f for f in os.listdir(cache_org_dir) if f.startswith(cache_file_secret)]
+            cache_files_del_list = [f for f in os.listdir(cache_dir) if f.startswith(cache_file_secret)]
 
             for cache_file in cache_files_del_list:
-                os.remove(f"{cache_org_dir}{cache_file}")
+                os.remove(f"{cache_dir}{cache_file}")
                 struct.files_deleted.append(cache_file)
 
     return struct

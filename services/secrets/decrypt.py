@@ -5,9 +5,10 @@ import models
 import services.secrets
 
 
-def decrypt(secret: models.Secret) -> models.Secret:
+# deprecated
+def decrypt(secret: models.SecretData) -> models.SecretData:
     """
-    decrypt password object using gpg key
+    decrypt secret object using gpg key
     """
     gpg = services.secrets.gpg_get(gpg_dir=os.environ.get("GPG_HOME_URI"))
 

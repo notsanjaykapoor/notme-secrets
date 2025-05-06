@@ -1,4 +1,3 @@
-import os
 import re
 
 import google.cloud.storage
@@ -11,7 +10,7 @@ def bucket_folders(bucket_name: str) -> list[str]:
     """
     Return list of top level folders.
 
-    The storage api doesn't seem to have a straightforward to do this.  It seems like you have to get all blobs and filter them
+    The storage api doesn't seem to have a straightforward way to do this.  It seems like you have to get all blobs and filter them
     to get the top level 'folders'.
     """
     folder_names = set()
@@ -24,12 +23,10 @@ def bucket_folders(bucket_name: str) -> list[str]:
     return sorted(list(folder_names))
 
 
-def bucket_name() -> str:
+def bucket_name(bucket_uri: str) -> str:
     """
     Get bucket uri, parse and return bucket name
     """
-    bucket_uri = os.environ.get("SECRETS_BUCKET_URI")
-
     match = re.match(r"^gs:\/\/(.+)", bucket_uri)
 
     if not match:
@@ -38,6 +35,7 @@ def bucket_name() -> str:
     return match[1]
 
 
+# deprecated?
 def buckets_list() -> list[google.cloud.storage.bucket.Bucket]:
     """
     List buckets, these are the top level objects.

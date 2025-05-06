@@ -39,3 +39,8 @@ class User(sqlmodel.SQLModel, table=True):
         ),
         default_factory=lambda: datetime.datetime.now(datetime.UTC),
     )
+
+    # deprecated
+    @property
+    def bucket_uri(self) -> str:
+        return self.data.get("bucket_uri", "")

@@ -41,8 +41,13 @@ async def lifespan(app: fastapi.FastAPI):
     # migrate database
     services.database.session.migrate()
 
-    # start sync task
-    task = asyncio.create_task(services.secrets.sync_task())
+    # start sync task with default user
+    with services.database.session.get() as db_session:
+        user = services.users.get_by_email(
+            db_session=db_session,
+            email="notsanjaykapoor@gmail.com",
+        )
+        task = asyncio.create_task(services.secrets.sync_task(user=user))
 
     logger.info("api.startup completed")
 
@@ -116,9 +121,7 @@ def favicon():
 
 @app.get("/")
 def home(
-    request: fastapi.Request,
     user_id: int = fastapi.Depends(main_shared.get_user_id),
-    db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
 ):
     logger.info(f"{context.rid_get()} home")
 
@@ -126,17 +129,6 @@ def home(
         return fastapi.responses.RedirectResponse("/login")
 
     return fastapi.responses.RedirectResponse("/bookmarks")
-
-    # user = services.users.get_by_id(db_session=db_session, id=user_id)
-
-    # return templates.TemplateResponse(
-    #     request,
-    #     "home.html",
-    #     {
-    #         "app_name": "Home",
-    #         "user": user,
-    #     }
-    # )
 
 
 @app.get("/500")

@@ -13,5 +13,4 @@ data/
 env/
 logs/
 **/*secret*.yml
-secrets/
-test/data/
+test/data/**

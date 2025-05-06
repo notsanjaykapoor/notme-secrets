@@ -1,0 +1,137 @@
+#!/usr/bin/env python
+
+import json
+import os
+import sys
+
+sys.path.insert(1, os.path.join(sys.path[0], ".."))
+
+import dot_init
+
+import click
+
+import models
+import services.console
+import services.database.session
+import services.crypto_keys
+import services.crypto_keys.gpg
+import services.secrets
+import services.secrets.fs
+import services.users
+
+@click.group()
+def cli():
+    pass
+
+
+@click.command()
+@click.option("--email", default=None, required=True, help="default user email")
+def create_default(email: str) -> list[str]:
+    """
+    create default system key(s)
+    """
+    services.console.print_(f"user '{email}' key create default")
+
+    with services.database.session.get() as db_session:
+        key_db = services.crypto_keys.get_by_name(
+            db_session=db_session,
+            name=models.crypto_key.NAME_DEFAULT,
+        )
+
+        if not key_db:
+            user = services.users.get_by_email(
+                db_session=db_session,
+                email=email,
+            )
+
+            key_db = services.crypto_keys.create_default(
+                db_session=db_session,
+                user_id=user.id,
+            )
+
+            services.console.print_ok("created")
+        else:
+            services.console.print_status("exists")
+
+
+@click.command()
+@click.option("--email", default=None, required=True, help="default user email")
+def import_default(email: str) -> list[str]:
+    """
+    import secrets for default user
+    """
+    services.console.print_status(f"user '{email}' secrets import")
+
+    with services.database.session.get() as db_session:
+        # get user and their default key
+
+        user = services.users.get_by_email(
+            db_session=db_session,
+            email=email,
+        )
+
+        list_result = services.crypto_keys.list(
+            db_session=db_session,
+            query=f"user_id:{user.id}",
+            offset=0,
+            limit=5,
+        )
+
+        if list_result.count == 0:
+            raise ValueError("no user key")
+
+        if list_result.count > 1:
+            raise ValueError("specify user key")
+
+        user_key = list_result.objects[0]
+
+        assert user_key.type == "gpg-sym"
+
+        list_result = services.secrets.fs.list(
+            org="notme",
+            query="",
+            offset=0,
+            limit=2**30,
+        )    
+
+        secrets_data_list = list_result.objects
+
+        for secret_data in secrets_data_list:
+            secret = services.secrets.get_by_name_user(
+                db_session=db_session,
+                name=secret_data.name,
+                user_id=user.id,
+            )
+
+            if secret:
+                services.console.print_status(f"user '{email}' secret '{secret_data.name}' exists")
+                continue
+
+            secret_data_plain = services.secrets.decrypt(secret=secret_data)
+
+            data_object = {
+                "passw": secret_data_plain.passw,
+                "user": secret_data_plain.user,
+            }
+            data_cipher = services.crypto_keys.gpg.encrypt(
+                key=user_key,
+                plain_text=json.dumps(data_object),
+            )
+
+            secret_db = services.secrets.create(
+                db_session=db_session,
+                data_cipher=data_cipher,
+                key_id=user_key.id,
+                name=secret_data.name,
+                user_id=user.id,
+            )
+
+            services.console.print_ok(f"user '{email}' secret '{secret_data.name}' imported secret {secret_db.id}")
+            
+
+cli.add_command(create_default)
+cli.add_command(import_default)
+
+if __name__ == "__main__":
+    cli()
+

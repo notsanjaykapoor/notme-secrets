@@ -27,7 +27,7 @@ def file_uri_parse(source_uri: str) -> tuple[str, str, str]:
 
 def gpg_get(gpg_dir: str) -> gnupg.GPG:
     """
-    get gpg object
+    get gpg object from directory
     """
     _, source_dir, _ = file_uri_parse(source_uri=gpg_dir)
 
@@ -36,7 +36,7 @@ def gpg_get(gpg_dir: str) -> gnupg.GPG:
 
 def gpg_key(gpg_dir: str) -> tuple[gnupg.GPG, dict]:
     """
-    get gpg key
+    get gpg key from directory
     """
     gpg = gpg_get(gpg_dir=gpg_dir)
 

@@ -13,9 +13,9 @@ class Struct:
     errors: list[str]
 
 
-def sync_upload(cache_dir: str, bucket_name: str, org_name: str, sync_mode: str, match_glob: str="") -> Struct:
+def sync_upload(cache_dir: str, bucket_name: str, folder_name: str, sync_mode: str, match_glob: str="") -> Struct:
     """
-    Sync local secrets cache dir with gcs bucket (org). 
+    Sync local secrets cache dir with gcs bucket. 
     """
     struct = Struct(
         code=0,
@@ -28,14 +28,14 @@ def sync_upload(cache_dir: str, bucket_name: str, org_name: str, sync_mode: str,
     if not cache_dir.endswith("/"):
         cache_dir = f"{cache_dir}/"
 
-    cache_org_dir = f"{cache_dir}/{org_name}/"
+    cache_org_dir = f"{cache_dir}/{folder_name}/"
 
     os.makedirs(cache_org_dir, exist_ok=True)
 
     cache_files_list = os.listdir(cache_org_dir)
     cache_files_list_new = [s for s in cache_files_list if s.endswith(".new")]
 
-    blobs_list = services.storage.gcs.files_list(bucket_name=bucket_name, org_name=org_name)
+    blobs_list = services.storage.gcs.files_list(bucket_name=bucket_name, folder_name=folder_name)
     blobs_names = [blob.name.split("/")[-1] for blob in blobs_list]
 
     file_upload_list = []
@@ -55,7 +55,7 @@ def sync_upload(cache_dir: str, bucket_name: str, org_name: str, sync_mode: str,
         # upload new file(s)
         for cache_file_gpg in file_upload_list:
             cache_path_gpg = f"{cache_org_dir}{cache_file_gpg}"
-            blob_name_dst = f"{org_name}/{cache_file_gpg}"
+            blob_name_dst = f"{folder_name}/{cache_file_gpg}"
 
             # upload blob to storage bucket
             services.storage.gcs.blob_upload(bucket_name=bucket_name, file_name_src=cache_path_gpg, blob_name_dst=blob_name_dst)

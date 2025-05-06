@@ -4,21 +4,23 @@ import services.storage.gcs
 
 import context
 import log
+import models
 
 logger = log.init("app")
 
-async def sync_task():
+# deprecated
+async def sync_task(user: models.User):
     """
     Sync all gcs orgs with local fs.
 
     This is run as a background task on app startup.
     """
 
-    bucket_name = services.storage.gcs.bucket_name()
+    bucket_name = services.storage.gcs.bucket_name(bucket_uri=user.bucket_uri)
     cache_dir = services.storage.gcs.cache_dir()
     org_names = services.storage.gcs.bucket_folders(bucket_name=bucket_name)
 
-    logger.info(f"{context.rid_get()} sync manager orgs '{org_names}', cache dir '{cache_dir}' starting")
+    logger.info(f"{context.rid_get()} sync manager user {user.id} bucket '{bucket_name}' orgs '{org_names}', cache dir '{cache_dir}' starting")
 
     sync_counter = 0
 

@@ -5,6 +5,7 @@ import gnupg
 import services.secrets
 
 
+# deprecated
 def encrypt(password: str, user: str="") -> gnupg.Crypt:
     """
     """

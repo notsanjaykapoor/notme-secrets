@@ -9,12 +9,9 @@ import sqlmodel.pool
 import dot_init  # noqa: F401
 import models
 import services.database
-import services.users
 
 # set env vars
 os.environ["APP_ENV"] = "tst"
-os.environ["SECRETS_BUCKET_URI"] = "gs://notme-secrets-tst"
-os.environ["SECRETS_FS_URI"] = "file:///Users/sanjaykapoor/notme/notme-secrets/test/data/bucket-cache/"
 
 test_db_name = os.environ.get("DATABASE_TEST_URL")
 connect_args: dict = {}
@@ -73,24 +70,6 @@ def session_fixture():
     connection.close()
 
 
-@pytest.fixture(name="user_1")
-def user_1_fixture(db_session: sqlmodel.Session):
-    user = models.User(
-        email="user-1@gmail.com",
-        idp=models.user.IDP_GOOGLE,
-        state=models.user.STATE_ACTIVE,
-    )
-
-    db_session.add(user)
-    db_session.commit()
-
-    assert user.id
-
-    yield user
-
-    services.database.truncate_tables(db_session=db_session, table_names=["users"])
-
-
 @pytest.fixture(name="bm_1")
 def bookmark_1_fixture(db_session: sqlmodel.Session, user_1: models.User):
     bm = models.Bookmark(
@@ -109,4 +88,81 @@ def bookmark_1_fixture(db_session: sqlmodel.Session, user_1: models.User):
     yield bm
 
     services.database.truncate_tables(db_session=db_session, table_names=["bookmarks"])
+
+
+@pytest.fixture(name="key_gpg_1")
+def crypto_key_gpg_1_fixture(db_session: sqlmodel.Session, user_1: models.User):
+    key = models.CryptoKey(
+        location="file:///me/you",
+        name="gpg-1",
+        type=models.crypto_key.TYPE_GPG_SYM,
+        user_id=user_1.id,
+    )
+
+    db_session.add(key)
+    db_session.commit()
+
+    assert key.id
+
+    yield key
+
+    services.database.truncate_tables(db_session=db_session, table_names=["crypto_keys"])
+
+
+@pytest.fixture(name="key_gpg_me")
+def crypto_key_gpg_me_fixture(db_session: sqlmodel.Session, user_1: models.User):
+    key = models.CryptoKey(
+        location=models.crypto_key.LOCATION_DEFAULT,
+        name="gpg-me",
+        type=models.crypto_key.TYPE_GPG_SYM,
+        user_id=user_1.id,
+    )
+
+    db_session.add(key)
+    db_session.commit()
+
+    assert key.id
+
+    yield key
+
+    services.database.truncate_tables(db_session=db_session, table_names=["crypto_keys"])
+
+
+@pytest.fixture(name="key_kms_1")
+def crypto_key_kms_1_fixture(db_session: sqlmodel.Session, user_1: models.User):
+    key = models.CryptoKey(
+        location="kms:xxx/yyy/zzz",
+        name="kms-1",
+        type=models.crypto_key.TYPE_KMS_SYM,
+        user_id=user_1.id,
+    )
+
+    db_session.add(key)
+    db_session.commit()
+
+    assert key.id
+
+    yield key
+
+    services.database.truncate_tables(db_session=db_session, table_names=["crypto_keys"])
+
+
+@pytest.fixture(name="user_1")
+def user_1_fixture(db_session: sqlmodel.Session):
+    user = models.User(
+        data={
+            "bucket_uri": "gs://notme-secrets-tst",
+        },
+        email="user-1@gmail.com",
+        idp=models.user.IDP_GOOGLE,
+        state=models.user.STATE_ACTIVE,
+    )
+
+    db_session.add(user)
+    db_session.commit()
+
+    assert user.id
+
+    yield user
+
     services.database.truncate_tables(db_session=db_session, table_names=["users"])

@@ -13,7 +13,7 @@ def get_by_id(db_session: sqlmodel.Session, id: int) -> typing.Optional[models.B
     return db_object
 
 
-def get_by_name(db_session: sqlmodel.Session, email: str) -> typing.Optional[models.Bookmark]:
+def get_by_name(db_session: sqlmodel.Session, name: str) -> typing.Optional[models.Bookmark]:
     """ """
     db_select = sqlmodel.select(models.Bookmark).where(models.Bookmark.name == name)
     db_object = db_session.exec(db_select).first()

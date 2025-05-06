@@ -1,3 +1,5 @@
+import json
+
 import fastapi
 import fastapi.responses
 import fastapi.templating
@@ -6,8 +8,10 @@ import sqlmodel
 import context
 import log
 import main_shared
+import models
+import services.crypto_keys.gpg
 import services.secrets
-import services.storage.gcs
+import services.secrets.fs
 import services.users
 
 PASSW_BLUR_COUNT = 2
@@ -26,145 +30,109 @@ app = fastapi.APIRouter(
 
 
 @app.get("/secrets", response_class=fastapi.responses.HTMLResponse)
-def orgs_list(
-    request: fastapi.Request,
-    user_id: int = fastapi.Depends(main_shared.get_user_id),
-    db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
-):
-    if user_id == 0:
-        return fastapi.responses.RedirectResponse("/login")
-
-    try:
-        bucket_name = services.storage.gcs.bucket_name()
-
-        logger.info(f"{context.rid_get()} secrets orgs list bucket '{bucket_name}'")
-
-        org_names = services.storage.gcs.bucket_folders(bucket_name=bucket_name)
-
-        logger.info(f"{context.rid_get()} secrets orgs list bucket '{bucket_name}' ok - orgs count {len(org_names)}")
-    except Exception as e:
-        org_names = []
-        logger.error(f"{context.rid_get()} secrets orgs list exception '{e}'")
-
-    if len(org_names) == 1:
-        org_name = org_names[0]
-        logger.info(f"{context.rid_get()} secrets orgs list bucket '{bucket_name}' ok - redirect to org '{org_name}")
-        return fastapi.responses.RedirectResponse(f"/secrets/orgs/{org_name}")
-
-    user = services.users.get_by_id(db_session=db_session, id=user_id)
-
-    try:
-        response = templates.TemplateResponse(
-            request,
-            "secrets/orgs_list.html",
-            {
-                "app_name": "Orgs",
-                "org_names": org_names,
-                "user": user,
-            }
-        )
-    except Exception as e:
-        logger.error(f"{context.rid_get()} secrets list orgs render exception '{e}'")
-        return templates.TemplateResponse(request, "500.html", {})
-
-    return response
-
-
-@app.get("/secrets/orgs/{org}", response_class=fastapi.responses.HTMLResponse)
 def secrets_list(
     request: fastapi.Request,
-    org: str,
+    user_id: int = fastapi.Depends(main_shared.get_user_id),
     query: str="",
     offset: int=0,
     limit: int=50,
-    user_id: int = fastapi.Depends(main_shared.get_user_id),
     db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
 ):
-    logger.info(f"{context.rid_get()} secrets org '{org}' query '{query}' try")
-
     if user_id == 0:
         return fastapi.responses.RedirectResponse("/login")
 
     user = services.users.get_by_id(db_session=db_session, id=user_id)
 
+    logger.info(f"{context.rid_get()} secrets user {user.id} list")
+
     try:
         list_result = services.secrets.list(
-            org=org,
+            db_session=db_session,
             query=query,
             offset=offset,
             limit=limit,
+            scope=f"user_id:{user_id}"
         )
         secrets_list = list_result.objects
+        secrets_total = list_result.total
 
+        # create map of secret id to secret data in plaintext format
+        secrets_map = {secret.id : models.SecretData for secret in secrets_list}
         query_code = 0
         query_result = f"query '{query}' returned {len(secrets_list)} results"
 
-        logger.info(f"{context.rid_get()} secrets org '{org}' query '{query}' ok")
+        logger.info(f"{context.rid_get()} secrets user {user.id} list ok - total {secrets_total}")
     except Exception as e:
         secrets_list = []
+        secrets_map = {}
         query_code = 500
         query_result = f"exception {e}"
 
-        logger.error(f"{context.rid_get()} secrets org '{org}' query '{query}' exception '{e}'")
+        logger.error(f"{context.rid_get()} secrets user {user.id} list exception '{e}'")
 
     if "HX-Request" in request.headers:
-        template = "secrets/secrets_list_table.html"
+        template = "secrets/list_table.html"
     else:
-        template = "secrets/secrets_list.html"
+        template = "secrets/list.html"
 
     try:
         response = templates.TemplateResponse(
             request,
             template,
             {
-                "app_name": "Org Secrets",
-                "org": org,
+                "app_name": "Secrets",
                 "passw_blur_count": PASSW_BLUR_COUNT,
                 "passw_blur_secs": PASSW_BLUR_SECS,
-                "secrets_list": secrets_list,
-                "prompt_text": "search",
                 "query": query,
                 "query_code": query_code,
                 "query_result": query_result,
+                "secrets_list": secrets_list,
+                "secrets_map": secrets_map,
                 "user": user,
             }
         )
-    except Exception as e:
-        logger.error(f"{context.rid_get()} secrets list render exception '{e}'")
-        return templates.TemplateResponse(request, "500.html", {})
 
-    if "HX-Request" in request.headers:
-        response.headers["HX-Push-Url"] = f"{request.get('path')}?query={query}"
+        if "HX-Request" in request.headers:
+            response.headers["HX-Push-Url"] = f"/secrets?query={query}"
+    except Exception as e:
+        logger.error(f"{context.rid_get()} secrets user {user.id} list render exception '{e}'")
+        return templates.TemplateResponse(request, "500.html", {})
 
     return response
 
 
-@app.get("/secrets/orgs/{org}/{name}/blur", response_class=fastapi.responses.HTMLResponse)
+@app.get("/secrets/{secret_id}/blur", response_class=fastapi.responses.HTMLResponse)
 def secrets_blur(
     request: fastapi.Request,
-    org: str,
-    name: str,
+    secret_id: int,
+    user_id: int = fastapi.Depends(main_shared.get_user_id),
+    db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
 ):
-    logger.info(f"{context.rid_get()} secrets org '{org}' name '{name}' blur try")
+    if user_id == 0:
+        return fastapi.responses.RedirectResponse("/login")
 
     try:
-        secret = services.secrets.get_by_name(org=org, name=name)
+        secret_db = services.secrets.get_by_id_user(
+            db_session=db_session,
+            id=secret_id,
+            user_id=user_id,
+        )
+        logger.info(f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' blur ok")
     except Exception as e:
-        secret = None
-        logger.error(f"{context.rid_get()} secrets blur exception '{e}'")
+        secret_db = None
+        logger.error(f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' blur exception '{e}'")
+
+    secret_data = models.SecretData
 
     try:
         response = templates.TemplateResponse(
             request,
-            "secrets/secret_show.html",
+            "secrets/show.html",
             {
-                "app_name": "Pass",
-                "org": org,
-                "secret": secret,
+                "secret": secret_db,
+                "secret_data": secret_data,
             }
         )
-
-        logger.info(f"{context.rid_get()} secrets org '{org}' name '{name}' blur ok")
     except Exception as e:
         logger.error(f"{context.rid_get()} secrets blur render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
@@ -172,35 +140,55 @@ def secrets_blur(
     return response
 
 
-@app.get("/secrets/orgs/{org}/{name}/decrypt", response_class=fastapi.responses.HTMLResponse)
+@app.get("/secrets/{secret_id}/decrypt", response_class=fastapi.responses.HTMLResponse)
 def secrets_decrypt(
     request: fastapi.Request,
-    org: str,
-    name: str,
+    secret_id: int,
     user_id: int = fastapi.Depends(main_shared.get_user_id),
+    db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
 ):
-    logger.info(f"{context.rid_get()} secrets org '{org}' name '{name}' decrypt try")
-
     if user_id == 0:
         return fastapi.responses.RedirectResponse("/login")
 
     try:
-        secret = services.secrets.get_by_name(org=org, name=name)
-        secret = services.secrets.decrypt(secret=secret)
+        secret_db = services.secrets.get_by_id_user(
+            db_session=db_session,
+            id=secret_id,
+            user_id=user_id,
+        )
 
-        logger.info(f"{context.rid_get()} secrets org '{org}' name '{name}' decrypt ok")
+        if not secret_db:
+            raise "secret invalid"
+
+        # get default user key
+        user_key = services.crypto_keys.get_user_default(
+            db_session=db_session,
+            user_id=user_id,
+        )
+
+        logger.info(f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' decrypt try")
+
+        plain_text = services.crypto_keys.gpg.decrypt(key=user_key, pgp_msg=secret_db.data_cipher)
+        plain_dict = json.loads(plain_text)
+
+        secret_data = models.SecretData(
+            name=secret_db.name,
+            passw=plain_dict.get("passw"),
+            user=plain_dict.get("user")
+        )
+
+        logger.info(f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' decrypt ok")
     except Exception as e:
-        secret = None
-        logger.error(f"{context.rid_get()} secrets org '{org}' name '{name}' decrypt exception '{e}'")
+        secret_data = None
+        logger.error(f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' decrypt exception '{e}'")
 
     try:
         response = templates.TemplateResponse(
             request,
-            "secrets/secret_show.html",
+            "secrets/show.html",
             {
-                "app_name": "Pass",
-                "org": org,
-                "secret": secret
+                "secret": secret_db,
+                "secret_data": secret_data,
             }
         )
     except Exception as e:

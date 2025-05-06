@@ -1,4 +1,4 @@
-import os
+import json
 import secrets
 
 import fastapi
@@ -9,8 +9,10 @@ import context
 import log
 import main_shared
 import pydantic
+import sqlmodel
 
 import services.secrets
+import services.crypto_keys.gpg
 
 logger = log.init("app")
 
@@ -24,18 +26,61 @@ app = fastapi.APIRouter(
 )
 
 
-class SecretStruct(pydantic.BaseModel):
+class SecretNewStruct(pydantic.BaseModel):
     name: str
     password: str
     user: str | None
 
 
-@app.get("/secrets/orgs/{org}/new", response_class=fastapi.responses.HTMLResponse)
-def secrets_org_new(
+@app.post("/secrets/create", response_class=fastapi.responses.JSONResponse)
+def secrets_create(
     request: fastapi.Request,
-    org: str,
+    secret_new_struct: SecretNewStruct,
+    user_id: int = fastapi.Depends(main_shared.get_user_id),
+    db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
 ):
-    logger.info(f"{context.rid_get()} secrets org '{org}' new")
+    logger.info(f"{context.rid_get()} secrets user {user_id} create '{secret_new_struct.name}' try")
+
+    try:
+        # get default user key
+        user_key = services.crypto_keys.get_user_default(
+            db_session=db_session,
+            user_id=user_id,
+        )
+
+        # create cipher text from raw data
+        data = {
+            "passw": secret_new_struct.password,
+            "user": secret_new_struct.user
+        }
+        pgp_msg = services.crypto_keys.gpg.encrypt(key=user_key, plain_text=json.dumps(data))
+
+        # create database secret
+        services.secrets.create(
+            db_session,
+            data_cipher=pgp_msg,
+            key_id=user_key.id,
+            name=secret_new_struct.name,
+            user_id=user_id,
+        )
+
+        logger.info(f"{context.rid_get()} secrets user {user_id} create '{secret_new_struct.name}' ok")
+    except Exception as e:
+        logger.error(f"{context.rid_get()} secrets user {user_id} create '{secret_new_struct.name}' exception - {e}")
+
+    response = fastapi.responses.JSONResponse(content={"response": "ok"})
+    response.headers["HX-Redirect"] = "/secrets"
+
+    return response
+
+
+@app.get("/secrets/new", response_class=fastapi.responses.HTMLResponse)
+def secrets_new(
+    request: fastapi.Request,
+    name: str,
+    user_id: int = fastapi.Depends(main_shared.get_user_id),
+):
+    logger.info(f"{context.rid_get()} secrets user {user_id} new")
 
     try:
         response = templates.TemplateResponse(
@@ -43,54 +88,22 @@ def secrets_org_new(
             "secrets/new.html",
             {
                 "app_name": "Pass",
-                "org": org,
+                "name": name,
             }
         )
     except Exception as e:
-        logger.error(f"{context.rid_get()} secrets org '{org}' new render exception '{e}'")
+        logger.error(f"{context.rid_get()} secrets user {user_id} new render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
 
     return response
 
 
-@app.post("/secrets/orgs/{org}/create", response_class=fastapi.responses.JSONResponse)
-def secrets_org_create(
+@app.get("/secrets/new/generate", response_class=fastapi.responses.JSONResponse)
+def secrets_new_generate(
     request: fastapi.Request,
-    secret_struct: SecretStruct,
-    org: str,
+    user_id: int = fastapi.Depends(main_shared.get_user_id),
 ):
-    logger.info(f"{context.rid_get()} secrets org '{org}' create '{secret_struct.name}'")
-
-    crypt_struct = services.secrets.encrypt(password=secret_struct.password, user=secret_struct.user)
-
-    dir_uri= os.environ.get("SECRETS_FS_URI")
-    _, source_dir, _ = services.secrets.file_uri_parse(source_uri=dir_uri)
-
-    file_gpg_path = f"{source_dir}{org}/{secret_struct.name}.gpg"
-    file_new_path = f"{file_gpg_path}.new"
-
-    # write xxx.gpg.new file first, followed by xxx.gpg file
-
-    with open(file_new_path, "w") as f:
-        pass
-
-    with open(file_gpg_path, "wb") as f:
-        f.write(crypt_struct.data)
-
-    logger.info(f"{context.rid_get()} secrets org '{org}' create file '{file_gpg_path}' ok")
-
-    response = fastapi.responses.JSONResponse(content={"response": "ok"})
-    response.headers["HX-Redirect"] = f"/secrets/orgs/{org}"
-
-    return response
-
-
-@app.get("/secrets/orgs/{org}/generate", response_class=fastapi.responses.JSONResponse)
-def secrets_org_generate(
-    request: fastapi.Request,
-    org: str,
-):
-    logger.info(f"{context.rid_get()} secrets org '{org}' generate")
+    logger.info(f"{context.rid_get()} secrets user {user_id} generate")
 
     password = secrets.token_urlsafe(13)
 
