@@ -1,15 +1,18 @@
 import base64
 
+import models
 import services.crypto_keys.kms
 
 
-def encrypt(key_name: str, plain_text: str) -> str:
-    """ """
+def encrypt(key: models.CryptoKey, plain_text: str) -> str:
+    """
+    Encrypt plain text with kms key and return base64 encoded cipher text.
+    """
     client = services.crypto_keys.kms.client()
 
     encrypt_response = client.encrypt(
         request={
-            "name": key_name,
+            "name": key.kms_name,
             "plaintext": plain_text.encode("utf-8"),
         }
     )

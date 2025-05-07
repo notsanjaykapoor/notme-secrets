@@ -12,6 +12,7 @@ import services.database
 
 # set env vars
 os.environ["APP_ENV"] = "tst"
+os.environ["KMS_KEY_TEST"] = "kms:projects/notme-330419/locations/us-central1/keyRings/ring-tst/cryptoKeys/tst-1"
 
 test_db_name = os.environ.get("DATABASE_TEST_URL")
 connect_args: dict = {}
@@ -131,7 +132,7 @@ def crypto_key_gpg_me_fixture(db_session: sqlmodel.Session, user_1: models.User)
 @pytest.fixture(name="key_kms_1")
 def crypto_key_kms_1_fixture(db_session: sqlmodel.Session, user_1: models.User):
     key = models.CryptoKey(
-        location="kms:xxx/yyy/zzz",
+        location=os.environ.get("KMS_KEY_TEST"),
         name="kms-1",
         type=models.crypto_key.TYPE_KMS_SYM,
         user_id=user_1.id,
@@ -150,9 +151,7 @@ def crypto_key_kms_1_fixture(db_session: sqlmodel.Session, user_1: models.User):
 @pytest.fixture(name="user_1")
 def user_1_fixture(db_session: sqlmodel.Session):
     user = models.User(
-        data={
-            "bucket_uri": "gs://notme-secrets-tst",
-        },
+        data={},
         email="user-1@gmail.com",
         idp=models.user.IDP_GOOGLE,
         state=models.user.STATE_ACTIVE,

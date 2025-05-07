@@ -1,3 +1,4 @@
+from .count import count_by_key
 from .create import create
 from .decrypt import decrypt
 from .encrypt import encrypt

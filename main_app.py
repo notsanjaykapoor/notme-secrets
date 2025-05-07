@@ -8,7 +8,7 @@ import fastapi
 import fastapi.middleware.cors
 import fastapi.staticfiles
 import fastapi.templating
-import sqlmodel
+import sqlmodel # required for migrate to work properly
 import starlette.middleware.sessions
 import ulid
 
@@ -20,6 +20,7 @@ import routers.auth.login_oauth
 import routers.auth.logout
 import routers.bookmarks.bookmarks_list
 import routers.bookmarks.bookmarks_manage
+import routers.keys.keys_list
 import routers.secrets.secrets_list
 import routers.secrets.secrets_manage
 import routers.turnstile
@@ -66,6 +67,7 @@ app.include_router(routers.auth.login_oauth.app)
 app.include_router(routers.auth.logout.app)
 app.include_router(routers.bookmarks.bookmarks_list.app)
 app.include_router(routers.bookmarks.bookmarks_manage.app)
+app.include_router(routers.keys.keys_list.app)
 app.include_router(routers.secrets.secrets_list.app)
 app.include_router(routers.secrets.secrets_manage.app)
 app.include_router(routers.turnstile.turnstile.app)

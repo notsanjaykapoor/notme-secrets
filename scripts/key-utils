@@ -25,25 +25,28 @@ def cli():
 
 
 @click.command()
-@click.option("--email", default=None, required=True, help="default user email")
+@click.option("--email", default=None, required=True, help="user email")
 def create_default(email: str) -> list[str]:
     """
-    create default system key(s)
+    create user default key(s)
     """
     services.console.print_(f"user '{email}' key create default")
 
     with services.database.session.get() as db_session:
+        user = services.users.get_by_email(
+            db_session=db_session,
+            email=email,
+        )
+
+        if not user:
+            services.console.print_status("error - invalid user")
+
         key_db = services.crypto_keys.get_by_name(
             db_session=db_session,
             name=models.crypto_key.NAME_DEFAULT,
         )
 
         if not key_db:
-            user = services.users.get_by_email(
-                db_session=db_session,
-                email=email,
-            )
-
             key_db = services.crypto_keys.create_default(
                 db_session=db_session,
                 user_id=user.id,
@@ -53,6 +56,43 @@ def create_default(email: str) -> list[str]:
         else:
             services.console.print_status("exists")
 
+
+@click.command()
+@click.option("--email", default=None, required=True, help="user email")
+@click.option("--key", "key_name", default="user-kms", required=False, help="kms key name")
+@click.option("--location", default=None, required=True, help="kms key location")
+def create_kms(email: str, key_name: str, location: str) -> list[str]:
+    """
+    create user kms key
+    """
+    services.console.print_(f"user '{email}' kms key create")
+
+    with services.database.session.get() as db_session:
+        user = services.users.get_by_email(
+            db_session=db_session,
+            email=email,
+        )
+
+        if not user:
+            services.console.print_status("error - invalid user")
+ 
+        key_db = services.crypto_keys.get_by_name(
+            db_session=db_session,
+            name=key_name,
+        )
+
+        if not key_db:
+            key_db = services.crypto_keys.create(
+                db_session=db_session,
+                location=location,
+                name=key_name,
+                type=models.crypto_key.TYPE_KMS_SYM,
+                user_id=user.id,
+            )
+
+            services.console.print_ok("created")
+        else:
+            services.console.print_status("exists")
 
 @click.command()
 @click.option("--email", default=None, required=True, help="default user email")
@@ -130,6 +170,7 @@ def import_default(email: str) -> list[str]:
             
 
 cli.add_command(create_default)
+cli.add_command(create_kms)
 cli.add_command(import_default)
 
 if __name__ == "__main__":

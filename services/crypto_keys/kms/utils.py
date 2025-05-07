@@ -4,7 +4,7 @@ def key_name(client, project_id: str, location_id: str, key_ring_id: str, key_id
     """
     Get kms key name from its components.
 
-    Params:
+    params:
         client: Google Cloud client object
         project_id: Google Cloud project ID (e.g. 'my-project').
         location_id: Cloud KMS location (e.g. 'us-east1').

@@ -49,7 +49,9 @@ def list(
     for token in struct_tokens.tokens:
         value = token["value"]
 
-        if token["field"] == "name":
+        if token["field"] in ["key_id"]:
+            dataset = dataset.where(model.key_id == int(value))
+        elif token["field"] == "name":
             # always like query
             value_normal = re.sub(r"~", "", value).lower()
             dataset = dataset.where(

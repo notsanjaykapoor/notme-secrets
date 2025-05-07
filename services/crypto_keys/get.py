@@ -1,11 +1,9 @@
-import typing
-
 import sqlmodel
 
 import models
+import services.crypto_keys
 
-
-def get_by_id(db_session: sqlmodel.Session, id: int) -> typing.Optional[models.CryptoKey]:
+def get_by_id(db_session: sqlmodel.Session, id: int) -> models.CryptoKey | None:
     """ """
     db_select = sqlmodel.select(models.CryptoKey).where(models.CryptoKey.id == id)
     db_object = db_session.exec(db_select).first()
@@ -13,7 +11,15 @@ def get_by_id(db_session: sqlmodel.Session, id: int) -> typing.Optional[models.C
     return db_object
 
 
-def get_by_name(db_session: sqlmodel.Session, name: str) -> typing.Optional[models.CryptoKey]:
+def get_by_id_user(db_session: sqlmodel.Session, id: int, user_id: int) -> models.CryptoKey | None:
+    """ """
+    db_select = sqlmodel.select(models.CryptoKey).where(models.CryptoKey.id == id).where(models.CryptoKey.user_id == user_id)
+    db_object = db_session.exec(db_select).first()
+
+    return db_object
+
+
+def get_by_name(db_session: sqlmodel.Session, name: str) -> models.CryptoKey | None:
     """ """
     db_select = sqlmodel.select(models.CryptoKey).where(models.CryptoKey.name == name)
     db_object = db_session.exec(db_select).first()
@@ -21,16 +27,17 @@ def get_by_name(db_session: sqlmodel.Session, name: str) -> typing.Optional[mode
     return db_object
 
 
-def get_user_default(db_session: sqlmodel.Session, user_id: int) -> typing.Optional[models.CryptoKey]:
+def get_user_default(db_session: sqlmodel.Session, user_id: int) -> models.CryptoKey | None:
     """ """
-    db_select = sqlmodel.select(models.CryptoKey).where(models.CryptoKey.user_id == user_id)
-    db_objects = db_session.exec(db_select).all()
+    list_result = services.crypto_keys.list(
+        db_session=db_session,
+        query=f"name:~default user_id:{user_id}",
+        offset=0,
+        limit=1,
+    )
 
-    if len(db_objects) == 0:
-        raise Exception("user has no keys")
-
-    if len(db_objects) > 1:
-        raise Exception("user has multiple keys")
+    if list_result.total != 1:
+        return None
     
-    return db_objects[0]
+    return list_result.objects[0]
 

@@ -1,10 +1,13 @@
 import base64
 
+import models
 import services.crypto_keys.kms
 
 
-def decrypt(key_name: str, base64_text: str) -> str:
-    """ """
+def decrypt(key: models.CryptoKey, base64_text: str) -> str:
+    """
+    Decrypt base64 encoded cipher text with kms key.
+    """
     client = services.crypto_keys.kms.client()
 
     # base64 to cipher bytes
@@ -12,7 +15,7 @@ def decrypt(key_name: str, base64_text: str) -> str:
 
     decrypt_response = client.decrypt(
         request={
-            "name": key_name,
+            "name": key.kms_name,
             "ciphertext": cipher_bytes,
         }
     )

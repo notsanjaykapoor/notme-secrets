@@ -11,7 +11,6 @@ import main_shared
 import models
 import services.crypto_keys.gpg
 import services.secrets
-import services.secrets.fs
 import services.users
 
 PASSW_BLUR_COUNT = 2
@@ -160,9 +159,10 @@ def secrets_decrypt(
         if not secret_db:
             raise "secret invalid"
 
-        # get default user key
-        user_key = services.crypto_keys.get_user_default(
+        # get specific user key
+        user_key = services.crypto_keys.get_by_id_user(
             db_session=db_session,
+            id=secret_db.key_id,
             user_id=user_id,
         )
 

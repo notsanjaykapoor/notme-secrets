@@ -4,6 +4,8 @@ import models
 import services.crypto_keys.gpg
 
 def test_gpg_encrypt(key_gpg_me: models.CryptoKey):
+    assert key_gpg_me.type == "gpg-sym"
+
     data = {
         "user": "user@gmail.com",
         "password": "secret",
