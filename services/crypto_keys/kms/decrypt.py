@@ -1,4 +1,5 @@
 import base64
+import time
 
 import models
 import services.crypto_keys.kms
@@ -23,3 +24,15 @@ def decrypt(key: models.CryptoKey, base64_text: str) -> str:
     plain_bytes = decrypt_response.plaintext
 
     return plain_bytes.decode("utf-8")
+
+
+def decrypt_with_time(key: models.CryptoKey, base64_text: str) -> tuple[str, float]:
+    """
+    Decrypt with timing info
+    """
+    t_start = time.time()
+    text = decrypt(key=key, base64_text=base64_text)
+    t_secs = round((time.time() - t_start), 1)
+
+    return [text, t_secs]
+

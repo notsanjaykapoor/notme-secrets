@@ -29,7 +29,11 @@
             <tr class="group hover:bg-zinc-50 odd:bg-white even:bg-slate-50 text-center text-xs">
                 <td class="p-4 font-normal text-left">{{ key.name }}</td>
                 <td class="p-4 font-normal">{{ key.type }}</td>
-                <td class="p-4 font-normal">{{ keys_map.get(key.id) }}</td>
+                <td class="p-4 font-normal">
+                    <a class="font-bold text-blue-700" href="/secrets?query=key:{{key.id}}">
+                        {{ keys_map.get(key.id) }}
+                    </a>
+                </td>
                 <td class="p-4 font-normal">{{ key.user_id }}</td>
             </tr>
             {% endfor %}

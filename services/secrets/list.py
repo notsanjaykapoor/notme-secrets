@@ -49,7 +49,7 @@ def list(
     for token in struct_tokens.tokens:
         value = token["value"]
 
-        if token["field"] in ["key_id"]:
+        if token["field"] in ["key", "key_id"]:
             dataset = dataset.where(model.key_id == int(value))
         elif token["field"] == "name":
             # always like query

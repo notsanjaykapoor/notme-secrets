@@ -10,6 +10,7 @@ import log
 import main_shared
 import models
 import services.crypto_keys.gpg
+import services.crypto_keys.kms
 import services.secrets
 import services.users
 
@@ -166,9 +167,13 @@ def secrets_decrypt(
             user_id=user_id,
         )
 
-        logger.info(f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' decrypt try")
+        logger.info(f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' decrypt '{user_key.type}' try")
 
-        plain_text = services.crypto_keys.gpg.decrypt(key=user_key, pgp_msg=secret_db.data_cipher)
+        if user_key.type == models.crypto_key.TYPE_GPG_SYM:
+            plain_text, t_secs = services.crypto_keys.gpg.decrypt_with_time(key=user_key, pgp_msg=secret_db.data_cipher)
+        elif user_key.type == models.crypto_key.TYPE_KMS_SYM:
+            plain_text, t_secs = services.crypto_keys.kms.decrypt_with_time(key=user_key, base64_text=secret_db.data_cipher)
+
         plain_dict = json.loads(plain_text)
 
         secret_data = models.SecretData(
@@ -177,7 +182,7 @@ def secrets_decrypt(
             user=plain_dict.get("user")
         )
 
-        logger.info(f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' decrypt ok")
+        logger.info(f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' decrypt '{user_key.type}' ok - cipher {t_secs}s")
     except Exception as e:
         secret_data = None
         logger.error(f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' decrypt exception '{e}'")
