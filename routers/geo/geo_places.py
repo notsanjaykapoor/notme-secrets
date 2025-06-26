@@ -46,8 +46,8 @@ def geo_places_list(
         query_norm = query
 
     box = None
-    map_path = ""
-    mapbox_path = ""
+    geo_api_path = ""
+    geo_map_path = ""
 
     query_code = 0
     query_prompt = "search places anywhere"
@@ -59,8 +59,8 @@ def geo_places_list(
         if box := services.geo.get_by_slug(db_session=db_session, slug=box_name):
             query_norm = f"{query_norm} {box.type}:{box.name}".strip()
             query_prompt = f"search places near {box.name}"
-            map_path = f"/geo/maps/box/{box.slug}"
-            mapbox_path = f"/geo/mapbox/box/{box.slug}"
+            geo_map_path = f"/geo/maps/box/{box.slug}"
+            geo_api_path = f"/geo/api/box/{box.slug}"
 
     try:
         places_struct = services.places.list(db_session=db_session, query=query_norm, offset=0, limit=50, sort="name+")
@@ -107,8 +107,8 @@ def geo_places_list(
                 "brands_cur_list": brands_cur_list,
                 "cities_count": cities_count,
                 "cities_names_slugs": cities_names_slugs,
-                "map_path": map_path,
-                "mapbox_path": mapbox_path,
+                "geo_api_path": geo_api_path,
+                "geo_map_path": geo_map_path,
                 "places_list": places_list,
                 "places_total": places_total,
                 "request_path": request.url.path,

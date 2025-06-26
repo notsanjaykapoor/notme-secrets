@@ -21,8 +21,8 @@ app = fastapi.APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@app.get("/geo/mapbox/box/{box_name}", response_class=fastapi.responses.HTMLResponse)
-def geo_mapbox_query(
+@app.get("/geo/api/box/{box_name}", response_class=fastapi.responses.HTMLResponse)
+def geo_api_query(
     request: fastapi.Request,
     box_name: str="",
     query: str="",
@@ -34,7 +34,7 @@ def geo_mapbox_query(
 
     user = services.users.get_by_id(db_session=db_session, id=user_id)
 
-    logger.info(f"{context.rid_get()} mapbox query '{query}' box '{box_name}' try")
+    logger.info(f"{context.rid_get()} api query '{query}' box '{box_name}' try")
 
     geo_list = []
     places_source_ids = {}
@@ -65,9 +65,9 @@ def geo_mapbox_query(
     referer_path = f"/geo/places/box/{box.slug}"
 
     if "HX-Request" in request.headers:
-        template = "geo/mapbox/list_table.html"
+        template = "geo/api/list_table.html"
     else:
-        template = "geo/mapbox/list.html"
+        template = "geo/api/list.html"
 
     try:
         response = templates.TemplateResponse(
@@ -75,7 +75,7 @@ def geo_mapbox_query(
             template,
             {
                 "add_code": 0,
-                "app_name": "Geo - Mapbox",
+                "app_name": "Geo - Api",
                 "box": box,
                 "geo_list": geo_list,
                 "places_source_ids": places_source_ids,
@@ -88,9 +88,9 @@ def geo_mapbox_query(
             }
         )
     except Exception as e:
-        logger.error(f"{context.rid_get()} mapbox render exception '{e}'")
+        logger.error(f"{context.rid_get()} api render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
 
-    logger.info(f"{context.rid_get()} mapbox query '{query}' box '{box_name}' ok")
+    logger.info(f"{context.rid_get()} api query '{query}' box '{box_name}' ok")
 
     return response

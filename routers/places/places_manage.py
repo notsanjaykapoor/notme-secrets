@@ -71,7 +71,7 @@ def places_add(
 
     response = templates.TemplateResponse(
         request,
-        "geo/mapbox/list_add_fragment.html",
+        "geo/api/list_add_fragment.html",
         {
             "add_code": add_code,
             "box": box,
