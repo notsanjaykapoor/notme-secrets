@@ -12,6 +12,7 @@ import services.mql
 class Struct:
     code: int
     objects: list[models.Place]
+    brands: list[str]
     tags: list[str]
     count: int
     total: int
@@ -27,6 +28,7 @@ def list(
     struct = Struct(
         code=0,
         objects=[],
+        brands=[],
         tags=[],
         count=0,
         total=0,
@@ -46,7 +48,11 @@ def list(
     for token in struct_tokens.tokens:
         value = token["value"]
 
-        if token["field"] == "city":
+        if token["field"] in ["brand", "brands"]:
+            values = [s.strip() for s in value.lower().split(",")]
+            dataset = dataset.where(model.brands.contains(values))
+            struct.brands = values
+        elif token["field"] == "city":
             # always like query
             value_normal = re.sub(r"~", "", value).lower()
             dataset = dataset.where(
@@ -62,7 +68,7 @@ def list(
             dataset = dataset.where(model.source_id == value)
         elif token["field"] == "source_name":
             dataset = dataset.where(model.source_name == value)
-        elif token["field"] in ["tags"]:
+        elif token["field"] in ["tag", "tags"]:
             values = [s.strip() for s in value.lower().split(",")]
             dataset = dataset.where(model.tags.contains(values))
             struct.tags = values

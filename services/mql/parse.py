@@ -1,5 +1,7 @@
 import dataclasses
 import urllib
+import urllib.parse
+
 
 @dataclasses.dataclass
 class Struct:

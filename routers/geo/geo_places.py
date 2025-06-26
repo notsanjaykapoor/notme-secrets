@@ -8,6 +8,7 @@ import log
 import main_shared
 import services.geo
 import services.places
+import services.places.brands
 import services.places.tags
 import services.users
 
@@ -47,6 +48,8 @@ def geo_places_list(
     box = None
     map_path = ""
     mapbox_path = ""
+
+    query_code = 0
     query_prompt = "search places anywhere"
 
     cities_names_slugs = services.cities.get_all_names_slugs(db_session=db_session)
@@ -64,11 +67,22 @@ def geo_places_list(
         places_list = places_struct.objects
         places_total = places_struct.total
 
+        brands_cur_list = sorted(places_struct.brands)
+
         tags_all_list = sorted(list(services.places.tags.list_all(db_session=db_session, city=box)))
         tags_cur_list = sorted(places_struct.tags)
+        tags_cur_str = ",".join(tags_cur_list)
 
-        query_code = 0
-        query_result = f"query '{query}' returned {len(places_list)} results"
+        if tags_cur_list:
+            # filter brands by tags
+            brands_all_list = sorted(services.places.brands.list_by_box_tags(db_session=db_session, box=box, tags=tags_cur_list))
+        else:
+            brands_all_list = []
+
+        if box:
+            query_result = f"query '{query}' near '{box.name}' returned {len(places_list)} results"
+        else:
+            query_result = f"query '{query}' returned {len(places_list)} results"
     except Exception as e:
         places_list = []
         places_total = 0
@@ -89,6 +103,8 @@ def geo_places_list(
             {
                 "app_name": "Geo - Places",
                 "box": box,
+                "brands_all_list": brands_all_list,
+                "brands_cur_list": brands_cur_list,
                 "cities_count": cities_count,
                 "cities_names_slugs": cities_names_slugs,
                 "map_path": map_path,
@@ -100,8 +116,9 @@ def geo_places_list(
                 "query_code": query_code,
                 "query_prompt": query_prompt,
                 "query_result": query_result,
-                "tags_cur_list": tags_cur_list,
                 "tags_all_list": tags_all_list,
+                "tags_cur_list": tags_cur_list,
+                "tags_cur_str": tags_cur_str,
                 "user": user,
             }
         )
