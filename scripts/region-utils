@@ -1,0 +1,100 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.insert(1, os.path.join(sys.path[0], ".."))
+
+import dot_init
+
+import click
+import ulid
+
+import models
+import services.console
+import services.database.session
+import services.regions
+
+@click.group()
+def cli():
+    pass
+
+@click.command()
+def init() -> list[str]:
+    """
+    Initialize region entries.
+    """
+    names = ["europe", "us", "japan"]
+
+    with services.database.session.get() as db_session:
+        for name in names:
+            services.console.print_status(f"region '{name}' add")
+
+            region_db = services.regions.get_by_name(db_session=db_session, name=name)
+
+            if region_db:
+                services.console.print_status(f"region '{name}' exists - region {region_db.id}")
+                continue
+
+            if name == "europe":
+                region_db = models.Region(
+                    bbox=[-12.708778, 35.885990, 29.918175, 68.104693],
+                    geo_json={},
+                    lat=53.2783,
+                    lon=12.392578,
+                    name=name,
+                    source_id=ulid.new().str,
+                    source_name="manual",
+                    slug=name,
+                )
+            elif name == "us":
+                region_db = models.Region(
+                    bbox=[-125.387306, 24.782371, -63.160744, 48.644252],
+                    geo_json={},
+                    lat=38.583600,
+                    lon=-95.387077,
+                    name=name,
+                    source_id=ulid.new().str,
+                    source_name="manual",
+                    slug=name,
+                )
+            else:
+                # add through regions interface
+                code, region_db = services.regions.create(db_session=db_session, name=name)
+
+                if region_db:
+                    services.console.print_ok(f"region '{name}' added - region {region_db.id}")
+                else:
+                    services.console.print_error(f"region '{name}' add error code {code}")
+
+                continue
+
+            db_session.add(region_db)
+            db_session.commit()
+
+            services.console.print_ok(f"region '{name}' added - region {region_db.id}")
+
+@click.command()
+@click.option("--name", default=None, required=True, help="city name")
+def add(name: str) -> list[str]:
+    """
+    Add region to regions table.
+    """
+    services.console.print_status(f"region '{name}' add")
+
+    with services.database.session.get() as db_session:
+        region_db = services.regions.get_by_name(db_session=db_session, name=name)
+
+        if region_db:
+            services.console.print_status(f"region '{name}' exists")
+            exit(0)
+
+        code, region_db = services.regions.create(db_session=db_session, name=name)
+
+        services.console.print_ok(f"region '{name}' created - id {region_db.id}")
+
+cli.add_command(add)
+cli.add_command(init)
+
+if __name__ == "__main__":
+    cli()

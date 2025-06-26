@@ -1,0 +1,115 @@
+<div class="flex flex-row mt-2">
+    <div class="w-1/12"></div>
+    <div class="w-10/12">
+        {% if query_code == 0 %}
+        <p class="text-xs font-bold text-slate-500">
+            {{query_result}}
+        </p>
+        {% else %}
+        <p class="text-xs font-bold text-red-700">
+            {{query_result}}
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="flex flex-row mt-10">
+    <div class="w-1/12"></div>
+    <div class="w-9/12">
+        {% if box %}
+        <button class="rounded-full text-xs font-bold text-white bg-blue-700 py-1 px-3 mr-5">
+            {{ box.name }}
+            <a href="/geo/places">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                    class="float-right ml-2 size-4">
+                    <path
+                        d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+                </svg>
+            </a>
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="flex flex-row mt-0">
+    <div class="w-1/12"></div>
+    <div class="w-10/12">
+        {% for tag in tags_all_list %}
+        {% if tag in tags_cur_list %}
+        {% set tag_color = "bg-sky-400 opacity-50" %}
+        {% else %}
+        {% set tag_color = "bg-sky-400" %}
+        {% endif %}
+
+        <a href="/bookmarks?query=cats:{{categories_cur_str}} tags:{{tag}}">
+            <button class="rounded-full text-xs font-bold text-white {{tag_color}} py-1 px-2">{{tag}}</button>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="flex flex-row mt-10">
+    <div class="w-1/12"></div>
+    <table class="w-10/12">
+        <thead class="font-normal text-left text-xs leading-6 text-zinc-800">
+            <tr class="">
+                <th class="p-4">name</th>
+                <th class="p-4">tags</th>
+                <th class="p-4">brands</th>
+                <th class="p-4 w-10">website</th>
+                <th class="p-4 w-10">notes</th>
+                <th class="p-4">location</th>
+                <th class="p-2 w-10"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for place in places_list %}
+            <tr class="group hover:bg-zinc-50 odd:bg-white even:bg-slate-50 text-left text-xs">
+                <td class="p-4">
+                    {{ place.name }}
+                </td>
+                <td class="p-4 font-normal">{{ place.tags_string }}</td>
+                <td class="p-4 font-normal">{{ place.brands_string }}</td>
+                <td class="p-4 font-normal flex justify-center text-center">
+                    {% if place.website %}
+                    <a class="font-bold text-blue-600" href="{{ place.website }}" target="_blank" title="website">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                            class="size-4 text-sky-400">
+                            <path
+                                d="M16.555 5.412a8.028 8.028 0 0 0-3.503-2.81 14.899 14.899 0 0 1 1.663 4.472 8.547 8.547 0 0 0 1.84-1.662ZM13.326 7.825a13.43 13.43 0 0 0-2.413-5.773 8.087 8.087 0 0 0-1.826 0 13.43 13.43 0 0 0-2.413 5.773A8.473 8.473 0 0 0 10 8.5c1.18 0 2.304-.24 3.326-.675ZM6.514 9.376A9.98 9.98 0 0 0 10 10c1.226 0 2.4-.22 3.486-.624a13.54 13.54 0 0 1-.351 3.759A13.54 13.54 0 0 1 10 13.5c-1.079 0-2.128-.127-3.134-.366a13.538 13.538 0 0 1-.352-3.758ZM5.285 7.074a14.9 14.9 0 0 1 1.663-4.471 8.028 8.028 0 0 0-3.503 2.81c.529.638 1.149 1.199 1.84 1.66ZM17.334 6.798a7.973 7.973 0 0 1 .614 4.115 13.47 13.47 0 0 1-3.178 1.72 15.093 15.093 0 0 0 .174-3.939 10.043 10.043 0 0 0 2.39-1.896ZM2.666 6.798a10.042 10.042 0 0 0 2.39 1.896 15.196 15.196 0 0 0 .174 3.94 13.472 13.472 0 0 1-3.178-1.72 7.973 7.973 0 0 1 .615-4.115ZM10 15c.898 0 1.778-.079 2.633-.23a13.473 13.473 0 0 1-1.72 3.178 8.099 8.099 0 0 1-1.826 0 13.47 13.47 0 0 1-1.72-3.178c.855.151 1.735.23 2.633.23ZM14.357 14.357a14.912 14.912 0 0 1-1.305 3.04 8.027 8.027 0 0 0 4.345-4.345c-.953.542-1.971.981-3.04 1.305ZM6.948 17.397a8.027 8.027 0 0 1-4.345-4.345c.953.542 1.971.981 3.04 1.305a14.912 14.912 0 0 0 1.305 3.04Z" />
+                        </svg>
+                    </a>
+                    {% else %}
+                    <span class="text-slate-400">-</span>
+                    {% endif %}
+                </td>
+                <td class="p-4 font-normal text-center">
+                    {% if place.notes_len > 0%}
+                    {{ place.notes_len }}
+                    {% else %}
+                    <span class="text-slate-400">-</span>
+                    {% endif %}
+                </td>
+                <td class="p-4 font-normal">
+                    {% if box %}
+                    {{ place.city_country }}
+                    {% else %}
+                    <a href="/geo/places/box/{{ place.city }}" class="font-bold text-sky-400">
+                        {{ place.city_country }}
+                    </a>
+                    {% endif %}
+                </td>
+                <td class="p-2 font-normal">
+                    <a href="/places/{{place.id}}/edit" class="text-sky-400 font-bold">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4">
+                            <path
+                                d="m2.695 14.762-1.262 3.155a.5.5 0 0 0 .65.65l3.155-1.262a4 4 0 0 0 1.343-.886L17.5 5.501a2.121 2.121 0 0 0-3-3L3.58 13.419a4 4 0 0 0-.885 1.343Z" />
+                        </svg>
+                    </a>
+                </td>
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

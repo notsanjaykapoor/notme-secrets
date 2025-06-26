@@ -91,6 +91,56 @@ def bookmark_1_fixture(db_session: sqlmodel.Session, user_1: models.User):
     services.database.truncate_tables(db_session=db_session, table_names=["bookmarks"])
 
 
+@pytest.fixture(name="city_chi")
+def city_chi_fixture(db_session: sqlmodel.Session):
+    city = models.City(
+        country_code="us",
+        data={},
+        geo_json={},
+        lat=41.8755616,
+        lon=-87.6244212,
+        name="chicago",
+        slug="chicago",
+        source_id="",
+        source_name="openstreetmap",
+        tags=[],
+    )
+
+    db_session.add(city)
+    db_session.commit()
+
+    assert city.id
+
+    yield city
+
+    services.database.truncate_tables(db_session=db_session, table_names=["cities"])
+
+
+@pytest.fixture(name="city_tokyo")
+def city_tokyo_fixture(db_session: sqlmodel.Session):
+    city = models.City(
+        country_code="jp",
+        data={},
+        geo_json={},
+        lat=35.6768601,
+        lon=-139.7638947,
+        name="tokyo",
+        slug="tokyo",
+        source_id="",
+        source_name="openstreetmap",
+        tags=[],
+    )
+
+    db_session.add(city)
+    db_session.commit()
+
+    assert city.id
+
+    yield city
+
+    services.database.truncate_tables(db_session=db_session, table_names=["cities"])
+
+
 @pytest.fixture(name="key_gpg_1")
 def crypto_key_gpg_1_fixture(db_session: sqlmodel.Session, user_1: models.User):
     key = models.CryptoKey(

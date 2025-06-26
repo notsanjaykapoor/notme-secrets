@@ -2,7 +2,6 @@ import os
 
 import dot_init # noqa: F401
 
-import asyncio
 import contextlib
 import fastapi
 import fastapi.middleware.cors
@@ -21,12 +20,14 @@ import routers.auth.logout
 import routers.bookmarks.bookmarks_list
 import routers.bookmarks.bookmarks_manage
 import routers.keys.keys_list
+import routers.geo.geo_main
+import routers.geo.geo_maps
+import routers.geo.geo_places
 import routers.secrets.secrets_list
 import routers.secrets.secrets_manage
 import routers.turnstile
 import routers.turnstile.turnstile
 import services.database
-import services.secrets
 import services.users
 
 logger = log.init("app")
@@ -42,21 +43,11 @@ async def lifespan(app: fastapi.FastAPI):
     # migrate database
     services.database.session.migrate()
 
-    # start sync task with default user
-    with services.database.session.get() as db_session:
-        user = services.users.get_by_email(
-            db_session=db_session,
-            email="notsanjaykapoor@gmail.com",
-        )
-        task = asyncio.create_task(services.secrets.sync_task(user=user))
-
     logger.info("api.startup completed")
 
     yield
 
-    # stop sync task
-    task.cancel()
-    await task
+    logger.info("api.shutdown completed")
 
 
 # create app object
@@ -68,6 +59,9 @@ app.include_router(routers.auth.logout.app)
 app.include_router(routers.bookmarks.bookmarks_list.app)
 app.include_router(routers.bookmarks.bookmarks_manage.app)
 app.include_router(routers.keys.keys_list.app)
+app.include_router(routers.geo.geo_main.app)
+app.include_router(routers.geo.geo_maps.app)
+app.include_router(routers.geo.geo_places.app)
 app.include_router(routers.secrets.secrets_list.app)
 app.include_router(routers.secrets.secrets_manage.app)
 app.include_router(routers.turnstile.turnstile.app)

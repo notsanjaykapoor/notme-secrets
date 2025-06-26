@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="flex flex-col mx-auto mt-10">
+    <h3 class="mx-auto font-bold">
+        {{ app_name }}
+    </h3>
+    <div class="mt-2 mx-auto text-xs text-zinc-400">
+        @{{ app_version }}
+    </div>
+</div>
+
+<div class="flex flex-row mx-auto mt-10">
+    <div class="w-1/12"></div>
+    <div class="w-2/12 font-normal text-xs">
+        <form class="max-w-sm mx-auto text-xs mr-0 mt-2">
+            <select id="city-select"
+                class="block px-0 pb-1.5 w-full text-xs text-gray-400 bg-transparent border-0 border-b border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer disabled:border-0 disabled:bg-blue-gray-50">
+                <option selected>select city - {{ cities_count }}</option>
+                {% for city in cities_names_slugs %}
+                <option value="/geo/maps/box/{{ city.slug }}">
+                    {{ city.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+    <div class=" w-2/12 font-normal text-xs ml-10">
+        <form class="max-w-sm mx-auto text-xs mr-0 mt-2">
+            <select id="region-select"
+                class="block px-0 pb-1.5 w-full text-xs text-gray-400 bg-transparent border-0 border-b border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer disabled:border-0 disabled:bg-blue-gray-50">
+                <option selected>select region - {{ regions_count }}</option>
+                {% for region in regions_names_slugs %}
+                <option value="/geo/maps/box/{{ region.slug }}">
+                    {{ region.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+    <div class="w-3/12"></div>
+    <div class="w-3/12">
+        <input type="search" name="box_name" placeholder="search by city or region" value="" autocomplete="off"
+            hx-get="/geo/maps/resolve" hx-target="" class="peer px-0 h-full w-full border-b bg-transparent pb-1.5 text-xs font-normal
+        text-gray-400 outline outline-0 transition-all placeholder-shown:border-blue-gray-200 focus:border-pink-600
+        focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50">
+    </div>
+    <div class="w-1/12"></div>
+</div>
+
+
+<script>
+    // list for select change events and redirect to map box view
+    const city_select = document.getElementById("city-select")
+    const region_select = document.getElementById("region-select")
+
+    if (city_select) {
+        city_select.addEventListener("change", function () {
+            window.location.href = city_select.value
+        })
+    }
+
+    if (region_select) {
+        region_select.addEventListener("change", function () {
+            window.location.href = region_select.value
+        })
+    }
+</script>
+
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="flex flex-col mx-auto mt-10">
+    <h3 class="mx-auto font-bold">
+        {{ app_name }}
+    </h3>
+    <div class="mt-2 mx-auto text-xs text-zinc-400">
+        @{{ app_version }}
+    </div>
+</div>
+
+<form id="tools-query-form" hx-get="/geo" hx-on::before-request="htmx_before_submit(event)" Add commentMore actions
+    hx-target="#tools-response">
+    <div class="flex flex-row mx-auto mt-10 items-center">
+        <div class="w-1/12"></div>
+        <div class="w-6/12 font-bold text-xs">
+            <input type="search" id="tools-query-input" name="query" value="{{query}}" placeholder="{{query_prompt}}"
+                autocomplete="off"
+                class="peer px-0 py-2.5 mx-0 h-full w-full border-b bg-transparent font-sans text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-blue-gray-200 focus:border-sky-400 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50">
+        </div>
+        <div class="w-4/12 flex justify-end text-xs">
+            <a class="font-bold text-blue-700" href="/geo/maps">maps</a>
+            <span class="text-slate-400">&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;</span>
+            <a class="font-bold text-blue-700" href="/geo/places">places</a>
+        </div>
+    </div>
+</form>
+
+<div class="flex flex-col mx-auto mt-0 mb-20 xs:w-full sm:w-full" id="tools-response">
+    {% include "geo/geo_query_result.html" %}
+</div>
+
+<script type="text/javascript">
+    function htmx_before_submit(e) {
+        // hide results, show processing state
+        e.stopPropagation()
+
+        var elements = document.querySelectorAll(".rag-infer,.rag-node-description,.rag-node-image,.rag-node-text")
+
+        for (var i = 0; i < elements.length; i++) {
+            elements[i].style.visibility = "hidden"
+        }
+
+        document.getElementById("tools-query-status").style.visibility = "hidden"
+        document.getElementById("tools-query-response").style.visibility = "hidden"
+        document.getElementById("tools-query-processing").style.display = ''
+    }
+</script>
+
+{% endblock %}

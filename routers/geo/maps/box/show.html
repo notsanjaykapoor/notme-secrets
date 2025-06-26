@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% include "geo/maps/mapbox.html" %}
+
+{% block content %}
+
+<div class="flex flex-col mx-auto mt-10">
+    <h3 class="mx-auto font-bold">
+        {{ app_name }}
+    </h3>
+    <div class="mt-2 mx-auto text-xs text-zinc-400">
+        @{{ app_version }}
+    </div>
+</div>
+
+<div class="flex mx-auto mt-5 mx-5 mb-10">
+    <div class="flex w-8/12 ml-10 items-center justify-left">
+        <div class="ml-5 mt-2">
+            {% if box %}
+            <button class="rounded-full text-xs font-bold text-white bg-blue-700 py-1 px-3">
+                {{ box.name }}
+                <a href="/geo/maps">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                        class="float-right ml-2 size-4">
+                        <path
+                            d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+                    </svg>
+                </a>
+            </button>
+            {% endif %}
+        </div>
+        <div class="font-normal text-sm min-w-80 ml-10">
+            <input id="search" type="search" name="query" placeholder="place search - e.g. tags:food"
+                value="{{ query }}" autocomplete="off" hx-get="{{ request_path }}" hx-target="#box-map" class="flex
+            peer px-0 h-full w-full border-b bg-transparent pt-4 pb-1.5 font-sans text-sm font-normal text-blue-gray-700
+            outline outline-0 transition-all placeholder-shown:border-blue-gray-200 focus:border-sky-400 focus:outline-0
+            disabled:border-0 disabled:bg-blue-gray-50">
+        </div>
+        <div class="ml-10 mt-5 opacity-25 font-normal text-xs" id="city-count"></div>
+        <div class="ml-10 mt-5 opacity-100 font-semibold text-xs" id="place-name"></div>
+    </div>
+    <div class="flex w-4/12 mr-20 items-center justify-end">
+        {% if box %}
+        <a class="font-bold text-xs text-blue-600" href="/geo/places/box/{{ box.slug }}">
+            list view
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div id="box-map" class="mt-10">
+    {% if box %}
+    {% include "geo/maps/box/show_map.html" %}
+    {% endif %}
+</div>
+
+{% endblock %}

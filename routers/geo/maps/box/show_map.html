@@ -1,0 +1,163 @@
+<div id='map' style='width: 90%; position: absolute; top: 250px; bottom: 0; left: 50; right: 0;'></div>
+
+<script>
+    mapboxgl.accessToken = "{{ mapbox_token }}"
+
+    var box_name = "{{ box.slug }}"
+    var box_lon = parseFloat("{{ box.lon }}")
+    var box_lat = parseFloat("{{ box.lat }}")
+    var box_query = "{{ query }}"
+    var box_type = "{{ box.type }}"
+    var map_zoom = parseInt("{{ box.map_zoom }}")
+    var bbox_lat_min = parseFloat("{{ box.lat_min }}")
+    var bbox_lat_max = parseFloat("{{ box.lat_max }}")
+    var bbox_lon_min = parseFloat("{{ box.lon_min }}")
+    var bbox_lon_max = parseFloat("{{ box.lon_max }}")
+
+    console.log(box_name, box_lon, box_lat, "bbox", bbox_lon_min, bbox_lat_min, bbox_lon_max, bbox_lat_max)
+
+    var map = new mapboxgl.Map({
+        center: [box_lon, box_lat], // starting position [lng, lat]
+        container: 'map', // container ID
+        style: 'mapbox://styles/mapbox/light-v11', // style URL
+        zoom: map_zoom, // starting zoom
+    })
+
+    if (box_type == "city") {
+        // fit the map to include the bounding box
+        map.fitBounds([
+            [bbox_lon_min, bbox_lat_min], // [lng, lat] - southwestern corner of the bounds
+            [bbox_lon_max, bbox_lat_max] // [lng, lat] - northeastern corner of the bounds
+        ])
+    }
+
+    function place_name_show(s) {
+        document.getElementById('place-name').innerHTML = s
+    }
+
+    map.on('load', async () => {
+        // example search box
+        // const geocoder = new MapboxGeocoder({
+        //     accessToken: mapboxgl.accessToken,
+        //     bbox: [bbox_lon_min, bbox_lat_min, bbox_lon_max, bbox_lat_max],
+        //     mapboxgl: mapboxgl,
+        //     placeholder: 'Enter an address or place name',
+        //     zoom: map_zoom, // same starting zoom as above
+        // });
+
+        // disable search box
+        // map.addControl(geocoder, 'top-left');
+
+        // const marker = new mapboxgl.Marker({
+        //     'color': '#008000'
+        // })
+
+        // add tile, the feature is an example of how to init with a data point
+
+        map.addSource('tilequery', {
+            type: 'geojson',
+            data: {
+                'type': 'FeatureCollection',
+                'features': [
+                    {
+                        'type': 'Feature',
+                        'geometry': {
+                            'coordinates': [box_lon, box_lat],
+                            'type': 'Point',
+                        },
+                        'properties': {
+                            'feature_type': 'poi',
+                            'maki': 'restaurant',
+                            'name': 'Rando Restaurant',
+                            'poi_category': ['american restaurant', 'brunch restaurant', 'food', 'food and drink', 'restaurant'],
+                            'tag': 'food',
+                        },
+                    }
+                ]
+            }
+        })
+
+        map.addLayer({
+            id: 'tilequery-points',
+            type: 'circle',
+            source: 'tilequery',
+            paint: {
+                'circle-stroke-color': 'white',
+                'circle-stroke-width': {
+                    stops: [
+                        [0, 0.1],
+                        [18, 3]
+                    ],
+                    base: 5
+                },
+                'circle-radius': {
+                    stops: [
+                        [12, 5],
+                        [22, 180]
+                    ],
+                    base: 5
+                },
+                'circle-color': [
+                    'match',
+                    ['get', 'color'],
+                    'blue',
+                    '#1D4ED8', // dark blue
+                    'green',
+                    '#16A34A', // green
+                    'orange',
+                    '#EA580C', // orange/rust
+                    'sky',
+                    '#00AFDA', // light blue
+                    'yellow',
+                    '#EAB308', // mustard
+                    'Convenience Store With Gas',
+                    '#FF8C00',
+                    'Pharmacy',
+                    '#FF8C00',
+                    'Specialty Food Store',
+                    '#9ACD32',
+                    'Small Grocery Store',
+                    '#008000',
+                    '#EAB308' // mustard - any other
+                ]
+            }
+        })
+
+        const tileset_uri = `/geo/maps/box/${box_name}/tileset?query=${box_query}`
+        const query = await fetch(tileset_uri, { method: 'GET' })
+        const response = await query.json()
+        const tileset = response.tileset
+
+        console.log(box_name, "tileset", tileset)
+
+        // update map
+        map.getSource('tilequery').setData(tileset)
+
+        // update map count
+        document.getElementById("city-count").innerHTML = `${tileset.features.length} places`
+
+        const popup = new mapboxgl.Popup()
+
+        // map point(s) hover logic
+
+        map.on('mouseenter', 'tilequery-points', (event) => {
+            map.getCanvas().style.cursor = 'pointer'
+            const geo = event.features[0].geometry.coordinates
+            const properties = event.features[0].properties
+
+            console.log("point geo", geo)
+            console.log("point properties", properties)
+
+            place_name_show(properties.name)
+        })
+
+        map.on('mouseleave', 'tilequery-points', () => {
+            map.getCanvas().style.cursor = 'default'
+            console.log("mouseleave")
+            popup.remove()
+
+            place_name_show("")
+        })
+    })
+
+</script>
