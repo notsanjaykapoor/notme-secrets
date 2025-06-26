@@ -1,0 +1,54 @@
+<div class="flex flex-row mt-5">
+    <div class="w-1/12"></div>
+    <div class="w-10/12">
+        {% if query_code == 0 %}
+        <p class="text-xs font-bold text-slate-500">
+            {{query_result}}
+        </p>
+        {% else %}
+        <p class="text-xs font-bold text-red-700">
+            {{query_result}}
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="flex flex-row mt-10">
+    <div class="w-1/12"></div>
+    <table class="w-10/12">
+        <thead class="font-normal text-left text-xs leading-6 text-zinc-800">
+            <tr class="">
+                <th class="p-4">name / tags / address</th>
+                <th class="p-4">source / id</th>
+                <th class="p-2"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for geo_object in geo_list %}
+            {% set geo_props = geo_object.get("properties") %}
+            {% set source_id = geo_props.get("source_id") %}
+            {% set source_name = geo_props.get("source_name") %}
+            {% set place_id = places_source_ids.get(source_id, 0) %}
+
+            <tr class="group hover:bg-zinc-50 odd:bg-white even:bg-slate-50 text-left text-xs">
+                <td class="p-4 text-xs/6">
+                    {{ geo_props.get("name") }}
+                    <br />
+                    <span class="opacity-50 text-slate-400">{{ geo_props.get("tags") | join(', ') }}</span>
+                    <br />
+                    <span class="opacity-50 text-slate-400">{{ geo_props.get("full_address") or geo_props.get("address")
+                        }}</span>
+                </td>
+                <td class="p-4 font-normal text-xs/6">
+                    {{ source_name }}
+                    <br />
+                    <span class="opacity-50 text-slate-400">{{ source_id }}</span>
+                </td>
+                <td class="p-2">
+                    {% include "geo/mapbox/list_add_fragment.html" %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

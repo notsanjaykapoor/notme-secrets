@@ -16,7 +16,7 @@
     <div class="flex w-8/12 ml-10 items-center justify-left">
         <div class="ml-5 mt-2">
             {% if box %}
-            <button class="rounded-full text-xs font-bold text-white bg-blue-700 py-1 px-3">
+            <button class="rounded-full text-xs font-bold text-white bg-blue-700 py-2 px-3">
                 {{ box.name }}
                 <a href="/geo/maps">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
@@ -40,8 +40,10 @@
     </div>
     <div class="flex w-4/12 mr-20 items-center justify-end">
         {% if box %}
-        <a class="font-bold text-xs text-blue-600" href="/geo/places/box/{{ box.slug }}">
-            list view
+        <a class="font-bold text-xs" href="/geo/places/box/{{ box.slug }}">
+            <button class="rounded-full text-xs font-bold text-white bg-sky-400 w-full py-2 px-3 mr-3">
+                list
+            </button>
         </a>
         {% endif %}
     </div>

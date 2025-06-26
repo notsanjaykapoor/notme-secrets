@@ -1,4 +1,4 @@
-<div class="flex flex-row mt-2">
+<div class="flex flex-row mt-5">
     <div class="w-1/12"></div>
     <div class="w-10/12">
         {% if query_code == 0 %}
@@ -15,34 +15,16 @@
 
 <div class="flex flex-row mt-10">
     <div class="w-1/12"></div>
-    <div class="w-9/12">
-        {% if box %}
-        <button class="rounded-full text-xs font-bold text-white bg-blue-700 py-1 px-3 mr-5">
-            {{ box.name }}
-            <a href="/geo/places">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                    class="float-right ml-2 size-4">
-                    <path
-                        d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
-                </svg>
-            </a>
-        </button>
-        {% endif %}
-    </div>
-</div>
-
-<div class="flex flex-row mt-0">
-    <div class="w-1/12"></div>
     <div class="w-10/12">
         {% for tag in tags_all_list %}
         {% if tag in tags_cur_list %}
-        {% set tag_color = "bg-sky-400 opacity-50" %}
+        {% set tag_color = "bg-blue-700 opacity-50" %}
         {% else %}
-        {% set tag_color = "bg-sky-400" %}
+        {% set tag_color = "bg-blue-700" %}
         {% endif %}
 
-        <a href="/bookmarks?query=cats:{{categories_cur_str}} tags:{{tag}}">
-            <button class="rounded-full text-xs font-bold text-white {{tag_color}} py-1 px-2">{{tag}}</button>
+        <a href="{{ request_path }}?query=tags:{{tag}}">
+            <button class="rounded-full text-xs font-bold text-white {{tag_color}} py-2 px-3 mr-1">{{tag}}</button>
         </a>
         {% endfor %}
     </div>
@@ -69,7 +51,9 @@
                     {{ place.name }}
                 </td>
                 <td class="p-4 font-normal">{{ place.tags_string }}</td>
-                <td class="p-4 font-normal">{{ place.brands_string }}</td>
+                <td class="p-4 font-normal">
+                    {{ place.brands_string }}
+                </td>
                 <td class="p-4 font-normal flex justify-center text-center">
                     {% if place.website %}
                     <a class="font-bold text-blue-600" href="{{ place.website }}" target="_blank" title="website">

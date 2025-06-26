@@ -1,5 +1,3 @@
-import os
-
 import fastapi
 import fastapi.responses
 import fastapi.templating
@@ -8,9 +6,9 @@ import sqlmodel
 import context
 import log
 import main_shared
-import services.cities
 import services.geo
 import services.places
+import services.places.tags
 import services.users
 
 logger = log.init("app")
@@ -23,7 +21,6 @@ app = fastapi.APIRouter(
     dependencies=[fastapi.Depends(main_shared.get_db)],
     responses={404: {"description": "Not found"}},
 )
-
 
 @app.get("/geo/places", response_class=fastapi.responses.HTMLResponse)
 @app.get("/geo/places/box/{box_name}", response_class=fastapi.responses.HTMLResponse)
@@ -47,16 +44,28 @@ def geo_places_list(
     else:
         query_norm = query
 
+    box = None
+    map_path = ""
+    mapbox_path = ""
+    query_prompt = "search places anywhere"
+
+    cities_names_slugs = services.cities.get_all_names_slugs(db_session=db_session)
+    cities_count = len(cities_names_slugs)
+
     if box_name:
         if box := services.geo.get_by_slug(db_session=db_session, slug=box_name):
             query_norm = f"{query_norm} {box.type}:{box.name}".strip()
-    else:
-        box = None
+            query_prompt = f"search places near {box.name}"
+            map_path = f"/geo/maps/box/{box.slug}"
+            mapbox_path = f"/geo/mapbox/box/{box.slug}"
 
     try:
         places_struct = services.places.list(db_session=db_session, query=query_norm, offset=0, limit=50, sort="name+")
         places_list = places_struct.objects
         places_total = places_struct.total
+
+        tags_all_list = sorted(list(services.places.tags.list_all(db_session=db_session, city=box)))
+        tags_cur_list = sorted(places_struct.tags)
 
         query_code = 0
         query_result = f"query '{query}' returned {len(places_list)} results"
@@ -80,12 +89,19 @@ def geo_places_list(
             {
                 "app_name": "Geo - Places",
                 "box": box,
+                "cities_count": cities_count,
+                "cities_names_slugs": cities_names_slugs,
+                "map_path": map_path,
+                "mapbox_path": mapbox_path,
                 "places_list": places_list,
                 "places_total": places_total,
                 "request_path": request.url.path,
                 "query": query,
                 "query_code": query_code,
+                "query_prompt": query_prompt,
                 "query_result": query_result,
+                "tags_cur_list": tags_cur_list,
+                "tags_all_list": tags_all_list,
                 "user": user,
             }
         )
@@ -93,9 +109,9 @@ def geo_places_list(
         if "HX-Request" in request.headers:
             response.headers["HX-Push-Url"] = f"{request.url.path}?query={query}"
     except Exception as e:
-        logger.error(f"{context.rid_get()} geo places box render exception '{e}'")
+        logger.error(f"{context.rid_get()} places list render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
 
-    logger.info(f"{context.rid_get()} places list query '{query}'  box '{box_name}' ok")
+    logger.info(f"{context.rid_get()} places list query '{query}' box '{box_name}' ok")
 
     return response

@@ -1,7 +1,7 @@
 import models
 
 
-def list_tiles(places: list[models.Place], color: str) -> list[dict]:
+def list_tiles(places: list[models.Place]) -> list[dict]:
     """
     Convert list of places to list of tiles that can be consumed by mapbox.
     """
@@ -16,7 +16,7 @@ def list_tiles(places: list[models.Place], color: str) -> list[dict]:
         },
         "properties": {
             "city": place.city,
-            "color": color,
+            "color": place.tile_color,
             "name": place.name,
         }
       }

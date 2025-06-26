@@ -58,6 +58,10 @@ def list(
             dataset = dataset.where(
                 sqlalchemy.func.lower(model.name).like("%" + value_normal + "%")
             )
+        elif token["field"] == "source_id":
+            dataset = dataset.where(model.source_id == value)
+        elif token["field"] == "source_name":
+            dataset = dataset.where(model.source_name == value)
         elif token["field"] in ["tags"]:
             values = [s.strip() for s in value.lower().split(",")]
             dataset = dataset.where(model.tags.contains(values))

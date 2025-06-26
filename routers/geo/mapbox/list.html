@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="flex flex-col mx-auto mt-10">
+    <h3 class="mx-auto font-bold">
+        {{ app_name }}
+    </h3>
+    <div class="mt-2 mx-auto text-xs text-zinc-400">
+        @{{ app_version }}
+    </div>
+</div>
+
+<div class="flex flex-row mx-auto mt-10">
+    <div class="w-1/12"></div>
+    <div class="w-6/12 font-normal text-xs justify-between">
+        <div class="flex flex-row">
+            <button class="rounded-full text-xs font-bold text-white bg-slate-700 w-1/4 py-1 px-3 mr-5">
+                {{ box.name }}
+                <a href="/geo/places">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                        class="float-right ml-2 size-4">
+                        <path
+                            d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+                    </svg>
+                </a>
+            </button>
+            <input type="search" id="mapbox-search" name="query" value="{{query}}"
+                placeholder="search mapbox to add places" autocomplete="off" hx-get="{{ request_path }}"
+                hx-target="#mapbox-table" hx-trigger="search"
+                class="px-0 py-2.5 mx-0 h-full w-full border-b bg-transparent font-sans outline outline-0 transition-all placeholder-shown:border-blue-gray-200 focus:border-blue-300 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50">
+        </div>
+    </div>
+    <div class="w-4/12 font-normal text-xs flex items-center justify-end">
+        <a href="{{ referer_path }}" class="cursor-pointer font-bold" title="cancel and go back">
+            <button class="rounded-full text-xs font-bold text-white bg-slate-400 w-full py-2 px-3 mr-3">
+                cancel
+            </button>
+        </a>
+    </div>
+</div>
+
+<div class="flex flex-col mx-auto mt-0 mb-20 xs:w-full sm:w-full" id="mapbox-table">
+    {% include "geo/mapbox/list_table.html" %}
+</div>
+
+{% endblock %}

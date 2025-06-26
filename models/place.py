@@ -5,6 +5,9 @@ import sqlalchemy
 import sqlalchemy.dialects.postgresql
 import sqlmodel
 
+SOURCE_GOOGLE = "google"
+SOURCE_MAPBOX = "mapbox"
+
 class Place(sqlmodel.SQLModel, table=True):
     __tablename__ = "places"
     __table_args__ = (
@@ -73,6 +76,10 @@ class Place(sqlmodel.SQLModel, table=True):
     def notes(self) -> str:
         return self.data.get("notes", "")
 
+    @notes.setter
+    def notes(self, value: str):
+        self.data = self.data | {"notes": value}
+
     @property
     def notes_len(self) -> int:
         return len(self.data.get("notes", ""))
@@ -80,3 +87,16 @@ class Place(sqlmodel.SQLModel, table=True):
     @property
     def tags_string(self) -> str:
         return ", ".join(self.tags)
+
+    @property
+    def tile_color(self) -> str:
+        """ color used by mapbox in tile view"""
+        tags_set = set(self.tags)
+
+        if tags_set.intersection(set(["bar", "cafe", "food"])):
+            return "blue"
+        elif tags_set.intersection(set(["clothing", "fashion", "shoes"])):
+            return "orange"
+        else:
+            return "yellow"
+

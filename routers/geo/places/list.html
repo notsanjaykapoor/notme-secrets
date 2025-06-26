@@ -13,15 +13,49 @@
 
 <div class="flex flex-row mx-auto mt-10">
     <div class="w-1/12"></div>
-    <div class="w-5/12 font-normal text-xs">
-        <input type="search" name="query" value="{{query}}" placeholder="search places" autocomplete="off"
-            hx-get="{{ request_path }}" hx-target="#places-table" hx-trigger="input changed delay:750ms, search"
-            class="search-primary px-0 py-2.5 mx-0 h-full w-full border-b bg-transparent font-sans outline outline-0 transition-all placeholder-shown:border-blue-gray-200 focus:border-blue-300 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50">
+    <div class="w-7/12 font-normal text-xs justify-between">
+        <div class="flex flex-row">
+            {% if box %}
+            <button class="rounded-full text-xs font-bold text-white bg-blue-700 w-1/4 py-1 px-3 mr-5">
+                {{ box.name }}
+                <a href="/geo/places">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                        class="float-right ml-2 size-4">
+                        <path
+                            d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+                    </svg>
+                </a>
+            </button>
+            {% else %}
+            <select id="city-select"
+                class="block ml-0 mr-10 px-0 pb-1.5 w-1/4 text-xs text-slate-400 bg-transparent border-0 border-b border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-sky-400 peer disabled:border-0 disabled:bg-blue-gray-50">
+                <option selected>city scope</option>
+                {% for city in cities_names_slugs %}
+                <option value="/geo/places/box/{{ city.slug }}">
+                    {{ city.name }}
+                </option>
+                {% endfor %}
+            </select>
+            {% endif %}
+
+            <input type="search" id="places-search" name="query" value="{{ query }}" placeholder="{{ query_prompt }}"
+                autocomplete="off" hx-get="{{ request_path }}" hx-target="#places-table"
+                hx-trigger="input changed delay:750ms, search"
+                class="px-0 py-2.5 mx-0 h-full w-full border-b bg-transparent font-sans outline outline-0 transition-all placeholder-shown:border-blue-gray-200 focus:border-blue-300 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50">
+        </div>
     </div>
-    <div class="w-5/12 font-normal text-xs flex items-center justify-end">
+    <div class="w-1/12"></div>
+    <div class="w-2/12 font-normal text-xs flex items-center justify-between">
         {% if box %}
-        <a hx-get="" class="cursor-pointer font-bold text-orange-600">
-            add place
+        <a href="{{ map_path }}" class="cursor-pointer font-bold text-sky-400" title="map view">
+            <button class="rounded-full text-xs font-bold text-white bg-sky-400 w-full py-2 px-3 mr-5">
+                map
+            </button>
+        </a>
+        <a href="{{ mapbox_path }}" class="cursor-pointer font-bold text-sky-400" title="add place near {{box.name}}">
+            <button class="rounded-full text-xs font-bold text-white bg-sky-400 w-full py-2 px-3 mr-3">
+                add&nbsp;+
+            </button>
         </a>
         {% endif %}
     </div>
@@ -30,5 +64,16 @@
 <div class="flex flex-col mx-auto mt-0 mb-20 xs:w-full sm:w-full" id="places-table">
     {% include "geo/places/list_table.html" %}
 </div>
+
+<script>
+    // list for select change events and redirect to places view scoped by city
+    const city_select = document.getElementById("city-select")
+
+    if (city_select) {
+        city_select.addEventListener("change", function () {
+            window.location.href = city_select.value
+        })
+    }
+</script>
 
 {% endblock %}

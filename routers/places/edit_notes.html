@@ -1,0 +1,23 @@
+<div class="flex flex-row mx-auto mt-10">
+    <div class="w-1/12"></div>
+    <div class="w-10/12 text-xs">
+        <input type="textarea" id="place-notes-input" name="val" placeholder="notes" value="{{ place.notes }}"
+            autocomplete="off" hx-get="{{ places_notes_path }}/mod" hx-target="#place-notes"
+            hx-trigger="input changed delay:1000ms, search"
+            class="peer px-0 h-full w-full border-b bg-transparent pt-4 pb-1.5 font-sans font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-blue-gray-200 focus:border-sky-400 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50">
+    </div>
+</div>
+
+<div class="flex flex-row mx-auto mt-5">
+    <div class="w-1/12"></div>
+    <div class="w-6/12 invisible italic text-xs font-light opacity-50 text-zinc-400" id="place-notes-status">
+    </div>
+</div>
+
+<script>
+    var notes_elem = document.getElementById("place-notes-status")
+    document.getElementById("place-notes-input").addEventListener("keyup", (event) => {
+        notes_elem.innerText = "changes"
+        notes_elem.classList.remove("invisible")
+    })
+</script>

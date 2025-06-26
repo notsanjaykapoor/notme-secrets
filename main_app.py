@@ -21,8 +21,10 @@ import routers.bookmarks.bookmarks_list
 import routers.bookmarks.bookmarks_manage
 import routers.keys.keys_list
 import routers.geo.geo_main
+import routers.geo.geo_mapbox
 import routers.geo.geo_maps
 import routers.geo.geo_places
+import routers.places.places_manage
 import routers.secrets.secrets_list
 import routers.secrets.secrets_manage
 import routers.turnstile
@@ -60,8 +62,10 @@ app.include_router(routers.bookmarks.bookmarks_list.app)
 app.include_router(routers.bookmarks.bookmarks_manage.app)
 app.include_router(routers.keys.keys_list.app)
 app.include_router(routers.geo.geo_main.app)
+app.include_router(routers.geo.geo_mapbox.app)
 app.include_router(routers.geo.geo_maps.app)
 app.include_router(routers.geo.geo_places.app)
+app.include_router(routers.places.places_manage.app)
 app.include_router(routers.secrets.secrets_list.app)
 app.include_router(routers.secrets.secrets_manage.app)
 app.include_router(routers.turnstile.turnstile.app)

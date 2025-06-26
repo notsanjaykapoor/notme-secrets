@@ -186,7 +186,7 @@ def geo_maps_box_tileset(
         places_total = places_struct.total
 
         # generate geo_json tiles collection from places list that's used by mapbox
-        places_tileset = services.places.list_tiles(places=places_list, color="")
+        places_tileset = services.places.list_tiles(places=places_list)
     except Exception as e:
         logger.error(f"{context.rid_get()} maps box render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})

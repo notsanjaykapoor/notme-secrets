@@ -23,11 +23,20 @@ def create(
     bbox = geo_json.get("bbox", [])
 
     geo_props = geo_json.get("properties", {})
-    country_code = geo_props.get("country_code", "").lower()
-    lat = geo_props.get("lat")
-    lon = geo_props.get("lon")
-    source_id = geo_props.get("place_id", "")
-    source_name = geo_props.get("datasource", {}).get("sourcename", "")
+    country_code = city.country_code # geo_props.get("country_code", "").lower()
+    source_id = geo_props.get("place_id", "") or geo_props.get("source_id", "")
+
+    if "lat" in geo_props.keys():
+        lat = geo_props.get("lat")
+        lon = geo_props.get("lon")
+    else:
+        # get lat/lon from geometry
+        lon, lat = geo_json.get("geometry", {}).get("coordinates", [])
+
+    if datasource := geo_props.get("datasource", {}):
+        source_name = datasource.get("sourcename", "")
+    else:
+        source_name = geo_props.get("source_name", "")
 
     place_db = models.Place(
         bbox=bbox,
