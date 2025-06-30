@@ -10,12 +10,12 @@ def test_cities_create(db_session: sqlmodel.Session):
     assert city_db.country_code == "us"
     assert city_db.data == {}
     assert city_db.geo_json
-    assert float(city_db.lat) == 41.8755616
-    assert float(city_db.lon) == -87.6244212
+    assert float(city_db.lat) == 41.8781136
+    assert float(city_db.lon) == -87.6297982
     assert city_db.name == "chicago"
     assert city_db.slug == "chicago"
     assert city_db.source_id
-    assert city_db.source_name == "openstreetmap"
+    assert city_db.source_name == "google"
     assert city_db.tags == []
 
     code, city_dup = services.cities.create(db_session=db_session, name="Chicago")

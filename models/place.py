@@ -1,6 +1,9 @@
 import datetime
 import decimal
 
+import geoalchemy2
+import geoalchemy2.shape
+import shapely.geometry
 import sqlalchemy
 import sqlalchemy.dialects.postgresql
 import sqlmodel
@@ -15,6 +18,10 @@ class Place(sqlmodel.SQLModel, table=True):
         sqlalchemy.UniqueConstraint("source_id", "source_name", name="i_place_source"),
     )
 
+    class Config:
+        # enable arbitrary_types_allowed for pydantic v2 to handle ShapelyPoint
+        arbitrary_types_allowed = True
+
     id: int = sqlmodel.Field(default=None, primary_key=True)
 
     brands: list[str] = sqlmodel.Field(
@@ -24,10 +31,15 @@ class Place(sqlmodel.SQLModel, table=True):
     city: str = sqlmodel.Field(index=True, nullable=False)
     country_code: str = sqlmodel.Field(index=True, nullable=False, max_length=5)
     data: dict = sqlmodel.Field(
-        default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON)
+        default_factory=dict,
+        sa_column=sqlmodel.Column(sqlmodel.JSON),
     )
     geo_json: dict = sqlmodel.Field(
-        default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON)
+        default_factory=dict,
+        sa_column=sqlmodel.Column(sqlmodel.JSON),
+    )
+    geom: shapely.geometry.Point = sqlmodel.Field(
+        sa_column=sqlmodel.Column(geoalchemy2.Geometry('POINT', srid=4326))
     )
     lat: decimal.Decimal = sqlmodel.Field(max_digits=11, decimal_places=7, index=False, nullable=False)
     lon: decimal.Decimal = sqlmodel.Field(max_digits=11, decimal_places=7, index=False, nullable=False)
@@ -52,6 +64,14 @@ class Place(sqlmodel.SQLModel, table=True):
     @property
     def brands_string(self) -> str:
         return ", ".join(self.brands)
+
+    def brands_string_max(self, limit: int) -> str:
+        if len(self.brands) <= limit:
+            return self.brands_string
+
+        brands_str = ", ".join(self.brands[0:limit])
+        brands_more = len(self.brands) - limit
+        return f"{brands_str} +{brands_more}"
 
     @property
     def city_country(self) -> str:
@@ -85,6 +105,10 @@ class Place(sqlmodel.SQLModel, table=True):
         return len(self.data.get("notes", ""))
 
     @property
+    def point(self) -> shapely.geometry.Point:
+        return geoalchemy2.shape.to_shape(self.geom)
+
+    @property
     def tags_string(self) -> str:
         return ", ".join(self.tags)
 
@@ -95,6 +119,8 @@ class Place(sqlmodel.SQLModel, table=True):
 
         if tags_set.intersection(set(["bar", "cafe", "food"])):
             return "blue"
+        elif tags_set.intersection(set(["hotel", "lodging", "rental"])):
+            return "sky"
         elif tags_set.intersection(set(["clothing", "fashion", "shoes"])):
             return "orange"
         else:

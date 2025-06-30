@@ -13,25 +13,34 @@
     </div>
 </div>
 
-{% if brands_all_list %}
-{% set tag_opacity = "opacity-25" %}
+{% if (tags_cur_list|length > 0) or (brands_cur_list|length > 0) %}
+{% set tag_cur_color = "bg-blue-700 opacity-50" %}
+{% set tag_oth_color = "bg-blue-700 opacity-100" %}
 {% else %}
-{% set tag_opacity = "opacity-100" %}
+{% set tag_cur_color = "bg-blue-700 opacity-100" %}
+{% set tag_oth_color = "bg-blue-700 opacity-100" %}
 {% endif %}
 
 <div class="flex flex-row mt-10">
     <div class="w-1/12"></div>
-    <div class="w-10/12 {{ tag_opacity }}">
+    <div class="w-10/12">
         {% for tag in tags_all_list %}
+
         {% if tag in tags_cur_list %}
-        {% set tag_color = "bg-blue-700 opacity-50" %}
+
+        <a href="{{ request_path }}?query=">
+            <button class="rounded-full text-xs font-bold text-white {{tag_cur_color}} py-2 px-3 mr-1">{{tag}}</button>
+        </a>
+
         {% else %}
-        {% set tag_color = "bg-blue-700" %}
-        {% endif %}
 
         <a href="{{ request_path }}?query=tags:{{tag | urlencode}}">
-            <button class="rounded-full text-xs font-bold text-white {{tag_color}} py-2 px-3 mr-1">{{tag}}</button>
+            <button class="rounded-full text-xs font-bold text-white {{tag_oth_color}} py-2 px-3 mr-1">{{tag}}</button>
         </a>
+
+        {% endif %}
+
+
         {% endfor %}
     </div>
 </div>
@@ -41,14 +50,23 @@
     <div class="w-10/12">
         {% for brand in brands_all_list %}
         {% if brand in brands_cur_list %}
+
         {% set brand_color = "bg-blue-700 opacity-50" %}
+        <a href="{{ request_path }}?query=tags:{{tags_cur_str | urlencode}}">
+            <button
+                class="rounded-full text-xs font-bold text-white {{brand_color}} py-2 px-3 mr-1 mb-4">{{brand}}</button>
+        </a>
+
         {% else %}
+
         {% set brand_color = "bg-blue-700" %}
+        <a href="{{ request_path }}?query=brands:{{brand | urlencode}} tags:{{tags_cur_str | urlencode}}">
+            <button
+                class="rounded-full text-xs font-bold text-white {{brand_color}} py-2 px-3 mr-1 mb-4">{{brand}}</button>
+        </a>
+
         {% endif %}
 
-        <a href="{{ request_path }}?query=brands:{{brand | urlencode}} tags:{{tags_cur_str | urlencode}}">
-            <button class="rounded-full text-xs font-bold text-white {{brand_color}} py-2 px-3 mr-1">{{brand}}</button>
-        </a>
         {% endfor %}
     </div>
 </div>
@@ -76,7 +94,7 @@
                 </td>
                 <td class="p-4 font-normal">{{ place.tags_string }}</td>
                 <td class="p-4 font-normal">
-                    {{ place.brands_string }}
+                    {{ place.brands_string_max(limit=5) }}
                 </td>
                 <td class="p-4 font-normal flex justify-center text-center">
                     {% if place.website %}

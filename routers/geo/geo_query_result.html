@@ -13,6 +13,17 @@
 
 <div class="flex flex-row mt-5">
     <div class="w-1/12"></div>
+    <div class="w-10/12 mt-0" id="tools-list">
+        <ul class="list-disc ml-2 text-xs/6 text-slate-400">
+            {% for tool_dict in tools_list %}
+            <li>tool '{{ tool_dict.get("name") }}' - {{ tool_dict.get("description") }} </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<div class="flex flex-row mt-5">
+    <div class="w-1/12"></div>
     <div class="w-10/12">
         <p class="text-xs italic font-normal text-slate-400" id="tools-query-processing" style="display: none">
             processing ...
@@ -20,15 +31,17 @@
     </div>
 </div>
 
-<div class="flex flex-row mt-10">
+<div class="flex flex-row mt-5">
     <div class="w-1/12"></div>
-    <div class="w-10/12 mt-0" id="tools-query-response">
+    <div class="w-10/12 mt-0" id="tools-query-response" data-tools-uri="{{ tools_uri }}">
+        {% if tools_uri == "" %}
         <p class="text-xs italic font-bold text-blue-700 py-5">
-            {% if query_tools %}
-            {{query_response}} using tool '{{query_tools}}'
+            {% if tools_uses %}
+            {{query_response}} - tool '{{tools_uses}}' returned '{{tools_result}}'
             {% else %}
             {{query_response}}
             {% endif %}
         </p>
+        {% endif %}
     </div>
 </div>

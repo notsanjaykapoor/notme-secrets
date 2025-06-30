@@ -16,7 +16,7 @@
     <div class="w-2/12 font-normal text-xs">
         <form class="max-w-sm mx-auto text-xs mr-0 mt-2">
             <select id="city-select"
-                class="block px-0 pb-1.5 w-full text-xs text-gray-400 bg-transparent border-0 border-b border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer disabled:border-0 disabled:bg-blue-gray-50">
+                class="block px-0 pb-1.5 w-full text-xs text-gray-400 bg-transparent border-0 border-b border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-sky-400 peer disabled:border-0 disabled:bg-blue-gray-50">
                 <option selected>select city - {{ cities_count }}</option>
                 {% for city in cities_names_slugs %}
                 <option value="/geo/maps/box/{{ city.slug }}">
@@ -26,10 +26,11 @@
             </select>
         </form>
     </div>
-    <div class=" w-2/12 font-normal text-xs ml-10">
+    <div class="w-1/12"></div>
+    <div class="w-2/12 font-normal text-xs">
         <form class="max-w-sm mx-auto text-xs mr-0 mt-2">
             <select id="region-select"
-                class="block px-0 pb-1.5 w-full text-xs text-gray-400 bg-transparent border-0 border-b border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer disabled:border-0 disabled:bg-blue-gray-50">
+                class="block px-0 pb-1.5 w-full text-xs text-gray-400 bg-transparent border-0 border-b border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-sky-400 peer disabled:border-0 disabled:bg-blue-gray-50">
                 <option selected>select region - {{ regions_count }}</option>
                 {% for region in regions_names_slugs %}
                 <option value="/geo/maps/box/{{ region.slug }}">
@@ -39,14 +40,20 @@
             </select>
         </form>
     </div>
-    <div class="w-3/12"></div>
+    <div class="w-1/12"></div>
     <div class="w-3/12">
         <input type="search" name="box_name" placeholder="search by city or region" value="" autocomplete="off"
-            hx-get="/geo/maps/resolve" hx-target="" class="peer px-0 h-full w-full border-b bg-transparent pb-1.5 text-xs font-normal
+            hx-get="/geo/maps/resolve" hx-target="" class="peer px-0 h-full w-4/5 border-b bg-transparent pb-1.5 text-xs font-normal
         text-gray-400 outline outline-0 transition-all placeholder-shown:border-blue-gray-200 focus:border-sky-400
         focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50">
     </div>
-    <div class="w-1/12"></div>
+    <div class="w-1/12 flex justify-end">
+        <a href="/geo/places">
+            <button class="rounded-full text-xs font-bold text-white bg-sky-400 w-full py-2 px-3 mr-5">
+                places
+            </button>
+        </a>
+    </div>
 </div>
 
 

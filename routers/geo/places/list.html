@@ -28,8 +28,8 @@
             </button>
             {% else %}
             <select id="city-select"
-                class="block ml-0 mr-10 px-0 pb-1.5 w-1/4 text-xs text-slate-400 bg-transparent border-0 border-b border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-sky-400 peer disabled:border-0 disabled:bg-blue-gray-50">
-                <option selected>city scope</option>
+                class="block ml-0 mr-10 px-0 pb-0 w-1/4 text-xs text-slate-400 bg-transparent border-0 border-b border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-sky-400 peer disabled:border-0 disabled:bg-blue-gray-50">
+                <option class="text-xs" selected>search city</option>
                 {% for city in cities_names_slugs %}
                 <option value="/geo/places/box/{{ city.slug }}">
                     {{ city.name }}
@@ -45,9 +45,9 @@
         </div>
     </div>
     <div class="w-1/12"></div>
-    <div class="w-2/12 font-normal text-xs flex items-center justify-between">
+    <div class="w-2/12 font-normal text-xs flex justify-end">
         {% if box %}
-        <a href="{{ geo_map_path }}" class="cursor-pointer font-bold text-sky-400" title="map view">
+        <a href="{{ geo_map_path }}" class="cursor-pointer font-bold text-sky-400 mr-10" title="map view">
             <button class="rounded-full text-xs font-bold text-white bg-sky-400 w-full py-2 px-3 mr-5">
                 map
             </button>
@@ -55,6 +55,12 @@
         <a href="{{ geo_api_path }}" class="cursor-pointer font-bold text-sky-400" title="add place near {{box.name}}">
             <button class="rounded-full text-xs font-bold text-white bg-sky-400 w-full py-2 px-3 mr-3">
                 add&nbsp;+
+            </button>
+        </a>
+        {% else %}
+        <a href="/geo/maps" class="cursor-pointer float-right font-bold text-sky-400" title="maps view">
+            <button class="rounded-full text-xs font-bold text-white bg-sky-400 w-full py-2 px-3 mr-5">
+                maps
             </button>
         </a>
         {% endif %}

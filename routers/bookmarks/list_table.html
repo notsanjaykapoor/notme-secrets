@@ -17,21 +17,30 @@
     <div class="w-1/12"></div>
     <div class="w-8/12">
         {% for category in categories_all_list %}
+
         {% if category in categories_cur_list %}
+
         {% set cat_color = "bg-sky-300" %}
+        <a href="/bookmarks?query=">
+            <button class="rounded-full text-xs font-bold text-white {{cat_color}} py-2 px-3 mr-1">{{category}}</button>
+        </a>
+
         {% else %}
+
         {% set cat_color = "bg-blue-700" %}
+        <a href="/bookmarks?query=cats:{{category}}">
+            <button class="rounded-full text-xs font-bold text-white {{cat_color}} py-2 px-3 mr-1">{{category}}</button>
+        </a>
+
         {% endif %}
 
-        <a href="/bookmarks?query=cats:{{category}}">
-            <button class="rounded-full text-xs font-bold text-white {{cat_color}} py-1 px-2">{{category}}</button>
-        </a>
         {% endfor %}
     </div>
     <div class="w-2/12 flex items-center justify-end text-xs">
         {% for category in categories_cur_list %}
         <a href="/bookmarks/new?cats={{category}}" title="new {{category}} bookmark">
-            <button class="rounded-full text-xs font-bold text-white bg-orange-600 py-1 px-2">{{category}} +</button>
+            <button class="rounded-full text-xs font-bold text-white bg-orange-600 py-2 px-3 mr-1">{{category}}
+                +</button>
         </a>
         {% endfor %}
     </div>
@@ -41,15 +50,23 @@
     <div class="w-1/12"></div>
     <div class="w-10/12">
         {% for tag in tags_all_list %}
+
         {% if tag in tags_cur_list %}
+
         {% set tag_color = "bg-sky-400 opacity-50" %}
+        <a href="/bookmarks?query=cats:{{categories_cur_str}}">
+            <button class="rounded-full text-xs font-bold text-white {{tag_color}} py-2 px-3 mr-1">{{tag}}</button>
+        </a>
+
         {% else %}
+
         {% set tag_color = "bg-sky-400" %}
+        <a href="/bookmarks?query=cats:{{categories_cur_str}} tags:{{tag}}">
+            <button class="rounded-full text-xs font-bold text-white {{tag_color}} py-2 px-3 mr-1">{{tag}}</button>
+        </a>
+
         {% endif %}
 
-        <a href="/bookmarks?query=cats:{{categories_cur_str}} tags:{{tag}}">
-            <button class="rounded-full text-xs font-bold text-white {{tag_color}} py-1 px-2">{{tag}}</button>
-        </a>
         {% endfor %}
     </div>
 </div>

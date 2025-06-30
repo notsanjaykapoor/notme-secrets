@@ -1,19 +1,29 @@
-import services.anthropic.tools.tool_maps
-import services.anthropic.tools.tool_places_search
+import importlib
+import os
+import re
 
-def list() -> list[dict]:
+
+def list_schemas(module_name="services.anthropic.tools") -> list[dict]:
     """
     Get list of claude tools.
+
+    Dynamically load tool schemas from the specified module root.
     """
     tools_list = []
 
-    schemas = [
-        services.anthropic.tools.tool_maps.schemas(),
-        services.anthropic.tools.tool_places_search.schemas(),
-    ]
+    module_dir = module_name.replace(".", "/")
+    module_files = os.listdir(module_dir)
 
-    for schema_list in schemas:
-        tools_list.extend(schema_list)
+    module_files = [name for name in module_files if re.match(r"^tool_.*.py$", name)]
+
+    for module_file in module_files:
+        # remove .py from module_file
+        module_file = re.sub(r"(\.py)", "", module_file)
+        module_path = f"{module_name}.{module_file}"
+        module = importlib.import_module(module_path)
+
+        # add schema to list
+        tools_list.extend(module.schemas())
 
     return tools_list
     

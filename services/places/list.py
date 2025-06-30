@@ -6,7 +6,7 @@ import sqlmodel
 
 import models
 import services.mql
-
+import services.regions
 
 @dataclasses.dataclass
 class Struct:
@@ -38,12 +38,12 @@ def list(
     model = models.Place
     dataset = sqlmodel.select(model)  # default database query
 
-    query_normalized = query
+    query_norm = query
 
     if query and ":" not in query:
-        query_normalized = f"name:{query}"
+        query_norm = f"name:{query}"
 
-    struct_tokens = services.mql.parse(query_normalized)
+    struct_tokens = services.mql.parse(query_norm)
 
     for token in struct_tokens.tokens:
         value = token["value"]
@@ -58,6 +58,28 @@ def list(
             dataset = dataset.where(
                 sqlalchemy.func.lower(model.city).like("%" + value_normal + "%")
             )
+        elif token["field"] in ["continent"]:
+            # get region
+            region_db = services.regions.get_by_continent(
+                db_session=db_session,
+                name=value,
+            )
+            if not region_db:
+                continue
+            dataset = dataset.where(model.country_code.in_(region_db.country_codes))
+        elif token["field"] in ["country", "country_code"]:
+            if len(value) > 2:
+                # map country value to a country code
+                region_db = services.regions.get_by_country(
+                    db_session=db_session,
+                    name=value,
+                )
+                if not region_db:
+                    continue
+                values = region_db.country_codes
+            else:
+                values = [value]
+            dataset = dataset.where(model.country_code.in_(values))
         elif token["field"] == "name":
             # always like query
             value_normal = re.sub(r"~", "", value).lower()

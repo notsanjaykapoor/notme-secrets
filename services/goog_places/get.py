@@ -30,8 +30,6 @@ def get_by_id(goog_id: str) -> dict:  # noqa: F821
     lat = data_json.get("location", {}).get("latitude")
     lon = data_json.get("location", {}).get("longitude")
 
-    print(data_json) # xxx
-
     geo_json = {
         "type": "Feature",
         "geometry": {

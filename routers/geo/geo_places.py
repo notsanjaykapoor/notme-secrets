@@ -6,6 +6,7 @@ import sqlmodel
 import context
 import log
 import main_shared
+import services.cities
 import services.geo
 import services.places
 import services.places.brands
@@ -50,7 +51,7 @@ def geo_places_list(
     geo_map_path = ""
 
     query_code = 0
-    query_prompt = "search places anywhere"
+    query_prompt = "search places"
 
     cities_names_slugs = services.cities.get_all_names_slugs(db_session=db_session)
     cities_count = len(cities_names_slugs)

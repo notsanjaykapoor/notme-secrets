@@ -1,0 +1,8 @@
+#! /bin/sh
+
+./scripts/city-utils add --name chicago
+./scripts/city-utils add --name paris
+./scripts/city-utils add --name tokyo
+./scripts/city-utils add --name osaka
+
+./scripts/region-utils init

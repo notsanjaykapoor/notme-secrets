@@ -12,7 +12,7 @@ def get_by_name(db_session: sqlmodel.Session, name: str) -> models.City | models
     model_names = [models.City, models.Region]
 
     for model_name in model_names:
-        db_select = sqlmodel.select(model_name).where(model_name.name == name)
+        db_select = sqlmodel.select(model_name).where(model_name.name == name.lower())
         db_object = db_session.exec(db_select).first()
 
         if db_object:

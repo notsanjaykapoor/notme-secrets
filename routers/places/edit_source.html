@@ -1,0 +1,9 @@
+<div class="flex flex-row mx-auto mt-10">
+    <div class="w-2/12"></div>
+    <div class="w-9/12 text-xs">
+        <input type="search" name="names" placeholder="source" value="{{ place.source_name }}:{{ place.source_id }}"
+            readonly autocomplete="off" hx-get="{{ places_brands_path }}/add" hx-target="#place-brands"
+            hx-trigger="search"
+            class="peer px-0 h-full w-full border-b bg-transparent pt-4 pb-1.5 font-sans font-normal text-slate-400 outline outline-0 transition-all placeholder-shown:border-blue-gray-200 focus:border-sky-400 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50">
+    </div>
+</div>

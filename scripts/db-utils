@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import re
 import subprocess
 import sys
 
@@ -9,12 +10,67 @@ sys.path.insert(1, os.path.join(sys.path[0], ".."))
 import dot_init
 
 import click
+import ulid
 
+import models # required for migrate init
+import services.console
 import services.database.session
+
+POSTGRES_REGEX = r"(postgres|postgresql):\/\/([^:]+:[^@]+)@([^:]+):(\d+)\/(.*)"
+
 
 @click.group()
 def cli():
     pass
+
+
+@click.command()
+@click.option("--db-url", default=None, required=False, help="backup database url")
+@click.option(
+    "--output-file", default="", required=False, help="backup output file name"
+)
+@click.option(
+    "--format",
+    default="archive",
+    required=False,
+    help="backup output file format, e.g. 'archive', 'text'",
+)
+@click.pass_context
+def backup(ctx, db_url: str, output_file: str, format: str) -> dict:
+    """
+    Backup database, if db_url is not specified then use env 'DATABASE_URL'
+    """
+    db_url = db_url or os.environ.get("DATABASE_URL")
+
+    output_file = output_file or f"backup.{ulid.new().str}.{format}.sql"
+
+    match = re.match(rf"{POSTGRES_REGEX}", db_url)
+    _user_password, host, port, db_name = (match[2], match[3], match[4], match[5])
+
+    print(
+        f"db backup '{host}:{port}' db '{db_name}' format '{format}' to file '{output_file}'",
+        end=" ... ",
+        flush=True,
+    )
+
+    if format == "archive":
+        format_str = "--format=c"  # compressed archive
+    elif format == "text":
+        format_str = "--format=p"  # plaintext
+    else:
+        format_str = "--format=c"  # compressed archive
+
+    backup_cmd = (
+        f"pg_dump -d {db_url} {format_str} --no-owner --no-acl --file {output_file}"
+    )
+
+    result = subprocess.run(backup_cmd.split(" "), check=True, capture_output=True)
+
+    if result.returncode != 0:
+        services.console.print_error(f"error {result.returncode}")
+        exit(result.returncode)
+
+    services.console.print_ok("ok")
 
 
 @click.command()
@@ -112,6 +168,7 @@ def _print_status(s: str):
     print("\x1b[1;33m" + s + "\x1b[0m")
 
 
+cli.add_command(backup)
 cli.add_command(create)
 cli.add_command(migrate_init)
 cli.add_command(migrate_create)

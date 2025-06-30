@@ -42,19 +42,34 @@ def geo_root(
     query_error = ""
     query_ok = ""
     query_response = ""
-    query_tools = ""
+
+    tools_list = services.anthropic.tools.list_schemas()
+    tools_result = ""
+    tools_uses = ""
+    tools_uri = ""
 
     try:
         if query:
             t_start = time.time()
-            anthropic_message, antropic_struct = services.anthropic.query_tools(query=query, tools=services.anthropic.tools.list())
+            anthropic_message, antropic_struct = services.anthropic.query_tools(
+                query=query,
+                tools=tools_list,
+            )
             t_secs = round(time.time() - t_start, 2)
 
-            print("anthropic result")
-            print(anthropic_message) # xxx
+            if antropic_struct.blocks_tools:
+                # parse tool results
+                tools_uses = ", ".join([tool_block.name for tool_block in antropic_struct.blocks_tools])
+
+                tool_name = antropic_struct.blocks_tools[0].name
+                tool_args = antropic_struct.blocks_tools[0].input
+
+                # call tool result
+                tool_func = getattr(services.anthropic.tools, tool_name)
+                tools_result = tool_func(**tool_args)
+                tools_uri = tools_result
 
             query_response = ", ".join(antropic_struct.blocks_text)
-            query_tools = ", ".join([tool_block.name for tool_block in antropic_struct.blocks_tools])
             query_ok = f"anthropic query completed in {t_secs}s"
     except Exception as e:
         query_code = 500
@@ -77,9 +92,12 @@ def geo_root(
                 "query_code": query_code,
                 "query_error": query_error,
                 "query_ok": query_ok,
-                "query_prompt": "semantic query",
+                "query_prompt": "type in a natural language query to use a tool",
                 "query_response": query_response,
-                "query_tools": query_tools,
+                "tools_list": tools_list,
+                "tools_result": tools_result,
+                "tools_uses": tools_uses,
+                "tools_uri": tools_uri,
                 "user": user,
             }
         )
@@ -89,5 +107,7 @@ def geo_root(
     except Exception as e:
         logger.error(f"{context.rid_get()} geo roo query '{query}' render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
+
+    logger.info(f"{context.rid_get()} geo root query '{query}' ok")
 
     return response

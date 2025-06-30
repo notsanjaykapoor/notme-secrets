@@ -123,7 +123,7 @@ def oauth_login_oauth2callback(
 
         # create jwt token
 
-        jwt_expires = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=1)
+        jwt_expires = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=30)
         # jwt_expires = credentials.expiry  # google tokens last about an hour
 
         jwt_token = services.users.jwt_token_create(

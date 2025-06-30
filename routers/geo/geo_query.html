@@ -11,8 +11,8 @@
     </div>
 </div>
 
-<form id="tools-query-form" hx-get="/geo" hx-on::before-request="htmx_before_submit(event)" Add commentMore actions
-    hx-target="#tools-response">
+<form id="tools-query-form" hx-get="/geo" hx-on::before-request="htmx_before_submit(event)"
+    hx-on::after-request="htmx_after_submit(event)" hx-target="#tools-response">
     <div class="flex flex-row mx-auto mt-10 items-center">
         <div class="w-1/12"></div>
         <div class="w-6/12 font-bold text-xs">
@@ -33,15 +33,26 @@
 </div>
 
 <script type="text/javascript">
+    function htmx_after_submit(e) {
+        var tools_uri = document.getElementById("tools-query-response").getAttribute("data-tools-uri")
+
+        if (tools_uri) {
+            window.location.href = tools_uri
+            // setTimeout(() => {
+            //     window.location.href = tools_uri
+            // }, 2000);
+        }
+    }
+
     function htmx_before_submit(e) {
         // hide results, show processing state
         e.stopPropagation()
 
-        var elements = document.querySelectorAll(".rag-infer,.rag-node-description,.rag-node-image,.rag-node-text")
+        // var elements = document.querySelectorAll(".rag-infer,.rag-node-description,.rag-node-image,.rag-node-text")
 
-        for (var i = 0; i < elements.length; i++) {
-            elements[i].style.visibility = "hidden"
-        }
+        // for (var i = 0; i < elements.length; i++) {
+        //     elements[i].style.visibility = "hidden"
+        // }
 
         document.getElementById("tools-query-status").style.visibility = "hidden"
         document.getElementById("tools-query-response").style.visibility = "hidden"

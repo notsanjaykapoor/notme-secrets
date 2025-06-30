@@ -39,6 +39,31 @@ def search_by_city(city: models.City, query: str, limit: int=10) -> list[dict]:
     return features_list
 
 
+# note: wip
+def search_for_region(name: str) -> list[dict]:
+    """
+    Mapbox places search for a city or region.
+    """
+    api_token = os.getenv("MAPBOX_TOKEN")
+
+    endpoint = "https://api.mapbox.com/search/searchbox/v1/suggest"
+
+    params = {
+        "access_token": api_token,
+        "q": name,
+        "language": "en",
+        "session_token": ulid.new().str, # required for suggest endpoint
+        "types": "country,region",
+    }
+
+    response = requests.get(endpoint, params=params)
+    data_json = response.json()
+
+    regions_list = data_json.get("suggestions", [])
+
+    return data_json
+
+
 def _mapbox_place_to_feature(place: dict) -> dict:
     """
     Transform mapbox place object into a geojson feature object.

@@ -31,12 +31,19 @@ def add(name: str) -> list[str]:
         city_db = services.cities.get_by_name(db_session=db_session, name=name)
 
         if city_db:
-            services.console.print_status(f"city '{name}' exists")
+            services.console.print_status(f"city '{name}' exists - city {city_db.id}")
             exit(0)
 
         code, city_db = services.cities.create(db_session=db_session, name=name)
 
-        services.console.print_ok(f"city '{name}' created - id {city_db.id}")
+        if code == 409:
+            services.console.print_status(f"city '{name}' exists - city {city_db.id}")
+            exit(0)
+        elif code != 0:
+            services.console.print_error(f"city '{name}' error - code {code}")
+            exit(code)
+
+        services.console.print_ok(f"city '{city_db.name}' created - id {city_db.id}")
 
 cli.add_command(add)
 
