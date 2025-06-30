@@ -13,8 +13,8 @@ def test_places_create(db_session: sqlmodel.Session, user_1: models.User, city_c
         "bbox": [],
         "properties": {
             "country_code": "us",
-            "lat": float(city_chi.lat),
-            "lon": float(city_chi.lon),
+            "lat": city_chi.lat_f,
+            "lon": city_chi.lon_f,
             "place_id": ulid.new().str,
         }
     }
@@ -28,8 +28,8 @@ def test_places_create(db_session: sqlmodel.Session, user_1: models.User, city_c
     assert place_db.lat == city_chi.lat
     assert place_db.lon == city_chi.lon
     assert place_db.name == "place 1"
-    assert place_db.point.x == float(place_db.lon)
-    assert place_db.point.y == float(place_db.lat)
+    assert place_db.point.x == place_db.lon_f
+    assert place_db.point.y == place_db.lat_f
     assert place_db.source_id
 
 

@@ -52,12 +52,8 @@ class City(sqlmodel.SQLModel, table=True):
     )
 
     @property
-    def lon_max(self) -> float:
-        return self.bbox[2]
-
-    @property
-    def lon_min(self) -> float:
-        return self.bbox[0]
+    def lat_f(self) -> float:
+        return float(self.lat)
 
     @property
     def lat_max(self) -> float:
@@ -66,6 +62,18 @@ class City(sqlmodel.SQLModel, table=True):
     @property
     def lat_min(self) -> float:
         return self.bbox[1]
+
+    @property
+    def lon_f(self) -> float:
+        return float(self.lon)
+
+    @property
+    def lon_max(self) -> float:
+        return self.bbox[2]
+
+    @property
+    def lon_min(self) -> float:
+        return self.bbox[0]
 
     @property
     def map_zoom(self) -> int:

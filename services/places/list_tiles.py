@@ -11,7 +11,7 @@ def list_tiles(places: list[models.Place]) -> list[dict]:
       tile = {
         "type": "Feature",
         "geometry": {
-            "coordinates": [float(place.lon), float(place.lat)],
+            "coordinates": [place.lon_f, place.lat_f],
             "type": "Point",
         },
         "properties": {

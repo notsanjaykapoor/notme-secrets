@@ -93,6 +93,14 @@ class Place(sqlmodel.SQLModel, table=True):
       }
 
     @property
+    def lat_f(self) -> float:
+        return float(self.lat)
+
+    @property
+    def lon_f(self) -> float:
+        return float(self.lon)
+
+    @property
     def notes(self) -> str:
         return self.data.get("notes", "")
 

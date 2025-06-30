@@ -1,8 +1,10 @@
+import array
 import os
 
 import fastapi
 import fastapi.responses
 import fastapi.templating
+import shapely
 import sqlmodel
 
 import context
@@ -183,10 +185,23 @@ def geo_maps_box_tileset(
         places_query = f"{query_norm} {box.type}:{box.name} user_id:{user_id}".strip()
         places_struct = services.places.list(db_session=db_session, query=places_query, offset=0, limit=50, sort="name+")
         places_list = places_struct.objects
+        places_count = len(places_list)
         places_total = places_struct.total
 
         # generate geo_json tiles collection from places list that's used by mapbox
         places_tileset = services.places.list_tiles(places=places_list)
+
+        if places_count >= 3:
+            # generate bounding box from list of places
+            places_points = [shapely.Point(place.lon_f, place.lat_f) for place in places_list]
+            places_multi = shapely.MultiPoint(places_points)
+            places_bbox = places_multi.bounds
+        else:
+            # use bounding box from city/region object
+            # places_bbox = [box.lon_max, box.lat_min, box.lon_max, box.lat_max]
+
+            # keep current bounding box
+            places_bbox = []
     except Exception as e:
         logger.error(f"{context.rid_get()} maps box render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
@@ -196,6 +211,7 @@ def geo_maps_box_tileset(
 
     response = fastapi.responses.JSONResponse(
         content={
+            "bbox": places_bbox,
             "tileset": {
                 "type": "FeatureCollection",
                 "features": places_tileset,

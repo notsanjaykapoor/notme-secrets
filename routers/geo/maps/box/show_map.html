@@ -52,7 +52,7 @@
         //     'color': '#008000'
         // })
 
-        // add tile, the feature is an example of how to init with a data point
+        // add tile, this is an example of how to init with a data point
 
         map.addSource('tilequery', {
             type: 'geojson',
@@ -127,14 +127,29 @@
         const query = await fetch(tileset_uri, { method: 'GET' })
         const response = await query.json()
         const tileset = response.tileset
+        const bbox = response.bbox
 
         console.log(box_name, "tileset", tileset)
+        console.log(box_name, "bbox", bbox, "zoom", map_zoom)
 
         // update map
         map.getSource('tilequery').setData(tileset)
 
         // update map count
         document.getElementById("city-count").innerHTML = `${tileset.features.length} places`
+
+        if (bbox.length > 1) {
+            // update bounding box
+            map.fitBounds(
+                [
+                    [bbox[0], bbox[1]], // [lng, lat] - southwestern corner of the bounds
+                    [bbox[2], bbox[3]], // [lng, lat] - northeastern corner of the bounds
+                ],
+                {
+                    padding: { top: 50, bottom: 50, left: 50, right: 50 }
+                },
+            )
+        }
 
         const popup = new mapboxgl.Popup()
 

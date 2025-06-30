@@ -10,8 +10,8 @@ def test_cities_create(db_session: sqlmodel.Session):
     assert city_db.country_code == "us"
     assert city_db.data == {}
     assert city_db.geo_json
-    assert float(city_db.lat) == 41.8781136
-    assert float(city_db.lon) == -87.6297982
+    assert city_db.lat_f == 41.88325
+    assert city_db.lon_f == -87.6323879
     assert city_db.name == "chicago"
     assert city_db.slug == "chicago"
     assert city_db.source_id
