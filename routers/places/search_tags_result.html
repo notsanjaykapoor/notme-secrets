@@ -1,0 +1,39 @@
+<select id="tag-select" name="value" hx-trigger="submit" hx-get="{{ tag_add_link }}" hx-target="#place-tags" class="block px-0 pb-1 w-full font-semibold text-xs text-black bg-transparent border-0 border-b border-gray-200
+    appearance-none focus:outline-none focus:ring-0 focus:border-sky-400 peer disabled:border-0
+    disabled:bg-blue-gray-50">
+    <option value="">
+        {% if not tags_match_list %}
+        no matches
+        {% else %}
+        {{ tags_match_list | length }} tags
+        {% endif %}
+    </option>
+    {% if not tags_match_list %}
+
+    {% if tag_search %}
+    <option value="{{ tag_search }}">
+        {{ tag_search }}
+    </option>
+    {% endif %}
+
+    {% else %}
+
+    {% for tag in tags_match_list %}
+    <option value="{{ tag }}">
+        {{ tag }}
+    </option>
+    {% endfor %}
+
+    {% endif %}
+</select>
+
+<script>
+    // list for select change event
+    var tag_select = document.getElementById("tag-select")
+
+    if (tag_select) {
+        tag_select.addEventListener("change", function () {
+            htmx.trigger("#tag-select", "submit")
+        })
+    }
+</script>

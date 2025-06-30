@@ -1,0 +1,40 @@
+<select id="brand-select" name="value" hx-trigger="submit" hx-get="{{ brand_add_link }}" hx-target="#place-brands"
+    class="block px-0 pb-1 w-full font-semibold text-xs text-black bg-transparent border-0 border-b border-gray-200
+    appearance-none focus:outline-none focus:ring-0 focus:border-sky-400 peer disabled:border-0
+    disabled:bg-blue-gray-50">
+    <option value="">
+        {% if not brands_match_list %}
+        no matches
+        {% else %}
+        {{ brands_match_list | length }} brands
+        {% endif %}
+    </option>
+    {% if not brands_match_list %}
+
+    {% if brand_search %}
+    <option value="{{ brand_search }}">
+        {{ brand_search }}
+    </option>
+    {% endif %}
+
+    {% else %}
+
+    {% for brand in brands_match_list %}
+    <option value="{{ brand }}">
+        {{ brand }}
+    </option>
+    {% endfor %}
+
+    {% endif %}
+</select>
+
+<script>
+    // list for select change event
+    var brand_select = document.getElementById("brand-select")
+
+    if (brand_select) {
+        brand_select.addEventListener("change", function () {
+            htmx.trigger("#brand-select", "submit")
+        })
+    }
+</script>

@@ -6,6 +6,7 @@ import sqlmodel
 import context
 import log
 import main_shared
+import routers.utils
 import services.cities
 import services.geo
 import services.places
@@ -30,6 +31,8 @@ def geo_places_list(
     request: fastapi.Request,
     box_name: str="",
     query: str="",
+    offset: int=0,
+    limit: int=20,
     user_id: int = fastapi.Depends(main_shared.get_user_id),
     db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
 ):
@@ -64,8 +67,9 @@ def geo_places_list(
             geo_api_path = f"/geo/api/box/{box.slug}"
 
     try:
-        places_struct = services.places.list(db_session=db_session, query=query_norm, offset=0, limit=50, sort="name+")
+        places_struct = services.places.list(db_session=db_session, query=query_norm, offset=offset, limit=limit, sort="name+")
         places_list = places_struct.objects
+        places_count = len(places_list)
         places_total = places_struct.total
 
         brands_cur_list = sorted(places_struct.brands)
@@ -81,9 +85,15 @@ def geo_places_list(
             brands_all_list = []
 
         if box:
-            query_result = f"query '{query}' near '{box.name}' returned {len(places_list)} results"
+            if places_total <= limit:
+                query_result = f"query '{query}' near '{box.name}' returned {len(places_list)} results"
+            else:
+                query_result = f"query '{query}' near '{box.name}' returned {offset+1} - {offset+places_count} of {places_total} results"
         else:
-            query_result = f"query '{query}' returned {len(places_list)} results"
+            if places_total <= limit:
+                query_result = f"query '{query}' returned {len(places_list)} results"
+            else:
+                query_result = f"query '{query}' returned {offset+1} - {offset+places_count} of {places_total} results"
     except Exception as e:
         places_list = []
         places_total = 0
@@ -92,6 +102,13 @@ def geo_places_list(
 
         logger.error(f"{context.rid_get()} places list exception '{e}'")
 
+    page_prev, page_next = routers.utils.page_links(
+        path=request.url.path,
+        params=request.query_params,
+        limit=limit,
+        total=places_total
+    )
+ 
     if "HX-Request" in request.headers:
         template = "geo/places/list_table.html"
     else:
@@ -110,6 +127,8 @@ def geo_places_list(
                 "cities_names_slugs": cities_names_slugs,
                 "geo_api_path": geo_api_path,
                 "geo_map_path": geo_map_path,
+                "page_next": page_next,
+                "page_prev": page_prev,
                 "places_list": places_list,
                 "places_total": places_total,
                 "request_path": request.url.path,
