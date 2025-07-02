@@ -22,13 +22,12 @@
 <div class="flex flex-row mx-auto mt-10">
     <div class="w-2/12"></div>
     <div class="w-9/12 text-xs flex justify-between items-center">
-        <div id="brands-select-options" class="w-1/2 mt-5 text-xs">
-            {% include "places/search_brands_result.html" %}
-        </div>
-
         <input type="search" name="name" placeholder="filter brands" value="" autocomplete="off"
             hx-get="{{ places_brands_path }}/search" hx-trigger="input changed delay:500ms, keyup[key=='Enter']"
             hx-target="#brands-select-options"
-            class="peer px-0 h-full w-2/5 border-b bg-transparent pt-4 pb-1.5 font-sans font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-blue-gray-200 focus:border-sky-400 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50">
+            class="peer px-0 h-full w-1/4 border-b bg-transparent pt-4 pb-1.5 font-sans font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-blue-gray-200 focus:border-sky-400 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50">
+        <div id="brands-select-options" class="w-3/5 mt-5 text-xs">
+            {% include "places/search_brands_result.html" %}
+        </div>
     </div>
 </div>

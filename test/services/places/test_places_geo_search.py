@@ -5,7 +5,7 @@ import models
 import services.places
 
 
-@pytest.mark.skip(reason="duplicate")
+@pytest.mark.skip(reason="minimize geo search requests")
 def test_places_geo_search_chi(db_session: sqlmodel.Session, city_chi: models.City):
     assert city_chi.name == "chicago"
 

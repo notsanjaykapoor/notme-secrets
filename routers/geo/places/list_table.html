@@ -88,6 +88,9 @@
         </thead>
         <tbody>
             {% for place in places_list %}
+
+            {% set brands_extra = place.brands_count - 5 %}
+
             <tr class="group hover:bg-zinc-50 odd:bg-white even:bg-slate-50 text-left text-xs">
                 <td class="p-4">
                     {{ place.name }}
@@ -95,6 +98,11 @@
                 <td class="p-4 font-normal">{{ place.tags_string }}</td>
                 <td class="p-4 font-normal">
                     {{ place.brands_string_max(limit=5) }}
+                    {% if brands_extra > 0 %}
+                    <span class="text-slate-400">
+                        +{{ brands_extra }}
+                    </span>
+                    {% endif %}
                 </td>
                 <td class="p-4 font-normal flex justify-center text-center">
                     {% if place.website %}

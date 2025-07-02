@@ -50,7 +50,7 @@ def list(
 
         if token["field"] in ["brand", "brands"]:
             values = [s.strip() for s in value.lower().split(",")]
-            dataset = dataset.where(model.brands.contains(values))
+            dataset = dataset.where(model.brands.op("&&")(values))
             struct.brands = values
         elif token["field"] == "city":
             # always like query
@@ -92,7 +92,7 @@ def list(
             dataset = dataset.where(model.source_name == value)
         elif token["field"] in ["tag", "tags"]:
             values = [s.strip() for s in value.lower().split(",")]
-            dataset = dataset.where(model.tags.contains(values))
+            dataset = dataset.where(model.tags.op("&&")(values))
             struct.tags = values
         elif token["field"] in ["uid", "user_id"]:
             dataset = dataset.where(model.user_id == int(value))

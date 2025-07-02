@@ -3,6 +3,7 @@ import decimal
 
 import geoalchemy2
 import geoalchemy2.shape
+import pydantic
 import shapely.geometry
 import sqlalchemy
 import sqlalchemy.dialects.postgresql
@@ -18,9 +19,8 @@ class Place(sqlmodel.SQLModel, table=True):
         sqlalchemy.UniqueConstraint("source_id", "source_name", name="i_place_source"),
     )
 
-    class Config:
-        # enable arbitrary_types_allowed for pydantic v2 to handle ShapelyPoint
-        arbitrary_types_allowed = True
+    # enable arbitrary_types_allowed for pydantic v2 to handle ShapelyPoint
+    model_config = pydantic.ConfigDict(arbitrary_types_allowed=True)
 
     id: int = sqlmodel.Field(default=None, primary_key=True)
 
@@ -62,10 +62,16 @@ class Place(sqlmodel.SQLModel, table=True):
     website: str = sqlmodel.Field(index=False, nullable=True, default="")
 
     @property
+    def brands_count(self) -> int:
+        return len(self.brands)
+
+    @property
     def brands_string(self) -> str:
         return ", ".join(self.brands)
 
     def brands_string_max(self, limit: int) -> str:
+        return ", ".join(self.brands[0:limit])
+
         if len(self.brands) <= limit:
             return self.brands_string
 

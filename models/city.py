@@ -3,6 +3,7 @@ import decimal
 
 import geoalchemy2
 import geoalchemy2.shape
+import pydantic
 import shapely.geometry
 import sqlalchemy
 import sqlalchemy.dialects.postgresql
@@ -12,9 +13,8 @@ class City(sqlmodel.SQLModel, table=True):
     __tablename__ = "cities"
     __table_args__ = (sqlalchemy.UniqueConstraint("name", name="i_city_name"),)
 
-    class Config:
-        # enable arbitrary_types_allowed for pydantic v2 to handle ShapelyPoint
-        arbitrary_types_allowed = True
+    # enable arbitrary_types_allowed for pydantic v2 to handle ShapelyPoint
+    model_config = pydantic.ConfigDict(arbitrary_types_allowed=True)
 
     id: int = sqlmodel.Field(default=None, primary_key=True)
 

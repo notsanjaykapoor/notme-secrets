@@ -76,6 +76,9 @@ def query_tools(query: str, tools: list[dict]) -> tuple[anthropic.types.message.
                 "role": "user",
             }
         ],
+        tool_choice={
+            "type": "any" # use one of the specified tools
+        },
         tools=tools,
     )
 
