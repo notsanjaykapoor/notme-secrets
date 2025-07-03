@@ -1,0 +1,130 @@
+#!/usr/bin/env python
+
+import json
+import os
+import sys
+
+sys.path.insert(1, os.path.join(sys.path[0], ".."))
+
+import dot_init
+
+import click
+
+import models
+import services.cities
+import services.console
+import services.database.session
+import services.goog_places
+import services.mapbox
+import services.places
+import services.users
+
+@click.group()
+def cli():
+    pass
+
+@click.command()
+@click.option("--name", default=None, required=True, help="city name")
+@click.option("--city", "city_name", default=None, required=True, help="city name")
+@click.option("--country", "country_code", default="", required=False, help="optional country code")
+@click.option("--email", default="notsanjaykapoor@gmail.com", required=False, help="user email")
+def add(name: str, city_name: str, country_code: str, email: str) -> list[str]:
+    """
+    Add place to places table.
+    """
+    services.console.print_status(f"place '{name}' near city '{city_name}' add")
+
+    with services.database.session.get() as db_session:
+        place_db = services.places.get_by_name(db_session=db_session, name=name)
+
+        if place_db:
+            services.console.print_status(f"place '{name}' exists - id {place_db.id}")
+            exit(0)
+
+        # geo search for place
+        city_db = services.cities.get_by_name(db_session=db_session, name=city_name, country_code=country_code)
+
+        if not city_db:
+            services.console.print_error(f"city '{city_name}' not found")
+            exit(-1)
+
+        code, geo_list = services.places.geo_search_by_name(city=city_db, name=name)
+
+        if code != 0:
+            services.console.print_error(f"geo search '{name}' error")
+            exit(0)
+
+        if len(geo_list) > 1:
+            services.console.print_error(f"geo search '{name}' return {len(geo_list)} results")
+            exit(0)
+
+        geo_json = geo_list[0]
+
+        user = services.users.get_by_email(db_session=db_session, email=email)
+
+        code, place_db = services.places.create(
+            db_session=db_session,
+            name=name,
+            user=user,
+            city=city_db,
+            geo_json=geo_json,
+        )
+
+        services.console.print_ok(f"place '{place_db.name}' city '{place_db.city}, {place_db.country_code}' id {place_db.id} created - ok")
+
+@click.command()
+@click.option("--id", default=None, required=True, help="place id")
+def geocode(id: int) -> list[str]:
+    """
+    Add place to places table.
+    """
+    with services.database.session.get() as db_session:
+        place_db = services.places.get_by_id(db_session=db_session, id=id)
+
+        if not place_db:
+            services.console.print_error("place not found")
+            exit(404)
+
+        services.console.print_status(f"place {place_db.id} name '{place_db.name}' city '{place_db.city}, {place_db.country_code}' geocode try")
+
+        if place_db.source_name == models.place.SOURCE_GOOGLE:
+            geo_json = services.goog_places.get_by_id(goog_id=place_db.source_id)
+        elif place_db.source_name == models.place.SOURCE_MAPBOX:
+            geo_json = services.mapbox.get_by_id(mapbox_id=place_db.source_id)
+
+        geo_city = geo_json.get("properties", {}).get("city", "")
+        geo_country = geo_json.get("properties", {}).get("country", "")
+
+        geo_city_country = [
+             geo_city,
+             geo_country
+        ]
+
+        place_city_country = [
+            place_db.city,
+            place_db.country_code,
+        ]
+
+        if place_city_country != geo_city_country:
+            # get or create city
+            city = services.cities.get_by_name(db_session=db_session, name=geo_city, country_code=geo_country)
+
+            if not city:
+                _, city = services.cities.create(db_session=db_session, name=geo_city, country_code=geo_country)
+
+            place_db.city = city.name
+            place_db.country_code = city.country_code
+
+            db_session.add(place_db)
+            db_session.commit()
+
+            services.console.print_ok(f"place {place_db.id} name '{place_db.name}' city '{place_db.city}, {place_db.country_code}' geocode updated")
+        else:
+            services.console.print_status(f"place {place_db.id} name '{place_db.name}' city '{place_db.city}, {place_db.country_code}' geocode ok")
+
+
+cli.add_command(add)
+cli.add_command(geocode)
+
+if __name__ == "__main__":
+    cli()

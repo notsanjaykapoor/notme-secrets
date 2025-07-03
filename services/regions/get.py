@@ -5,6 +5,7 @@ import models
 
 def get_all_names_slugs(db_session: sqlmodel.Session) -> list[models.Region]:
     db_select = sqlmodel.select(models.Region.name, models.Region.slug)
+    db_select = db_select.order_by(models.Region.name.asc())
     return db_session.exec(db_select).all()
 
 

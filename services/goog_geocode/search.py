@@ -4,7 +4,7 @@ import unicodedata
 import requests
 
 import models
-
+import services.goog_geocode
 
 def search_address(addr: str) -> list[dict]:
     """
@@ -46,24 +46,7 @@ def _google_addr_to_feature(addr: dict) -> dict:
 
     # parse address components into city name and country code
     addr_components = addr.get("address_components", [])
-    country_code = ""
-    region_name = ""
-
-    for addr_component in addr_components:
-        if "country" in addr_component.get("types", []):
-            country_code = addr_component.get("short_name", "").lower()
-
-        if "locality" in addr_component.get("types", []):
-            region_name = _region_remove_accents(
-                name = addr_component.get("long_name", "").lower()
-            )
-
-    if not region_name:
-        # try 'administrative_area_level_1' component
-        if "administrative_area_level_1" in addr_component.get("types", []):
-            region_name = _region_remove_accents(
-                name = addr_component.get("long_name", "").lower()
-            )
+    country_code, region_name = services.goog_geocode.address_components_city_country(addr_components=addr_components)
 
     feature = {
         "type": "Feature",
@@ -97,14 +80,14 @@ def _region_bbox(bbox_object: dict) -> dict:
     ]
 
 
-def _region_remove_accents(name=str) -> str:
-    """
-    Removes accent marks (diacritics) from a Unicode string.
-    """
-    # Normalize the string to NFD (Normalization Form Canonical Decomposition)
-    # This separates base characters from their combining diacritical marks.
-    nfkd_form = unicodedata.normalize('NFKD', name)
+# def _region_remove_accents(name=str) -> str:
+#     """
+#     Removes accent marks (diacritics) from a Unicode string.
+#     """
+#     # Normalize the string to NFD (Normalization Form Canonical Decomposition)
+#     # This separates base characters from their combining diacritical marks.
+#     nfkd_form = unicodedata.normalize('NFKD', name)
 
-    # Filter out characters that are combining diacritical marks ('Mn' category)
-    # and join the remaining characters to form the new string.
-    return ''.join([c for c in nfkd_form if not unicodedata.combining(c)])
+#     # Filter out characters that are combining diacritical marks ('Mn' category)
+#     # and join the remaining characters to form the new string.
+#     return ''.join([c for c in nfkd_form if not unicodedata.combining(c)])

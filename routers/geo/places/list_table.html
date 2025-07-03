@@ -78,11 +78,11 @@
         <thead class="font-normal text-left text-xs leading-6 text-zinc-800">
             <tr class="">
                 <th class="p-4">name</th>
-                <th class="p-4">tags</th>
-                <th class="p-4">brands</th>
+                <th class="p-4 min-w-32">tags</th>
+                <th class="p-4 min-w-48">brands</th>
                 <th class="p-4 w-10">website</th>
                 <th class="p-4 w-10">notes</th>
-                <th class="p-4">location</th>
+                <th class="p-4 w-32">location</th>
                 <th class="p-2 w-10"></th>
             </tr>
         </thead>
@@ -96,7 +96,7 @@
                     {{ place.name }}
                 </td>
                 <td class="p-4 font-normal">{{ place.tags_string }}</td>
-                <td class="p-4 font-normal">
+                <td class="p-4 font-normal text-xs/6">
                     {{ place.brands_string_max(limit=5) }}
                     {% if brands_extra > 0 %}
                     <span class="text-slate-400">
@@ -125,10 +125,10 @@
                     {% endif %}
                 </td>
                 <td class="p-4 font-normal">
-                    {% if box %}
+                    {% if box and box.type == "city" %}
                     {{ place.city_country }}
                     {% else %}
-                    <a href="/geo/places/box/{{ place.city }}" class="font-bold text-sky-400">
+                    <a href="/geo/places/box/{{ place.city_slug }}" class="font-bold text-sky-400">
                         {{ place.city_country }}
                     </a>
                     {% endif %}

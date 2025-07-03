@@ -1,5 +1,6 @@
 import datetime
 import decimal
+import re
 
 import geoalchemy2
 import geoalchemy2.shape
@@ -82,6 +83,10 @@ class Place(sqlmodel.SQLModel, table=True):
     @property
     def city_country(self) -> str:
         return ", ".join([self.city, self.country_code])
+
+    @property
+    def city_slug(self) -> str:
+        return re.sub(r"\s", "-", self.city)
 
     @property
     def geo_json_compact(self, color: str) -> dict:

@@ -1,7 +1,5 @@
-import os
 import re
 
-import requests
 import geoalchemy2.shape
 import shapely.geometry
 import sqlmodel
@@ -14,18 +12,22 @@ import services.goog_geocode
 def create(
     db_session: sqlmodel.Session,
     name: str,
+    country_code: str="",
 ) -> tuple[int, models.City | None]:
     """
     Create city and persist to database
     """
     name_norm = name.lower()
 
-    city_db = services.cities.get_by_name(db_session=db_session, name=name_norm)
+    city_db = services.cities.get_by_name(db_session=db_session, name=name_norm, country_code=country_code)
 
     if city_db:
         return 409, city_db
 
-    geo_features = services.goog_geocode.search_address(addr=name)
+    if country_code:
+        name_norm = f"{name_norm}, {country_code}"
+
+    geo_features = services.goog_geocode.search_address(addr=name_norm)
 
     if not geo_features:
         return 422, None
@@ -50,7 +52,7 @@ def create(
 
     # check city name again for uniqueness, the city search will normalize the name so its a good check here
 
-    if city_db := services.cities.get_by_name(db_session=db_session, name=city_name):
+    if city_db := services.cities.get_by_name(db_session=db_session, name=city_name, country_code=country_code):
         return 409, city_db
 
     city_db = models.City(

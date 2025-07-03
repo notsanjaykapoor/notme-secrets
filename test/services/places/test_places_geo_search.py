@@ -27,6 +27,9 @@ def test_places_geo_search_tokyo(db_session: sqlmodel.Session, city_tokyo: model
     assert code == 0
     assert len(geo_list) == 1
     assert geo_list[0].get("geometry").get("type") == "Point"
+    assert geo_list[0].get("properties").get("city") == "tokyo"
+    assert geo_list[0].get("properties").get("lat")
+    assert geo_list[0].get("properties").get("lon")
     assert geo_list[0].get("properties").get("name") == "boutiqueW"
     assert geo_list[0].get("properties").get("source_id")
     assert geo_list[0].get("properties").get("source_name") == "google"

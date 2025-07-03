@@ -190,7 +190,7 @@ def geo_maps_box_tileset(
         # generate geo_json tiles collection from places list that's used by mapbox
         places_tileset = services.places.list_tiles(places=places_list)
 
-        if places_count >= 3:
+        if places_count > 1:
             # generate bounding box from list of places
             places_points = [shapely.Point(place.lon_f, place.lat_f) for place in places_list]
             places_multi = shapely.MultiPoint(places_points)

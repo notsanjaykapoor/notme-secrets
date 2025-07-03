@@ -3,6 +3,7 @@ import os
 import requests
 
 import models
+import services.goog_places
 
 
 def search_by_city(city: models.City, query: str) -> list[dict]:
@@ -15,7 +16,7 @@ def search_by_city(city: models.City, query: str) -> list[dict]:
     geo_key = os.getenv("GOOGLE_PLACES_KEY")
     geo_headers = {
         "X-Goog-Api-Key": geo_key,
-        "X-Goog-FieldMask": "places.displayName,places.shortFormattedAddress,places.id,places.location,places.types",
+        "X-Goog-FieldMask": "places.addressComponents,places.displayName,places.shortFormattedAddress,places.id,places.location,places.types",
     }
 
     geo_query = f"{query} near {city.name}, {city.country_code}"
@@ -46,6 +47,8 @@ def _google_place_to_feature(place: dict) -> dict:
     address = place.get("shortFormattedAddress", "")
     name = place.get("displayName", {}).get("text")
 
+    country, city = services.goog_places.address_components_city_country(addr_components=place.get("addressComponents", []))
+
     feature = {
         "type": "Feature",
         "geometry": {
@@ -54,6 +57,8 @@ def _google_place_to_feature(place: dict) -> dict:
         },
         "properties": {
             "address": address,
+            "city": city,
+            "country": country,
             "lat": lat,
             "lon": lon,
             "name": name,

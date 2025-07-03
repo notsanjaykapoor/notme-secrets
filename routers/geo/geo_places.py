@@ -41,13 +41,14 @@ def geo_places_list(
 
     user = services.users.get_by_id(db_session=db_session, id=user_id)
 
-    logger.info(f"{context.rid_get()} places list query '{query}' box '{box_name}' try")
-
     # normalize query
+    query_scope_default = "name:"
     if query and ":" not in query:
-        query_norm = f"name:{query}".strip()
+        query_norm = f"{query_scope_default}{query}".strip()
     else:
         query_norm = query
+
+    logger.info(f"{context.rid_get()} places list query '{query_norm}' box '{box_name}' try")
 
     box = None
     geo_api_path = ""
@@ -86,14 +87,14 @@ def geo_places_list(
 
         if box:
             if places_total <= limit:
-                query_result = f"query '{query}' near '{box.name}' returned {len(places_list)} results"
+                query_result = f"query '{query_norm}' near '{box.name}' returned {len(places_list)} results"
             else:
-                query_result = f"query '{query}' near '{box.name}' returned {offset+1} - {offset+places_count} of {places_total} results"
+                query_result = f"query '{query_norm}' near '{box.name}' returned {offset+1} - {offset+places_count} of {places_total} results"
         else:
             if places_total <= limit:
-                query_result = f"query '{query}' returned {len(places_list)} results"
+                query_result = f"query '{query_norm}' returned {len(places_list)} results"
             else:
-                query_result = f"query '{query}' returned {offset+1} - {offset+places_count} of {places_total} results"
+                query_result = f"query '{query_norm}' returned {offset+1} - {offset+places_count} of {places_total} results"
     except Exception as e:
         places_list = []
         places_total = 0
@@ -132,10 +133,11 @@ def geo_places_list(
                 "places_list": places_list,
                 "places_total": places_total,
                 "request_path": request.url.path,
-                "query": query,
+                "query": query_norm,
                 "query_code": query_code,
                 "query_prompt": query_prompt,
                 "query_result": query_result,
+                "query_scope_default": query_scope_default,
                 "tags_all_list": tags_all_list,
                 "tags_cur_list": tags_cur_list,
                 "tags_cur_str": tags_cur_str,
@@ -149,6 +151,6 @@ def geo_places_list(
         logger.error(f"{context.rid_get()} places list render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
 
-    logger.info(f"{context.rid_get()} places list query '{query}' box '{box_name}' ok")
+    logger.info(f"{context.rid_get()} places list query '{query_norm}' box '{box_name}' ok")
 
     return response

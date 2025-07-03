@@ -32,7 +32,7 @@
                 <option class="text-xs" selected>search city</option>
                 {% for city in cities_names_slugs %}
                 <option value="/geo/places/box/{{ city.slug }}">
-                    {{ city.name }}
+                    {{ city.name }}, {{ city.country_code }}
                 </option>
                 {% endfor %}
             </select>
@@ -72,6 +72,8 @@
 </div>
 
 <script>
+    var query_scope_default = "{{query_scope_default}}"
+
     // list for select change events and redirect to places view scoped by city
     const city_select = document.getElementById("city-select")
 

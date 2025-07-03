@@ -24,7 +24,7 @@ def init() -> list[str]:
     """
     Initialize region entries.
     """
-    names = ["europe", "us", "japan"]
+    names = ["canada", "europe", "us", "japan"]
 
     with services.database.session.get() as db_session:
         for name in names:

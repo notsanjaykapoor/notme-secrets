@@ -1,4 +1,5 @@
 from .bookmark import Bookmark
+from .box import Box
 from .city import City
 from .crypto_key import CryptoKey
 from .place import Place

@@ -7,6 +7,7 @@ import context
 import log
 import main_shared
 import models
+import services.cities
 import services.geo
 import services.goog_places
 import services.mapbox
@@ -52,20 +53,31 @@ def places_add(
         else:
             raise ValueError(f"invalid source {source_name}")
 
+        if box.type != models.box.TYPE_CITY:
+            # get or create city
+            city_name = geo_json.get("properties", {}).get("city", "")
+            country_code = geo_json.get("properties", {}).get("country", "")
+            city = services.cities.get_by_name(db_session=db_session, name=city_name, country_code=country_code)
+
+            if not city:
+                _, city = services.cities.create(db_session=db_session, name=city_name, country_code=country_code)
+        else:
+            city = box
+
         code, place_db = services.places.create(
             db_session=db_session,
             user=user,
-            city=box,
+            city=city,
             geo_json=geo_json,
             name=geo_json.get("properties", {}).get("name"),
         )
 
         place_id = place_db.id
-        add_code = 201
+        add_code = code
 
         logger.info(f"{context.rid_get()} places add box '{box_name}' source '{source_name}' ok")
     except Exception as e:
-        place_id = 0
+        place_id = -1
         add_code = 500
         logger.error(f"{context.rid_get()} places add box '{box_name}' source '{source_name} exception - '{e}'")
 
@@ -237,6 +249,7 @@ def places_brands_update(
     logger.info(f"{context.rid_get()} places {place_id} brands '{edit_op}' '{value}' ok")
 
     return response
+
 
 @app.get("/places/{place_id}/notes/mod", response_class=fastapi.responses.JSONResponse)
 def places_notes_update(

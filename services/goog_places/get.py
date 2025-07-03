@@ -3,7 +3,7 @@ import os
 import requests
 
 import models
-
+import services.goog_places
 
 def get_by_id(goog_id: str) -> dict:  # noqa: F821
     """
@@ -15,7 +15,7 @@ def get_by_id(goog_id: str) -> dict:  # noqa: F821
     geo_key = os.getenv("GOOGLE_PLACES_KEY")
     geo_headers = {
         "X-Goog-Api-Key": geo_key,
-        "X-Goog-FieldMask": "displayName,location,name,shortFormattedAddress,types",
+        "X-Goog-FieldMask": "addressComponents,displayName,location,name,shortFormattedAddress,types",
     }
 
     geo_params = {
@@ -24,6 +24,10 @@ def get_by_id(goog_id: str) -> dict:  # noqa: F821
 
     response = requests.get(geo_url, headers=geo_headers, params=geo_params)
     data_json = response.json()
+
+    # get city name
+
+    country, city = services.goog_places.address_components_city_country(addr_components=data_json.get("addressComponents", []))
 
     # map google data to geo_json format
 
@@ -38,6 +42,8 @@ def get_by_id(goog_id: str) -> dict:  # noqa: F821
         },
         "properties": {
             "address": data_json.get("shortFormattedAddress"),
+            "city": city,
+            "country": country,
             "goog": data_json, # raw data
             "lat": lat,
             "lon": lon,
@@ -49,3 +55,4 @@ def get_by_id(goog_id: str) -> dict:  # noqa: F821
     }
 
     return geo_json
+

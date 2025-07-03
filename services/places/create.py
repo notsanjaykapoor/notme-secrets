@@ -19,9 +19,6 @@ def create(
 
     place_db = services.places.get_by_name(db_session=db_session, name=name_norm)
     
-    # if place_db:
-    #     return 409, place_db
-
     bbox = geo_json.get("bbox", [])
 
     geo_props = geo_json.get("properties", {})

@@ -20,7 +20,7 @@
                 <option selected>select city - {{ cities_count }}</option>
                 {% for city in cities_names_slugs %}
                 <option value="/geo/maps/box/{{ city.slug }}">
-                    {{ city.name }}
+                    {{ city.name }}, {{ city.country_code }}
                 </option>
                 {% endfor %}
             </select>
