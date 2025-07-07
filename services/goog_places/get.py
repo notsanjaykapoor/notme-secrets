@@ -27,7 +27,7 @@ def get_by_id(goog_id: str) -> dict:  # noqa: F821
 
     # get city name
 
-    country, city = services.goog_places.address_components_city_country(addr_components=data_json.get("addressComponents", []))
+    country, city, locality, area = services.goog_places.address_components_city_country(addr_components=data_json.get("addressComponents", []))
 
     # map google data to geo_json format
 
@@ -42,11 +42,13 @@ def get_by_id(goog_id: str) -> dict:  # noqa: F821
         },
         "properties": {
             "address": data_json.get("shortFormattedAddress"),
+            "area": area,
             "city": city,
             "country": country,
             "goog": data_json, # raw data
             "lat": lat,
             "lon": lon,
+            "locality": locality,
             "name": data_json.get("displayName", {}).get("text", ""),
             "source_id": goog_id,
             "source_name": models.place.SOURCE_GOOGLE,

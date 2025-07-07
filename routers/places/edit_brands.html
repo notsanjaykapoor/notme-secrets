@@ -7,7 +7,7 @@
 
         {% for brand in place.brands %}
         <button class="rounded-full text-xs font-bold text-white bg-orange-600 py-2 px-3 mb-3">{{ brand }}
-            <a hx-get="{{ places_brands_path }}/remove?value={{ brand }}" hx-target="#place-brands">
+            <a hx-get="{{ places_brands_path }}/remove?value={{ brand | urlencode }}" hx-target="#place-brands">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                     class="float-right ml-2 size-4">
                     <path

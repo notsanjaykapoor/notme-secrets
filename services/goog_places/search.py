@@ -47,7 +47,7 @@ def _google_place_to_feature(place: dict) -> dict:
     address = place.get("shortFormattedAddress", "")
     name = place.get("displayName", {}).get("text")
 
-    country, city = services.goog_places.address_components_city_country(addr_components=place.get("addressComponents", []))
+    country, city, locality, area = services.goog_places.address_components_city_country(addr_components=place.get("addressComponents", []))
 
     feature = {
         "type": "Feature",
@@ -57,10 +57,12 @@ def _google_place_to_feature(place: dict) -> dict:
         },
         "properties": {
             "address": address,
+            "area": area,
             "city": city,
             "country": country,
             "lat": lat,
             "lon": lon,
+            "locality": locality,
             "name": name,
             "source_id": place.get("id"),
             "source_name": models.place.SOURCE_GOOGLE,

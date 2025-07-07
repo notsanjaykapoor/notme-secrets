@@ -115,7 +115,9 @@ class Region(sqlmodel.SQLModel, table=True):
         if self.type == "country":
             return [self.country_code]
 
-        if self.name == "europe":
+        if self.name in ["canada", "us"]:
+            return NA_CODES
+        elif self.name == "europe":
             return EU_CODES
 
         return []

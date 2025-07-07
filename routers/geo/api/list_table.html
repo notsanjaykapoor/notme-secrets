@@ -36,8 +36,13 @@
                     <br />
                     <span class="opacity-50 text-slate-400">{{ geo_props.get("tags") | join(', ') }}</span>
                     <br />
-                    <span class="opacity-50 text-slate-400">{{ geo_props.get("full_address") or geo_props.get("address")
-                        }}</span>
+                    <span class="opacity-50 text-slate-400">
+                        {{ geo_props.get("full_address") or geo_props.get("address") }}
+                    </span>
+                    <br />
+                    <span class="opacity-50 text-slate-400">
+                        {{ geo_props.get("city") }}, {{ geo_props.get("country") }}
+                    </span>
                 </td>
                 <td class="p-4 font-normal text-xs/6">
                     {{ source_name }}

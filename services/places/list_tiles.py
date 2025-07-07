@@ -17,6 +17,7 @@ def list_tiles(places: list[models.Place]) -> list[dict]:
         "properties": {
             "city": place.city,
             "color": place.tile_color,
+            "country": place.country_code,
             "name": place.name,
         }
       }

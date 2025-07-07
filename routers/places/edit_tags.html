@@ -8,7 +8,7 @@
         {% for tag in place.tags %}
         <button class="rounded-full text-xs font-bold text-white bg-orange-600 py-2 px-3">
             {{ tag }}
-            <a hx-get="{{ places_tags_path }}/remove?value={{ tag }}" hx-target="#place-tags">
+            <a hx-get="{{ places_tags_path }}/remove?value={{ tag | urlencode }}" hx-target="#place-tags">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                     class="float-right ml-2 size-4">
                     <path

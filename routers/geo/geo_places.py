@@ -42,6 +42,7 @@ def geo_places_list(
     user = services.users.get_by_id(db_session=db_session, id=user_id)
 
     # normalize query
+    query_scope = ""
     query_scope_default = "name:"
     if query and ":" not in query:
         query_norm = f"{query_scope_default}{query}".strip()
@@ -62,20 +63,22 @@ def geo_places_list(
 
     if box_name:
         if box := services.geo.get_by_slug(db_session=db_session, slug=box_name):
-            query_norm = f"{query_norm} {box.type}:{box.name}".strip()
+            query_scope = f"{box.type}:{box.name}"
             query_prompt = f"search places near {box.name}"
             geo_map_path = f"/geo/maps/box/{box.slug}"
             geo_api_path = f"/geo/api/box/{box.slug}"
 
     try:
-        places_struct = services.places.list(db_session=db_session, query=query_norm, offset=offset, limit=limit, sort="name+")
+        places_struct = services.places.list(
+            db_session=db_session, query=query_norm, scope=query_scope, offset=offset, limit=limit, sort="name+",
+        )
         places_list = places_struct.objects
         places_count = len(places_list)
         places_total = places_struct.total
 
         brands_cur_list = sorted(places_struct.brands)
 
-        tags_all_list = sorted(list(services.places.tags.list_all(db_session=db_session, city=box)))
+        tags_all_list = sorted(list(services.places.tags.list_all(db_session=db_session, box=box)))
         tags_cur_list = sorted(places_struct.tags)
         tags_cur_str = ",".join(tags_cur_list)
 
@@ -86,15 +89,17 @@ def geo_places_list(
             brands_all_list = []
 
         if box:
+            query_result = f"query '{query_norm}' near '{box.name}'"
             if places_total <= limit:
-                query_result = f"query '{query_norm}' near '{box.name}' returned {len(places_list)} results"
+                query_result = f"{query_result} returned {len(places_list)} results"
             else:
-                query_result = f"query '{query_norm}' near '{box.name}' returned {offset+1} - {offset+places_count} of {places_total} results"
+                query_result = f"{query_result} returned {offset+1} - {offset+places_count} of {places_total} results"
         else:
+            query_result = f"query '{query_norm}'"
             if places_total <= limit:
-                query_result = f"query '{query_norm}' returned {len(places_list)} results"
+                query_result = f"{query_result} returned {len(places_list)} results"
             else:
-                query_result = f"query '{query_norm}' returned {offset+1} - {offset+places_count} of {places_total} results"
+                query_result = f"{query_result} returned {offset+1} - {offset+places_count} of {places_total} results"
     except Exception as e:
         places_list = []
         places_total = 0

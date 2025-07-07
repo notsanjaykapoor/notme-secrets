@@ -1,10 +1,9 @@
 import os
-import unicodedata
 
 import requests
 
 import models
-import services.goog_geocode
+import services.goog_places
 
 def search_address(addr: str) -> list[dict]:
     """
@@ -46,7 +45,7 @@ def _google_addr_to_feature(addr: dict) -> dict:
 
     # parse address components into city name and country code
     addr_components = addr.get("address_components", [])
-    country_code, region_name = services.goog_geocode.address_components_city_country(addr_components=addr_components)
+    country_code, city_name, locality, area = services.goog_places.address_components_city_country(addr_components=addr_components)
 
     feature = {
         "type": "Feature",
@@ -57,11 +56,13 @@ def _google_addr_to_feature(addr: dict) -> dict:
         },
         "properties": {
             "address": address_formatted,
+            "area": area,
             "bounds": addr_bounds,
             "country_code": country_code,
             "lat": lat,
             "lon": lon,
-            "name": region_name,
+            "locality": locality,
+            "name": city_name,
             "source_id": addr.get("place_id"),
             "source_name": models.place.SOURCE_GOOGLE,
             "viewport": addr_viewport,
@@ -78,16 +79,3 @@ def _region_bbox(bbox_object: dict) -> dict:
         bbox_object.get("northeast", {}).get("lng"),
         bbox_object.get("northeast", {}).get("lat"),    
     ]
-
-
-# def _region_remove_accents(name=str) -> str:
-#     """
-#     Removes accent marks (diacritics) from a Unicode string.
-#     """
-#     # Normalize the string to NFD (Normalization Form Canonical Decomposition)
-#     # This separates base characters from their combining diacritical marks.
-#     nfkd_form = unicodedata.normalize('NFKD', name)
-
-#     # Filter out characters that are combining diacritical marks ('Mn' category)
-#     # and join the remaining characters to form the new string.
-#     return ''.join([c for c in nfkd_form if not unicodedata.combining(c)])

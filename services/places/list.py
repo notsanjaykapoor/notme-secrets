@@ -20,7 +20,7 @@ class Struct:
 
 
 def list(
-    db_session: sqlmodel.Session, query: str = "", offset: int = 0, limit: int = 20, sort: str="id+"
+    db_session: sqlmodel.Session, query: str = "", scope: str = "", offset: int = 0, limit: int = 20, sort: str="id+"
 ) -> Struct:
     """
     Search places table
@@ -42,6 +42,9 @@ def list(
 
     if query and ":" not in query:
         query_norm = f"name:{query}"
+
+    if scope:
+        query_norm = f"{query_norm} {scope}".strip()
 
     struct_tokens = services.mql.parse(query_norm)
 

@@ -160,10 +160,9 @@
             const geo = event.features[0].geometry.coordinates
             const properties = event.features[0].properties
 
-            console.log("point geo", geo)
-            console.log("point properties", properties)
+            console.log("point geo", geo, "properties", properties)
 
-            place_name_show(properties.name)
+            place_name_show(`${properties.name}, ${properties.city}`)
         })
 
         map.on('mouseleave', 'tilequery-points', () => {

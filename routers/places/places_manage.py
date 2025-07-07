@@ -116,7 +116,7 @@ def places_edit(
     brands_match_list = sorted(list(services.places.brands.list_all(db_session=db_session)))
     brands_match_list = sorted(set(brands_match_list) - set(place_db.brands))
 
-    tags_match_list = sorted(list(services.places.tags.list_all(db_session=db_session, city=None)))
+    tags_match_list = sorted(list(services.places.tags.list_all(db_session=db_session, box=None)))
     tags_match_list = sorted(set(tags_match_list) - set(place_db.tags))
 
     if "HX-Request" in request.headers:
@@ -306,7 +306,7 @@ def places_tags_search(
 
     tag_search = name
 
-    tags_all_list = sorted(list(services.places.tags.list_all(db_session=db_session, city=None)))
+    tags_all_list = sorted(list(services.places.tags.list_all(db_session=db_session, box=None)))
 
     if not name:
         tags_match_list = tags_all_list
@@ -362,7 +362,7 @@ def places_tags_update(
     db_session.add(place_db)
     db_session.commit()
 
-    tags_match_list = sorted(list(services.places.tags.list_all(db_session=db_session, city=None)))
+    tags_match_list = sorted(list(services.places.tags.list_all(db_session=db_session, box=None)))
     tags_match_list = sorted(set(tags_match_list) - set(place_db.tags))
 
     try:

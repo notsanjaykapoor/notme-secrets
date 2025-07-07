@@ -124,6 +124,7 @@ def geo_maps_box(
 
     try:
         box = services.geo.get_by_slug(db_session=db_session, slug=box_name)
+        geo_api_path = f"/geo/api/box/{box.slug}"
     except Exception as e:
         logger.error(f"{context.rid_get()} maps box '{box_name}' exception '{e}'")
 
@@ -141,6 +142,7 @@ def geo_maps_box(
             {
                 "app_name": "Geo - Map",
                 "box": box,
+                "geo_api_path": geo_api_path,
                 "mapbox_token": mapbox_token,
                 "request_path": request.url.path,
                 "query": query,
@@ -204,7 +206,6 @@ def geo_maps_box_tileset(
     except Exception as e:
         logger.error(f"{context.rid_get()} maps box render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
-        
 
     logger.info(f"{context.rid_get()} maps box '{box_name}' query '{query}' tileset ok")
 
