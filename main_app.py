@@ -27,6 +27,7 @@ import routers.geo.geo_places
 import routers.places.places_manage
 import routers.secrets.secrets_list
 import routers.secrets.secrets_manage
+import routers.sse.sse_main
 import routers.turnstile
 import routers.turnstile.turnstile
 import services.database
@@ -68,6 +69,7 @@ app.include_router(routers.geo.geo_places.app)
 app.include_router(routers.places.places_manage.app)
 app.include_router(routers.secrets.secrets_list.app)
 app.include_router(routers.secrets.secrets_manage.app)
+app.include_router(routers.sse.sse_main.app)
 app.include_router(routers.turnstile.turnstile.app)
 
 # mount traditional static directory
