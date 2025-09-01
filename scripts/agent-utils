@@ -9,13 +9,9 @@ sys.path.insert(1, os.path.join(sys.path[0], ".."))
 import dot_init
 
 import asyncclick as click
-import pydantic_ai
-import pydantic_ai.models.anthropic
-import pydantic_ai.models.google
-import pydantic_ai.providers.anthropic
-import pydantic_ai.providers.google
 
-import services.anthropic
+import models
+import services.agents
 import services.console
 import services.database.session
 import services.places.tools
@@ -32,8 +28,11 @@ async def conv_start() -> int:
     """
     services.console.print_status("conversation start: \r\n")
 
-    agent_anth = _agent_anthropic()
-    agent_places = _agent_places(output_types=services.places.tools.list_all())
+    agent_anth = services.agents.create_agent_anthropic()
+    agent_places = services.agents.create_agent_places(
+        model=services.agents.model_gemini(),
+        output_types=services.places.tools.list_all(),
+    )
 
     msgs_history = []
 
@@ -52,9 +51,10 @@ async def conv_start() -> int:
 
         if services.places.tools.match_tool_use(query=user_query):
             result = await agent_places.run(user_prompt=user_query)
+            places: list[models.Place] = result.output
 
             services.console.print_fragment(
-                services.places.tools.output_markdown(places=result.output)
+                services.places.tools.output_markdown(places=places)
             )
             print("")
 
@@ -80,51 +80,6 @@ async def conv_start() -> int:
                 print("")
 
     return 0
-
-
-def _agent_anthropic() -> pydantic_ai.Agent:
-    agent = pydantic_ai.Agent(
-        deps_type=dict,
-        model=_model_anthropic(),
-        # model="google-gla:gemini-1.5-flash",
-        output_type=[str],
-        system_prompt=(
-            "You are a helpful agent. "
-            "Be concise, reply with one sentence if possible."
-        ),
-        tools=[]
-    )
-
-    return agent
-
-
-def _agent_places(output_types: list) -> pydantic_ai.Agent:
-    agent = pydantic_ai.Agent(
-        deps_type=dict,
-        # model=_model_anthropic(),
-        model=_model_gemini(),
-        output_type=output_types,
-        system_prompt=(
-            "You are a helpful agent. "
-            "Use one of the following tools to help compose your answer."
-        ),
-        tools=[]
-    )
-
-    return agent
-
-
-def _model_anthropic() -> pydantic_ai.models:
-    return pydantic_ai.models.anthropic.AnthropicModel(
-        model_name=services.anthropic.query.MODEL_DEFAULT,
-        provider=pydantic_ai.providers.anthropic.AnthropicProvider(api_key=os.getenv("ANTHROPIC_API_KEY")),
-    )
-
-def _model_gemini() -> pydantic_ai.models:
-    return pydantic_ai.models.google.GoogleModel(
-        model_name="gemini-1.5-flash",
-        provider=pydantic_ai.providers.google.GoogleProvider(api_key=os.getenv("GOOGLE_GEMINI_KEY"), vertexai=False),
-    )
 
 cli.add_command(conv_start)
 
