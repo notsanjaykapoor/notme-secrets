@@ -26,9 +26,9 @@ app = fastapi.APIRouter(
 @app.get("/bookmarks", response_class=fastapi.responses.HTMLResponse)
 def bookmarks_list(
     request: fastapi.Request,
-    query: str="",
-    offset: int=0,
-    limit: int=50,
+    query: str = "",
+    offset: int = 0,
+    limit: int = 50,
     user_id: int = fastapi.Depends(main_shared.get_user_id),
     db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
 ):
@@ -93,7 +93,7 @@ def bookmarks_list(
                 "tags_cur_list": tags_cur_list,
                 "tags_all_list": tags_all_list,
                 "user": user,
-            }
+            },
         )
 
         if "HX-Request" in request.headers:

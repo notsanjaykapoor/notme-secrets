@@ -1,13 +1,13 @@
 import os
 
-import dot_init # noqa: F401
+import dot_init  # noqa: F401
 
 import contextlib
 import fastapi
 import fastapi.middleware.cors
 import fastapi.staticfiles
 import fastapi.templating
-import sqlmodel # required for migrate to work properly
+import sqlmodel  # required for migrate to work properly
 import starlette.middleware.sessions
 import ulid
 
@@ -34,6 +34,7 @@ import services.database
 import services.users
 
 logger = log.init("app")
+
 
 @contextlib.asynccontextmanager
 async def lifespan(app: fastapi.FastAPI):
@@ -89,6 +90,7 @@ app.add_middleware(
     max_age=None,
 )
 
+
 @app.middleware("http")
 async def notme_middleware(request: fastapi.Request, call_next):
     # set request id context var
@@ -99,7 +101,7 @@ async def notme_middleware(request: fastapi.Request, call_next):
     if jwt_user := services.users.jwt_token_decode(token=session_id):
         user_id = jwt_user.get("user_id")
     else:
-        user_id=0
+        user_id = 0
 
     context.uid_set(id=user_id)
 
@@ -140,5 +142,5 @@ def error_500(request: fastapi.Request):
         "500.html",
         {
             "app_name": "Error",
-        }
+        },
     )

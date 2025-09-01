@@ -23,4 +23,3 @@ def list_all(db_session: sqlmodel.Session, box: models.City | models.Region | No
         tags_set = tags_set.union(set(str_list))
 
     return tags_set
-

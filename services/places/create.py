@@ -5,6 +5,7 @@ import sqlmodel
 import models
 import services.places
 
+
 def create(
     db_session: sqlmodel.Session,
     user: models.User,
@@ -18,11 +19,11 @@ def create(
     name_norm = name.lower()
 
     place_db = services.places.get_by_name(db_session=db_session, name=name_norm)
-    
+
     bbox = geo_json.get("bbox", [])
 
     geo_props = geo_json.get("properties", {})
-    country_code = city.country_code # geo_props.get("country_code", "").lower()
+    country_code = city.country_code  # geo_props.get("country_code", "").lower()
     source_id = geo_props.get("source_id", "") or geo_props.get("place_id", "")
 
     if "lat" in geo_props.keys():
@@ -37,16 +38,14 @@ def create(
     else:
         source_name = geo_props.get("source_name", "")
 
-    geom_wkb = geoalchemy2.shape.from_shape(
-        shapely.geometry.Point(lon, lat)
-    )
+    geom_wkb = geoalchemy2.shape.from_shape(shapely.geometry.Point(lon, lat))
 
     if place_db:
         # check place source to see if data is being updated
         if source_name == place_db.source_name:
             # same place and source
             return 409, place_db
-        
+
         # place source is different, update place
         place_db.country_code = country_code
         place_db.geo_json = geo_json

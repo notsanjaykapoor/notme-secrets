@@ -27,5 +27,3 @@ def create(
     db_session.commit()
 
     return bm
-
-

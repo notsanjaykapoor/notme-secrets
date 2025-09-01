@@ -4,6 +4,7 @@ import os
 import anthropic
 import anthropic.types.beta.file_metadata
 
+
 def file_delete(file_id: str) -> anthropic.types.beta.file_metadata.FileMetadata:
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
     result = client.beta.files.delete(file_id)

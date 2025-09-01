@@ -1,5 +1,6 @@
 import models
 
+
 def output_markdown(places: list[models.Place]) -> str:
     """
     Convert list of models to markdown text
@@ -13,7 +14,7 @@ def output_markdown(places: list[models.Place]) -> str:
         md_list.append(f"- {place.name}, {place.city}\n")
 
         if place.brands_count > 0:
-           md_list.append(f"  brands: {place.brands_string}\n")
+            md_list.append(f"  brands: {place.brands_string}\n")
 
         if place.website:
             md_list.append(f"  website: {place.website}\n")

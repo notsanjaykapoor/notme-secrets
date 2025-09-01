@@ -26,4 +26,3 @@ def decrypt(secret: models.SecretData) -> models.SecretData:
         secret.user = ""
 
     return secret
-

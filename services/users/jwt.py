@@ -25,8 +25,6 @@ def jwt_token_create(user: models.User, oauth_token: str, oauth_expiry: datetime
 def jwt_token_decode(token: str) -> dict:
     try:
         token_raw = re.sub("(Bearer|bearer)\s+", "", token)
-        return jwt.decode(
-            token_raw, os.environ["JWT_SECRET"], algorithms=[JWT_ALGORITHM]
-        )
+        return jwt.decode(token_raw, os.environ["JWT_SECRET"], algorithms=[JWT_ALGORITHM])
     except Exception:
         return {}

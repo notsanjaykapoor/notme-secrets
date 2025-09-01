@@ -25,7 +25,7 @@ app = fastapi.APIRouter(
 @app.get("/sse", response_class=fastapi.responses.StreamingResponse)
 async def see_root(
     request: fastapi.Request,
-    query: str="",
+    query: str = "",
     user_id: int = fastapi.Depends(main_shared.get_user_id),
     db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
 ):

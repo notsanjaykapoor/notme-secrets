@@ -6,6 +6,7 @@ import models
 import services.crypto_keys
 import services.database
 
+
 def test_crypto_keys_create(db_session: sqlmodel.Session, user_1: models.User):
     # create with valid name and location
     key = services.crypto_keys.create(
@@ -34,4 +35,3 @@ def test_crypto_keys_create(db_session: sqlmodel.Session, user_1: models.User):
     db_session.rollback()
 
     services.database.truncate_tables(db_session=db_session, table_names=["crypto_keys"])
-

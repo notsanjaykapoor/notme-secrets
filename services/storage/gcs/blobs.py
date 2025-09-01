@@ -33,9 +33,10 @@ def blob_get(bucket_name: str, blob_name: str) -> google.cloud.storage.blob.Blob
     """
     client = google.cloud.storage.Client()
     bucket = client.bucket(bucket_name)
-    blob = bucket.get_blob(blob_name) # download blob meta
+    blob = bucket.get_blob(blob_name)  # download blob meta
 
     return blob
+
 
 def blob_upload(bucket_name: str, file_name_src: str, blob_name_dst: str) -> int:
     """
@@ -63,7 +64,7 @@ def blob_upload(bucket_name: str, file_name_src: str, blob_name_dst: str) -> int
 
 
 def blobs_list(bucket_name: str, prefix: str, delimiter: str) -> list[google.cloud.storage.blob.Blob]:
-    """"
+    """ "
     Lists all the blobs in the bucket that begin with the prefix.
 
     The delimiter argument can be used to restrict the results to only the "files" in the given "folder".

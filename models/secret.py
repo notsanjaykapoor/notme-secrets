@@ -11,9 +11,7 @@ class Secret(sqlmodel.SQLModel, table=True):
 
     id: typing.Optional[int] = sqlmodel.Field(default=None, primary_key=True)
 
-    data: dict = sqlmodel.Field(
-        default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON)
-    )
+    data: dict = sqlmodel.Field(default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON))
     data_cipher: str = sqlmodel.Field(
         sa_column=sqlmodel.Column(sqlmodel.TEXT, nullable=False),
     )

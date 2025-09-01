@@ -12,7 +12,7 @@ def address_components_city_country(addr_components: list[dict]) -> tuple[str, s
     seem to use administrative_area_as their 'city' components.
 
     Locality focuses on the city/town, while administrative area levels provide the hierarchical breakdown of the wider
-    geographical region within which the locality exists. 
+    geographical region within which the locality exists.
 
     Note that the address components objects returned from the new google places api uses camel case (e.g. longText)
     while the google geocode api uses snake case (e.g. long_name).
@@ -56,8 +56,8 @@ def name_remove_accents(name=str) -> str:
     """
     # Normalize the string to NFD (Normalization Form Canonical Decomposition)
     # This separates base characters from their combining diacritical marks.
-    nfkd_form = unicodedata.normalize('NFKD', name)
+    nfkd_form = unicodedata.normalize("NFKD", name)
 
     # Filter out characters that are combining diacritical marks ('Mn' category)
     # and join the remaining characters to form the new string.
-    return ''.join([c for c in nfkd_form if not unicodedata.combining(c)])
+    return "".join([c for c in nfkd_form if not unicodedata.combining(c)])

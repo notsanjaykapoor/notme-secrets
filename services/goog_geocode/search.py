@@ -5,6 +5,7 @@ import requests
 import models
 import services.goog_places
 
+
 def search_address(addr: str) -> list[dict]:
     """
     Google geocoding service mapping names to coordinates
@@ -77,5 +78,5 @@ def _region_bbox(bbox_object: dict) -> dict:
         bbox_object.get("southwest", {}).get("lng"),
         bbox_object.get("southwest", {}).get("lat"),
         bbox_object.get("northeast", {}).get("lng"),
-        bbox_object.get("northeast", {}).get("lat"),    
+        bbox_object.get("northeast", {}).get("lat"),
     ]

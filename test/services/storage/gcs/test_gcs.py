@@ -6,6 +6,7 @@ import pytest
 import models
 import services.storage.gcs
 
+
 @pytest.mark.skip(reason="too long")
 def test_gcs_sync_download(user_1: models.User):
     bucket_uri = user_1.bucket_uri
@@ -54,7 +55,7 @@ def test_gcs_sync_download(user_1: models.User):
 
     assert len(os.listdir(cache_folder_dir)) == 2
 
-    cache_file_version = sorted(os.listdir(cache_folder_dir))[1] # should be secret-1.txt.version
+    cache_file_version = sorted(os.listdir(cache_folder_dir))[1]  # should be secret-1.txt.version
     cache_path_cur = f"{cache_folder_dir}{cache_file_version}"
     cache_path_new = f"{cache_folder_dir}secret-1.txt.0000"
 
@@ -161,7 +162,7 @@ def test_gcs_sync_upload(user_1: models.User):
     file_1 = open(f"{cache_folder_dir}/new-1.gpg.new", "w")
     file_1.close()
 
-    # sync_download should not delete partial secrets file 
+    # sync_download should not delete partial secrets file
 
     sync_result = services.storage.gcs.sync_download(
         bucket_name=bucket_name,

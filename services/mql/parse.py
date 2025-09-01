@@ -10,7 +10,7 @@ class Struct:
     errors: list[str]
 
 
-def parse(query: str, unquote: int=0) -> Struct:
+def parse(query: str, unquote: int = 0) -> Struct:
     struct = Struct(0, [], [])
 
     tokens_list = query.strip().split(" ")
@@ -26,9 +26,9 @@ def parse(query: str, unquote: int=0) -> Struct:
 
         field, value = token.split(":")
 
-        while tokens_i+1 < tokens_count:
+        while tokens_i + 1 < tokens_count:
             # greedy parse value until we find next field
-            token_j = tokens_list[tokens_i+1]
+            token_j = tokens_list[tokens_i + 1]
             if ":" in token_j:
                 # found next field
                 break

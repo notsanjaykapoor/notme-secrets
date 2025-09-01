@@ -8,6 +8,7 @@ import models
 import services.mql
 import services.regions
 
+
 @dataclasses.dataclass
 class Struct:
     code: int
@@ -19,9 +20,7 @@ class Struct:
     errors: list[str]
 
 
-def list(
-    db_session: sqlmodel.Session, query: str = "", scope: str = "", offset: int = 0, limit: int = 20, sort: str="id+"
-) -> Struct:
+def list(db_session: sqlmodel.Session, query: str = "", scope: str = "", offset: int = 0, limit: int = 20, sort: str = "id+") -> Struct:
     """
     Search places table
     """
@@ -58,9 +57,7 @@ def list(
         elif token["field"] == "city":
             # always like query
             value_normal = re.sub(r"~", "", value).lower()
-            dataset = dataset.where(
-                sqlalchemy.func.lower(model.city).like("%" + value_normal + "%")
-            )
+            dataset = dataset.where(sqlalchemy.func.lower(model.city).like("%" + value_normal + "%"))
         elif token["field"] in ["continent"]:
             # get region
             region_db = services.regions.get_by_continent(
@@ -86,9 +83,7 @@ def list(
         elif token["field"] == "name":
             # always like query
             value_normal = re.sub(r"~", "", value).lower()
-            dataset = dataset.where(
-                sqlalchemy.func.lower(model.name).like("%" + value_normal + "%")
-            )
+            dataset = dataset.where(sqlalchemy.func.lower(model.name).like("%" + value_normal + "%"))
         elif token["field"] == "source_id":
             dataset = dataset.where(model.source_id == value)
         elif token["field"] == "source_name":
@@ -110,13 +105,11 @@ def list(
         db_query = db_query.order_by(model.name.asc())
     elif sort == "name-":
         db_query = db_query.order_by(model.name.desc())
-    else: # default is "id+"
+    else:  # default is "id+"
         db_query = db_query.order_by(model.id.asc())
 
     struct.objects = db_session.exec(db_query).all()
     struct.count = len(struct.objects)
-    struct.total = db_session.scalar(
-        sqlmodel.select(sqlalchemy.func.count("*")).select_from(dataset.subquery())
-    )
+    struct.total = db_session.scalar(sqlmodel.select(sqlalchemy.func.count("*")).select_from(dataset.subquery()))
 
     return struct

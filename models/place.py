@@ -13,6 +13,7 @@ import sqlmodel
 SOURCE_GOOGLE = "google"
 SOURCE_MAPBOX = "mapbox"
 
+
 class Place(sqlmodel.SQLModel, table=True):
     __tablename__ = "places"
     __table_args__ = (
@@ -39,9 +40,7 @@ class Place(sqlmodel.SQLModel, table=True):
         default_factory=dict,
         sa_column=sqlmodel.Column(sqlmodel.JSON),
     )
-    geom: shapely.geometry.Point = sqlmodel.Field(
-        sa_column=sqlmodel.Column(geoalchemy2.Geometry('POINT', srid=4326))
-    )
+    geom: shapely.geometry.Point = sqlmodel.Field(sa_column=sqlmodel.Column(geoalchemy2.Geometry("POINT", srid=4326)))
     lat: decimal.Decimal = sqlmodel.Field(max_digits=11, decimal_places=7, index=False, nullable=False)
     lon: decimal.Decimal = sqlmodel.Field(max_digits=11, decimal_places=7, index=False, nullable=False)
     name: str = sqlmodel.Field(index=True, nullable=False)
@@ -90,18 +89,18 @@ class Place(sqlmodel.SQLModel, table=True):
 
     @property
     def geo_json_compact(self, color: str) -> dict:
-      return {
-        "type": "Feature",
-        "geometry": {
-          "coordinates": [self.lon, self.lat],
-          "type": "Point",
-        },
-        "properties": {
-          "city": self.city,
-          "color": color,
-          "name": self.name,
-        },
-      }
+        return {
+            "type": "Feature",
+            "geometry": {
+                "coordinates": [self.lon, self.lat],
+                "type": "Point",
+            },
+            "properties": {
+                "city": self.city,
+                "color": color,
+                "name": self.name,
+            },
+        }
 
     @property
     def lat_f(self) -> float:
@@ -133,7 +132,7 @@ class Place(sqlmodel.SQLModel, table=True):
 
     @property
     def tile_color(self) -> str:
-        """ color used by mapbox in tile view"""
+        """color used by mapbox in tile view"""
         tags_set = set(self.tags)
 
         if tags_set.intersection(set(["bar", "cafe", "food"])):
@@ -144,4 +143,3 @@ class Place(sqlmodel.SQLModel, table=True):
             return "orange"
         else:
             return "yellow"
-

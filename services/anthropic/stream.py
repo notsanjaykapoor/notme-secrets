@@ -5,6 +5,7 @@ import anthropic
 MAX_TOKENS_DEFAULT = 1024
 MODEL_DEFAULT = "claude-sonnet-4-20250514"
 
+
 async def stream(query: str, tools: list[dict]):
     """
     Query model using the streaming interface.
@@ -29,9 +30,7 @@ async def stream(query: str, tools: list[dict]):
         }
 
         if tools:
-            params["tool_choice"] = {
-                "type": "auto"
-            }
+            params["tool_choice"] = {"type": "auto"}
             params["tools"] = tools
 
         with client.messages.stream(**params) as stream:
@@ -43,5 +42,3 @@ async def stream(query: str, tools: list[dict]):
         yield f"stream api status error {e.status_code}: {e}"
     except Exception as e:
         yield f"stream exception: {e}"
-
-

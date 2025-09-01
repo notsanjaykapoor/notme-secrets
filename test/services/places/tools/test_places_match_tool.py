@@ -5,13 +5,7 @@ import services.places.tools
 
 
 def test_places_match_tool_use():
-    queries_match = [
-        "find fashion in paris",
-        "find fashion in france",
-        "find brand calmlence in paris",
-        "find brand calmlence in france",
-        "search fashion in belgium"
-    ]
+    queries_match = ["find fashion in paris", "find fashion in france", "find brand calmlence in paris", "find brand calmlence in france", "search fashion in belgium"]
 
     for query in queries_match:
         code = services.places.tools.match_tool_use(query=query)

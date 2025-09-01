@@ -106,9 +106,7 @@ def oauth_login_oauth2callback(
 
         # get user email address from google endpoint
 
-        google_response = requests.get(
-            f"https://www.googleapis.com/oauth2/v2/userinfo?access_token={credentials.token}"
-        )
+        google_response = requests.get(f"https://www.googleapis.com/oauth2/v2/userinfo?access_token={credentials.token}")
         google_response_json = google_response.json()
 
         user_email = google_response_json.get("email")

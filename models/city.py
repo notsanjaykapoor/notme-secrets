@@ -9,6 +9,7 @@ import sqlalchemy
 import sqlalchemy.dialects.postgresql
 import sqlmodel
 
+
 class City(sqlmodel.SQLModel, table=True):
     __tablename__ = "cities"
     __table_args__ = (sqlalchemy.UniqueConstraint("name", name="i_city_name"),)
@@ -23,15 +24,9 @@ class City(sqlmodel.SQLModel, table=True):
         sa_column=sqlmodel.Column(sqlalchemy.dialects.postgresql.ARRAY(sqlmodel.Float())),
     )
     country_code: str = sqlmodel.Field(index=True, nullable=False, max_length=5)
-    data: dict = sqlmodel.Field(
-        default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON)
-    )
-    geo_json: dict = sqlmodel.Field(
-        default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON)
-    )
-    geom: shapely.geometry.Point = sqlmodel.Field(
-        sa_column=sqlmodel.Column(geoalchemy2.Geometry('POINT', srid=4326))
-    ) 
+    data: dict = sqlmodel.Field(default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON))
+    geo_json: dict = sqlmodel.Field(default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON))
+    geom: shapely.geometry.Point = sqlmodel.Field(sa_column=sqlmodel.Column(geoalchemy2.Geometry("POINT", srid=4326)))
     lat: decimal.Decimal = sqlmodel.Field(max_digits=11, decimal_places=7, index=False, nullable=False)
     lon: decimal.Decimal = sqlmodel.Field(max_digits=11, decimal_places=7, index=False, nullable=False)
     name: str = sqlmodel.Field(index=True, nullable=False)

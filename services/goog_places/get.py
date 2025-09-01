@@ -5,6 +5,7 @@ import requests
 import models
 import services.goog_places
 
+
 def get_by_id(goog_id: str) -> dict:  # noqa: F821
     """
     Google place details
@@ -45,7 +46,7 @@ def get_by_id(goog_id: str) -> dict:  # noqa: F821
             "area": area,
             "city": city,
             "country": country,
-            "goog": data_json, # raw data
+            "goog": data_json,  # raw data
             "lat": lat,
             "lon": lon,
             "locality": locality,
@@ -57,4 +58,3 @@ def get_by_id(goog_id: str) -> dict:  # noqa: F821
     }
 
     return geo_json
-

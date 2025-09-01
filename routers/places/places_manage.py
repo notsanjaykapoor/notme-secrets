@@ -27,6 +27,7 @@ app = fastapi.APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+
 @app.get("/places/add", response_class=fastapi.responses.HTMLResponse)
 def places_add(
     request: fastapi.Request,
@@ -92,10 +93,11 @@ def places_add(
             "place_id": place_id,
             "source_id": source_id,
             "source_name": source_name,
-        }
+        },
     )
 
     return response
+
 
 @app.get("/places/{place_id}/edit", response_class=fastapi.responses.HTMLResponse)
 def places_edit(
@@ -141,7 +143,7 @@ def places_edit(
                 "tag_add_link": f"/places/{place_db.id}/tags/add",
                 "tags_match_list": tags_match_list,
                 "user": user,
-            }
+            },
         )
 
         if "HX-Request" in request.headers:
@@ -191,7 +193,7 @@ def places_brands_search(
                 "brand_add_link": f"/places/{place_db.id}/brands/add",
                 "brand_search": brand_search,
                 "brands_match_list": brands_match_list,
-            }
+            },
         )
     except Exception as e:
         logger.error(f"{context.rid_get()} places {place_id} brands 'search' exception '{e}'")
@@ -235,12 +237,12 @@ def places_brands_update(
         response = templates.TemplateResponse(
             request,
             "places/edit_brands.html",
-            {   
+            {
                 "brand_add_link": f"/places/{place_db.id}/brands/add",
                 "brands_match_list": brands_match_list,
                 "place": place_db,
                 "places_brands_path": f"/places/{place_db.id}/brands",
-            }
+            },
         )
     except Exception as e:
         logger.error(f"{context.rid_get()} places edit render exception '{e}'")
@@ -278,7 +280,7 @@ def places_notes_update(
             {
                 "place": place_db,
                 "places_notes_path": f"/places/{place_db.id}/notes",
-            }
+            },
         )
     except Exception as e:
         logger.error(f"{context.rid_get()} places edit render exception '{e}'")
@@ -325,7 +327,7 @@ def places_tags_search(
                 "tag_add_link": f"/places/{place_db.id}/tags/add",
                 "tag_search": tag_search,
                 "tags_match_list": tags_match_list,
-            }
+            },
         )
     except Exception as e:
         logger.error(f"{context.rid_get()} places {place_id} tags 'search' exception '{e}'")
@@ -374,7 +376,7 @@ def places_tags_update(
                 "places_tags_path": f"/places/{place_db.id}/tags",
                 "tag_add_link": f"/places/{place_db.id}/tags/add",
                 "tags_match_list": tags_match_list,
-            }
+            },
         )
     except Exception as e:
         logger.error(f"{context.rid_get()} places edit render exception '{e}'")
@@ -383,6 +385,7 @@ def places_tags_update(
     logger.info(f"{context.rid_get()} places {place_id} tags '{edit_op}' '{value}' ok")
 
     return response
+
 
 @app.get("/places/{place_id}/website/mod", response_class=fastapi.responses.JSONResponse)
 def places_website_update(
@@ -412,7 +415,7 @@ def places_website_update(
             {
                 "place": place_db,
                 "places_website_path": f"/places/{place_db.id}/website",
-            }
+            },
         )
     except Exception as e:
         logger.error(f"{context.rid_get()} places edit render exception '{e}'")

@@ -4,7 +4,7 @@ import subprocess
 import sqlalchemy
 import sqlmodel
 
-import dot_init # noqa: F401
+import dot_init  # noqa: F401
 
 database_url = os.environ.get("DATABASE_URL")
 
@@ -15,7 +15,7 @@ connect_args: dict = {}
 engine = sqlmodel.create_engine(database_url, echo=False, connect_args=connect_args)
 
 
-def check(url: str="") -> int:
+def check(url: str = "") -> int:
     """
     returns 0 if database exists; 1 otherwise
     """
@@ -24,13 +24,13 @@ def check(url: str="") -> int:
     try:
         engine = sqlmodel.create_engine(url, echo=False, connect_args={})
         engine.connect()
-        return 0 # database exists
+        return 0  # database exists
     except Exception:
         return 1
 
 
-def create(url: str="") -> int:
-    """ create database iff it doesn't exist"""
+def create(url: str = "") -> int:
+    """create database iff it doesn't exist"""
     url = url or database_url
 
     if check(url) == 0:

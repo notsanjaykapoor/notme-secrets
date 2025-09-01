@@ -6,7 +6,7 @@ import ulid
 import models
 
 
-def get_by_id(mapbox_id: str, session_token: str="") -> dict:
+def get_by_id(mapbox_id: str, session_token: str = "") -> dict:
     """
     Get mapbox place
 
@@ -24,7 +24,7 @@ def get_by_id(mapbox_id: str, session_token: str="") -> dict:
 
     response = requests.get(endpoint, params=params)
     data_json = response.json()
-    
+
     if (data_type := data_json.get("type")) != "FeatureCollection":
         raise ValueError(f"type unexpected {data_type}")
 

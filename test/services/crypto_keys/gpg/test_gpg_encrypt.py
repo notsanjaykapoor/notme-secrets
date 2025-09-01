@@ -3,6 +3,7 @@ import json
 import models
 import services.crypto_keys.gpg
 
+
 def test_gpg_encrypt(key_gpg_me: models.CryptoKey):
     assert key_gpg_me.type == "gpg-sym"
 
@@ -20,5 +21,3 @@ def test_gpg_encrypt(key_gpg_me: models.CryptoKey):
 
     assert plain_dict.get("user") == "user@gmail.com"
     assert plain_dict.get("password") == "secret"
-
-

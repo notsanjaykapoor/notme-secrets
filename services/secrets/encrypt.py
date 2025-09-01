@@ -6,9 +6,8 @@ import services.secrets
 
 
 # deprecated
-def encrypt(password: str, user: str="") -> gnupg.Crypt:
-    """
-    """
+def encrypt(password: str, user: str = "") -> gnupg.Crypt:
+    """ """
     gpg, gpg_key = services.secrets.gpg_key(gpg_dir=os.environ.get("GPG_HOME_URI"))
 
     data = [password]

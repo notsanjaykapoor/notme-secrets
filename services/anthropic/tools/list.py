@@ -26,4 +26,3 @@ def list_schemas(module_name="services.anthropic.tools") -> list[dict]:
         tools_list.extend(module.schemas())
 
     return tools_list
-    

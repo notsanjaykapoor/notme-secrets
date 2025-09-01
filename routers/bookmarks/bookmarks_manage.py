@@ -95,7 +95,7 @@ def bookmarks_edit(
                 "bm_uri_path": f"/bookmarks/{bm.id}/uri/mod",
                 "referer_path": referer_path,
                 "user": user,
-            }
+            },
         )
 
         logger.info(f"{context.rid_get()} bookmarks {bm.id} edit ok")
@@ -140,7 +140,6 @@ def bookmarks_edit_categories(
         logger.error(f"{context.rid_get()} bookmarks {bm.id} edit categories exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
 
-
     try:
         response = templates.TemplateResponse(
             request,
@@ -149,7 +148,7 @@ def bookmarks_edit_categories(
                 "bm": bm,
                 "bm_categories_path": f"/bookmarks/{bm.id}/categories",
                 "user": user,
-            }
+            },
         )
     except Exception as e:
         logger.error(f"{context.rid_get()} bookmarks {bm.id} edit categories render exception '{e}'")
@@ -180,7 +179,7 @@ def bookmarks_edit_links(
         if edit_op == "add":
             if not link.startswith("https://"):
                 raise ValueError("link invalid")
-            
+
             bm.links = bm.links + [link]
         else:
             bm.links = [s for s in bm.links if s != link]
@@ -200,7 +199,7 @@ def bookmarks_edit_links(
                 "bm": bm,
                 "bm_links_path": f"/bookmarks/{bm.id}/links",
                 "user": user,
-            }
+            },
         )
     except Exception as e:
         logger.error(f"{context.rid_get()} bookmarks {bm.id} links add render exception '{e}'")
@@ -245,7 +244,7 @@ def bookmarks_edit_name(
                 "bm": bm,
                 "bm_name_path": f"/bookmarks/{bm.id}/name/mod",
                 "user": user,
-            }
+            },
         )
     except Exception as e:
         logger.error(f"{context.rid_get()} bookmarks {bm.id} edit notes render exception '{e}'")
@@ -282,7 +281,6 @@ def bookmarks_edit_notes(
         logger.error(f"{context.rid_get()} bookmarks {bm.id} edit notes exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
 
-
     try:
         response = templates.TemplateResponse(
             request,
@@ -291,7 +289,7 @@ def bookmarks_edit_notes(
                 "bm": bm,
                 "bm_notes_path": f"/bookmarks/{bm.id}/notes/mod",
                 "user": user,
-            }
+            },
         )
     except Exception as e:
         logger.error(f"{context.rid_get()} bookmarks {bm.id} edit notes render exception '{e}'")
@@ -305,7 +303,7 @@ def bookmarks_edit_tags(
     request: fastapi.Request,
     bookmark_id: int,
     edit_op: str,
-    tags: str="",
+    tags: str = "",
     user_id: int = fastapi.Depends(main_shared.get_user_id),
     db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
 ):
@@ -342,7 +340,7 @@ def bookmarks_edit_tags(
                 "bm": bm,
                 "bm_tags_path": f"/bookmarks/{bm.id}/tags",
                 "user": user,
-            }
+            },
         )
     except Exception as e:
         logger.error(f"{context.rid_get()} bookmarks {bm.id} edit tags render exception '{e}'")
@@ -387,7 +385,7 @@ def bookmarks_edit_uri(
                 "bm": bm,
                 "bm_uri_path": f"/bookmarks/{bm.id}/uri/mod",
                 "user": user,
-            }
+            },
         )
     except Exception as e:
         logger.error(f"{context.rid_get()} bookmarks {bm.id} edit uri render exception '{e}'")
@@ -399,8 +397,8 @@ def bookmarks_edit_uri(
 @app.get("/bookmarks/new", response_class=fastapi.responses.HTMLResponse)
 def bookmarks_new(
     request: fastapi.Request,
-    name: str="",
-    cats: str="",
+    name: str = "",
+    cats: str = "",
     user_id: int = fastapi.Depends(main_shared.get_user_id),
     db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
 ):
@@ -420,7 +418,7 @@ def bookmarks_new(
                 "cats_str": cats,
                 "name": name,
                 "user": user,
-            }
+            },
         )
     except Exception as e:
         logger.error(f"{context.rid_get()} bookmarks new render exception '{e}'")

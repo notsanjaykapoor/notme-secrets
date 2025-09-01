@@ -8,6 +8,7 @@ import models
 
 logger = log.init("app")
 
+
 # deprecated
 async def sync_task(user: models.User):
     """

@@ -31,4 +31,3 @@ def test_crypto_keys_get(db_session: sqlmodel.Session, user_1: models.User, key_
     )
 
     assert key_db == key_kms_1
-

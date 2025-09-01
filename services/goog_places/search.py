@@ -38,7 +38,7 @@ def _google_place_to_feature(place: dict) -> dict:
     """
     Transform google place object into a geojson feature object.
     """
-    place_types = place.get("types", []) # e.g. 'point_of_interest', 'store'
+    place_types = place.get("types", [])  # e.g. 'point_of_interest', 'store'
     place_location = place.get("location", {})
 
     lat = place_location.get("latitude")

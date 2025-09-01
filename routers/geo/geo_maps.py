@@ -30,7 +30,7 @@ app = fastapi.APIRouter(
 @app.get("/geo/maps", response_class=fastapi.responses.HTMLResponse)
 def geo_maps(
     request: fastapi.Request,
-    query: str="",
+    query: str = "",
     user_id: int = fastapi.Depends(main_shared.get_user_id),
     db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
 ):
@@ -61,7 +61,7 @@ def geo_maps(
                 "regions_names_slugs": regions_names_slugs,
                 "regions_count": regions_count,
                 "user": user,
-            }
+            },
         )
 
         if "HX-Request" in request.headers:
@@ -147,7 +147,7 @@ def geo_maps_box(
                 "request_path": request.url.path,
                 "query": query,
                 "user": user,
-            }
+            },
         )
 
         if "HX-Request" in request.headers:

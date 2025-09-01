@@ -201,9 +201,12 @@ def crypto_key_kms_1_fixture(db_session: sqlmodel.Session, user_1: models.User):
 
 @pytest.fixture(name="place_1")
 def place_1_fixture(db_session: sqlmodel.Session, user_1: models.User, city_chi: models.City):
-
     code, place_db = services.places.create(
-        db_session=db_session, user=user_1, city=city_chi, geo_json={}, name="Place 1",
+        db_session=db_session,
+        user=user_1,
+        city=city_chi,
+        geo_json={},
+        name="Place 1",
     )
 
     assert code == 0

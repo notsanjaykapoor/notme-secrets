@@ -6,6 +6,7 @@ import models
 import services.bookmarks
 import services.database
 
+
 def test_bookmarks_create(db_session: sqlmodel.Session, user_1: models.User):
     # create with valid name and uri
     bm = services.bookmarks.create(
@@ -47,4 +48,3 @@ def test_bookmarks_create(db_session: sqlmodel.Session, user_1: models.User):
     assert bm.name == "bookmark 2"
 
     services.database.truncate_tables(db_session=db_session, table_names=["bookmarks"])
-

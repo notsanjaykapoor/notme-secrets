@@ -12,8 +12,7 @@ def user_cache_dir(user: models.User, env: str) -> str:
 
 
 def _cache_dir(env: str) -> str:
-    """
-    """
+    """ """
     if env in ["tst", "test"]:
         return f"{os.getcwd()}/test/data/cache"
     else:

@@ -4,6 +4,7 @@ import re
 
 import services.storage.gcs
 
+
 @dataclasses.dataclass
 class Struct:
     code: int
@@ -13,9 +14,9 @@ class Struct:
     errors: list[str]
 
 
-def sync_upload(cache_dir: str, bucket_name: str, folder_name: str, sync_mode: str, match_glob: str="") -> Struct:
+def sync_upload(cache_dir: str, bucket_name: str, folder_name: str, sync_mode: str, match_glob: str = "") -> Struct:
     """
-    Sync local secrets cache dir with gcs bucket. 
+    Sync local secrets cache dir with gcs bucket.
     """
     struct = Struct(
         code=0,

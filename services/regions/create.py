@@ -8,6 +8,7 @@ import models
 import services.goog_geocode
 import services.regions
 
+
 def create(
     db_session: sqlmodel.Session,
     name: str,
@@ -29,7 +30,7 @@ def create(
 
     if len(geo_features) != 1:
         return 422, None
-    
+
     geo_json = geo_features[0]
     bbox = geo_json.get("bbox")
 
@@ -47,9 +48,7 @@ def create(
     source_name = geo_props.get("source_name", "")
     type = geo_props.get("result_type")
 
-    geom_wkb = geoalchemy2.shape.from_shape(
-        shapely.geometry.Point(lon, lat)
-    )
+    geom_wkb = geoalchemy2.shape.from_shape(shapely.geometry.Point(lon, lat))
 
     # check region name again for uniqueness, the city search will normalize the name so its a good check here
 
@@ -75,5 +74,3 @@ def create(
     db_session.commit()
 
     return 0, region_db
-
-

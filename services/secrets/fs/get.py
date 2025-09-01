@@ -5,7 +5,7 @@ import services.secrets
 
 
 def get_by_name(org: str, name: str) -> models.SecretData | None:
-    dir_uri= os.environ.get("SECRETS_FS_URI")
+    dir_uri = os.environ.get("SECRETS_FS_URI")
     source_host, source_dir, _ = services.secrets.file_uri_parse(source_uri=dir_uri)
 
     file_path = f"{source_dir}{org}/{name}"
@@ -15,11 +15,7 @@ def get_by_name(org: str, name: str) -> models.SecretData | None:
 
     if not os.path.exists(file_path):
         return None
-    
-    secret_data = models.SecretData(
-        name=name,
-        path=file_path,
-        uri=f"file://{source_host}/{file_path}"
-    )
+
+    secret_data = models.SecretData(name=name, path=file_path, uri=f"file://{source_host}/{file_path}")
 
     return secret_data

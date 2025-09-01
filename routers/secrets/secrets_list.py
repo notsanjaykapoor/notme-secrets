@@ -33,9 +33,9 @@ app = fastapi.APIRouter(
 def secrets_list(
     request: fastapi.Request,
     user_id: int = fastapi.Depends(main_shared.get_user_id),
-    query: str="",
-    offset: int=0,
-    limit: int=50,
+    query: str = "",
+    offset: int = 0,
+    limit: int = 50,
     db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
 ):
     if user_id == 0:
@@ -46,18 +46,12 @@ def secrets_list(
     logger.info(f"{context.rid_get()} secrets user {user.id} list")
 
     try:
-        list_result = services.secrets.list(
-            db_session=db_session,
-            query=query,
-            offset=offset,
-            limit=limit,
-            scope=f"user_id:{user_id}"
-        )
+        list_result = services.secrets.list(db_session=db_session, query=query, offset=offset, limit=limit, scope=f"user_id:{user_id}")
         secrets_list = list_result.objects
         secrets_total = list_result.total
 
         # create map of secret id to secret data in plaintext format
-        secrets_map = {secret.id : models.SecretData for secret in secrets_list}
+        secrets_map = {secret.id: models.SecretData for secret in secrets_list}
         query_code = 0
         query_result = f"query '{query}' returned {len(secrets_list)} results"
 
@@ -89,7 +83,7 @@ def secrets_list(
                 "secrets_list": secrets_list,
                 "secrets_map": secrets_map,
                 "user": user,
-            }
+            },
         )
 
         if "HX-Request" in request.headers:
@@ -131,12 +125,12 @@ def secrets_blur(
             {
                 "secret": secret_db,
                 "secret_data": secret_data,
-            }
+            },
         )
     except Exception as e:
         logger.error(f"{context.rid_get()} secrets blur render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
-    
+
     return response
 
 
@@ -176,11 +170,7 @@ def secrets_decrypt(
 
         plain_dict = json.loads(plain_text)
 
-        secret_data = models.SecretData(
-            name=secret_db.name,
-            passw=plain_dict.get("passw"),
-            user=plain_dict.get("user")
-        )
+        secret_data = models.SecretData(name=secret_db.name, passw=plain_dict.get("passw"), user=plain_dict.get("user"))
 
         logger.info(f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' decrypt '{user_key.type}' ok - cipher {t_secs}s")
     except Exception as e:
@@ -194,10 +184,10 @@ def secrets_decrypt(
             {
                 "secret": secret_db,
                 "secret_data": secret_data,
-            }
+            },
         )
     except Exception as e:
         logger.error(f"{context.rid_get()} secrets decrypt render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
-    
+
     return response

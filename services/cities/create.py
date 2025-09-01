@@ -12,7 +12,7 @@ import services.goog_geocode
 def create(
     db_session: sqlmodel.Session,
     name: str,
-    country_code: str="",
+    country_code: str = "",
 ) -> tuple[int, models.City | None]:
     """
     Create city and persist to database
@@ -46,9 +46,7 @@ def create(
     source_id = geo_props.get("source_id", "")
     source_name = geo_props.get("source_name")
 
-    geom_wkb = geoalchemy2.shape.from_shape(
-        shapely.geometry.Point(lon, lat)
-    )
+    geom_wkb = geoalchemy2.shape.from_shape(shapely.geometry.Point(lon, lat))
 
     # check city name again for uniqueness, the city search will normalize the name so its a good check here
 
@@ -73,5 +71,3 @@ def create(
     db_session.commit()
 
     return 0, city_db
-
-

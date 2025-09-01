@@ -10,7 +10,8 @@ import models
 # docs: https://docs.mapbox.com/api/search/search-box/#search-request
 # docs: https://docs.mapbox.com/api/search/search-box/#reverse-lookup
 
-def search_by_city(city: models.City, query: str, limit: int=10) -> list[dict]:
+
+def search_by_city(city: models.City, query: str, limit: int = 10) -> list[dict]:
     """
     Mapbox places search near a city.
     """
@@ -25,7 +26,7 @@ def search_by_city(city: models.City, query: str, limit: int=10) -> list[dict]:
         "language": "en",
         "limit": limit,
         "proximity": city_proximity,
-        "session_token": ulid.new().str, # required for suggest endpoint
+        "session_token": ulid.new().str,  # required for suggest endpoint
         "types": "poi",
     }
 
@@ -52,7 +53,7 @@ def search_for_region(name: str) -> list[dict]:
         "access_token": api_token,
         "q": name,
         "language": "en",
-        "session_token": ulid.new().str, # required for suggest endpoint
+        "session_token": ulid.new().str,  # required for suggest endpoint
         "types": "country,region",
     }
 
@@ -75,10 +76,11 @@ def _mapbox_place_to_feature(place: dict) -> dict:
     feature = {
         "type": "Feature",
         "geometry": {
-            "coordinates": [], # not lat, lon in these objects
+            "coordinates": [],  # not lat, lon in these objects
             "type": "Point",
         },
-        "properties": place | {
+        "properties": place
+        | {
             "source_id": source_id,
             "source_name": source_name,
             "tags": category_names,

@@ -12,6 +12,7 @@ def list_all() -> list:
         list_by_tags_country,
     ]
 
+
 def list_by_brands_anywhere(brands: list[str]) -> list[models.Place]:
     """
     Search places by brand.
@@ -95,7 +96,7 @@ def list_by_tags_country(country: str, tags: list[str]) -> list[models.Place]:
     return _list_by_query(query=f"country_code:{country_normal} tags:{tags_str}")
 
 
-def _list_by_query(query: str, offset: int=0, limit: int=50, sort: str="name+") -> list[models.Place]:
+def _list_by_query(query: str, offset: int = 0, limit: int = 50, sort: str = "name+") -> list[models.Place]:
     with services.database.session.get() as db_session:
         places_struct = services.places.list(
             db_session=db_session,

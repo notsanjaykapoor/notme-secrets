@@ -1,5 +1,6 @@
 import google.cloud.kms
 
+
 def key_name(client, project_id: str, location_id: str, key_ring_id: str, key_id: str) -> str:
     """
     Get kms key name from its components.

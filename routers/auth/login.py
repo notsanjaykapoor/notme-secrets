@@ -25,6 +25,7 @@ app = fastapi.APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+
 class UserPassStruct(pydantic.BaseModel):
     email: str = ""
     password: str = ""

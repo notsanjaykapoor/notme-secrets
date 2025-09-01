@@ -27,7 +27,7 @@ app = fastapi.APIRouter(
 @app.get("/geo", response_class=fastapi.responses.HTMLResponse)
 def geo_root(
     request: fastapi.Request,
-    query: str="",
+    query: str = "",
     user_id: int = fastapi.Depends(main_shared.get_user_id),
     db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
 ):
@@ -99,7 +99,7 @@ def geo_root(
                 "tools_uses": tools_uses,
                 "tools_uri": tools_uri,
                 "user": user,
-            }
+            },
         )
 
         if "HX-Request" in request.headers:

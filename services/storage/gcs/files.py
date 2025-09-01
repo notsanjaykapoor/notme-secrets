@@ -18,13 +18,7 @@ def file_download(bucket_name: str, folder_name: str, file_name: str, cache_dir:
     """
     Download gcs blob from bucket 'bucket_name', blob 'folder_name/file)name' to local 'cache_dir'
     """
-    struct = FileGetStruct(
-        code=0,
-        blob_name="",
-        cache_dir="",
-        cache_path="",
-        errors=[]
-    )
+    struct = FileGetStruct(code=0, blob_name="", cache_dir="", cache_path="", errors=[])
 
     struct.blob_name = f"{folder_name}/{file_name}"
     struct.cache_dir = cache_dir
@@ -36,7 +30,7 @@ def file_download(bucket_name: str, folder_name: str, file_name: str, cache_dir:
 
 
 def files_list(bucket_name: str, folder_name: str) -> list[google.cloud.storage.blob.Blob]:
-    """"
+    """ "
     List all files/blobs in bucket 'bucket_name' under the top level folder 'folder_name'.
     """
     folder_prefix = f"{folder_name}/"
@@ -45,5 +39,3 @@ def files_list(bucket_name: str, folder_name: str) -> list[google.cloud.storage.
     blobs_list = [blob for blob in blobs_list if blob.name != folder_prefix]
 
     return blobs_list
-
-

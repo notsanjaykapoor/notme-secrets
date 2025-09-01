@@ -25,14 +25,15 @@ app = fastapi.APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+
 @app.get("/geo/places", response_class=fastapi.responses.HTMLResponse)
 @app.get("/geo/places/box/{box_name}", response_class=fastapi.responses.HTMLResponse)
 def geo_places_list(
     request: fastapi.Request,
-    box_name: str="",
-    query: str="",
-    offset: int=0,
-    limit: int=20,
+    box_name: str = "",
+    query: str = "",
+    offset: int = 0,
+    limit: int = 20,
     user_id: int = fastapi.Depends(main_shared.get_user_id),
     db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
 ):
@@ -70,7 +71,12 @@ def geo_places_list(
 
     try:
         places_struct = services.places.list(
-            db_session=db_session, query=query_norm, scope=query_scope, offset=offset, limit=limit, sort="name+",
+            db_session=db_session,
+            query=query_norm,
+            scope=query_scope,
+            offset=offset,
+            limit=limit,
+            sort="name+",
         )
         places_list = places_struct.objects
         places_count = len(places_list)
@@ -93,13 +99,13 @@ def geo_places_list(
             if places_total <= limit:
                 query_result = f"{query_result} returned {len(places_list)} results"
             else:
-                query_result = f"{query_result} returned {offset+1} - {offset+places_count} of {places_total} results"
+                query_result = f"{query_result} returned {offset + 1} - {offset + places_count} of {places_total} results"
         else:
             query_result = f"query '{query_norm}'"
             if places_total <= limit:
                 query_result = f"{query_result} returned {len(places_list)} results"
             else:
-                query_result = f"{query_result} returned {offset+1} - {offset+places_count} of {places_total} results"
+                query_result = f"{query_result} returned {offset + 1} - {offset + places_count} of {places_total} results"
     except Exception as e:
         places_list = []
         places_total = 0
@@ -108,13 +114,8 @@ def geo_places_list(
 
         logger.error(f"{context.rid_get()} places list exception '{e}'")
 
-    page_prev, page_next = routers.utils.page_links(
-        path=request.url.path,
-        params=request.query_params,
-        limit=limit,
-        total=places_total
-    )
- 
+    page_prev, page_next = routers.utils.page_links(path=request.url.path, params=request.query_params, limit=limit, total=places_total)
+
     if "HX-Request" in request.headers:
         template = "geo/places/list_table.html"
     else:
@@ -147,7 +148,7 @@ def geo_places_list(
                 "tags_cur_list": tags_cur_list,
                 "tags_cur_str": tags_cur_str,
                 "user": user,
-            }
+            },
         )
 
         if "HX-Request" in request.headers:

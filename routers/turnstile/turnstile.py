@@ -1,6 +1,6 @@
 import os
 
-import dot_init # noqa: F401
+import dot_init  # noqa: F401
 
 import fastapi
 import fastapi.templating
@@ -24,13 +24,16 @@ app = fastapi.APIRouter(
 
 TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
 
+
 class TurnstileStruct(pydantic.BaseModel):
     token: str
+
 
 #
 # turnstile docs: https://developers.cloudflare.com/turnstile/
 # turnstile testing: https://developers.cloudflare.com/turnstile/troubleshooting/testing/
 #
+
 
 @app.get("/turnstile")
 def turnstile(request: fastapi.Request):

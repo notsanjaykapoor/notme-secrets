@@ -21,11 +21,12 @@ app = fastapi.APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+
 @app.get("/geo/api/box/{box_name}", response_class=fastapi.responses.HTMLResponse)
 def geo_api_query(
     request: fastapi.Request,
-    box_name: str="",
-    query: str="",
+    box_name: str = "",
+    query: str = "",
     user_id: int = fastapi.Depends(main_shared.get_user_id),
     db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
 ):
@@ -57,7 +58,7 @@ def geo_api_query(
                 limit=100,
             )
             places_list = places_struct.objects
-            places_source_ids = {place.source_id : place.id for place in places_list}
+            places_source_ids = {place.source_id: place.id for place in places_list}
     except Exception as e:
         query_code = 500
         query_result = str(e)
@@ -85,7 +86,7 @@ def geo_api_query(
                 "query_code": query_code,
                 "query_result": query_result,
                 "user": user,
-            }
+            },
         )
     except Exception as e:
         logger.error(f"{context.rid_get()} api render exception '{e}'")

@@ -3,6 +3,7 @@ import sqlmodel
 import services.cities
 import services.database
 
+
 def test_cities_create(db_session: sqlmodel.Session):
     code, city_db = services.cities.create(db_session=db_session, name="Chicago")
 

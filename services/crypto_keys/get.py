@@ -3,6 +3,7 @@ import sqlmodel
 import models
 import services.crypto_keys
 
+
 def get_by_id(db_session: sqlmodel.Session, id: int) -> models.CryptoKey | None:
     """ """
     db_select = sqlmodel.select(models.CryptoKey).where(models.CryptoKey.id == id)
@@ -38,6 +39,5 @@ def get_user_default(db_session: sqlmodel.Session, user_id: int) -> models.Crypt
 
     if list_result.total != 1:
         return None
-    
-    return list_result.objects[0]
 
+    return list_result.objects[0]

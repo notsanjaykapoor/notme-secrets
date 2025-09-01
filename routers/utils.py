@@ -13,14 +13,14 @@ def page_links(path: str, params: starlette.datastructures, limit: int, total: i
 
     if offset + limit < total:
         next_dict = params._dict.copy()
-        next_dict["offset"] = offset+limit
+        next_dict["offset"] = offset + limit
         next_params = starlette.datastructures.QueryParams(next_dict)
         page_next = f"{path}?{str(next_params)}"
 
     if offset - limit >= 0:
         prev_dict = params._dict.copy()
         if offset - limit > 0:
-            prev_dict["offset"] = offset-limit
+            prev_dict["offset"] = offset - limit
         else:
             prev_dict.pop("offset", 0)
 

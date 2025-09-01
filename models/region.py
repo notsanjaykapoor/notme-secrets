@@ -9,22 +9,43 @@ import sqlalchemy
 import sqlalchemy.dialects.postgresql
 import sqlmodel
 
-ASIA_CODES = [
-    "am", "az", "in", "jp", "kr", "lk", "ph", "pk", "qa", "sg", "tw", "vn"
-]
+ASIA_CODES = ["am", "az", "in", "jp", "kr", "lk", "ph", "pk", "qa", "sg", "tw", "vn"]
 
-NA_CODES = [
-    "ca", "us", "mx"
-]
+NA_CODES = ["ca", "us", "mx"]
 EU_CODES = [
-    "at", "be", "bg", "cy", "cz", "de", "dk", "ee", "es", "fi", "fr",
-    "gr", "hr", "hu", "ie", "it", "lt", "lu", "lv", "mt", "nl", "pl",
-    "pt", "ro", "se", "si", "sk",
+    "at",
+    "be",
+    "bg",
+    "cy",
+    "cz",
+    "de",
+    "dk",
+    "ee",
+    "es",
+    "fi",
+    "fr",
+    "gr",
+    "hr",
+    "hu",
+    "ie",
+    "it",
+    "lt",
+    "lu",
+    "lv",
+    "mt",
+    "nl",
+    "pl",
+    "pt",
+    "ro",
+    "se",
+    "si",
+    "sk",
 ]
 
 ASIA_EU_CODES = ASIA_CODES + EU_CODES
 
 REGION_TYPES = ["continent", "country"]
+
 
 class Region(sqlmodel.SQLModel, table=True):
     __tablename__ = "regions"
@@ -40,15 +61,9 @@ class Region(sqlmodel.SQLModel, table=True):
         sa_column=sqlmodel.Column(sqlalchemy.dialects.postgresql.ARRAY(sqlmodel.Float())),
     )
     country_code: str = sqlmodel.Field(index=False, nullable=True, max_length=5, default="")
-    data: dict = sqlmodel.Field(
-        default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON)
-    )
-    geo_json: dict = sqlmodel.Field(
-        default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON)
-    )
-    geom: shapely.geometry.Point = sqlmodel.Field(
-        sa_column=sqlmodel.Column(geoalchemy2.Geometry('POINT', srid=4326))
-    ) 
+    data: dict = sqlmodel.Field(default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON))
+    geo_json: dict = sqlmodel.Field(default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON))
+    geom: shapely.geometry.Point = sqlmodel.Field(sa_column=sqlmodel.Column(geoalchemy2.Geometry("POINT", srid=4326)))
     lat: decimal.Decimal = sqlmodel.Field(max_digits=11, decimal_places=7, index=False, nullable=False)
     lon: decimal.Decimal = sqlmodel.Field(max_digits=11, decimal_places=7, index=False, nullable=False)
     name: str = sqlmodel.Field(index=True, nullable=False)
@@ -68,7 +83,6 @@ class Region(sqlmodel.SQLModel, table=True):
         ),
         default_factory=lambda: datetime.datetime.now(datetime.UTC),
     )
-
 
     @property
     def lat_f(self) -> float:

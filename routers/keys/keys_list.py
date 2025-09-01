@@ -29,9 +29,9 @@ app = fastapi.APIRouter(
 def keys_list(
     request: fastapi.Request,
     user_id: int = fastapi.Depends(main_shared.get_user_id),
-    query: str="",
-    offset: int=0,
-    limit: int=50,
+    query: str = "",
+    offset: int = 0,
+    limit: int = 50,
     db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
 ):
     if user_id == 0:
@@ -52,7 +52,7 @@ def keys_list(
         keys_total = list_result.total
 
         # map each key to count of secrets
-        keys_map = {key.id : services.secrets.count_by_key(db_session=db_session, key_id=key.id) for key in keys_list}
+        keys_map = {key.id: services.secrets.count_by_key(db_session=db_session, key_id=key.id) for key in keys_list}
 
         query_code = 0
         query_result = f"query '{query}' returned {len(keys_list)} results"
@@ -83,7 +83,7 @@ def keys_list(
                 "keys_list": keys_list,
                 "keys_map": keys_map,
                 "user": user,
-            }
+            },
         )
 
         if "HX-Request" in request.headers:

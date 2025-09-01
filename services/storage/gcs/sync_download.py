@@ -4,6 +4,7 @@ import re
 
 import services.storage.gcs
 
+
 @dataclasses.dataclass
 class Struct:
     code: int
@@ -14,7 +15,7 @@ class Struct:
     errors: list[str]
 
 
-def sync_download(bucket_name: str, folder_name: str, cache_dir: str, sync_mode: str, match_glob: str="") -> Struct:
+def sync_download(bucket_name: str, folder_name: str, cache_dir: str, sync_mode: str, match_glob: str = "") -> Struct:
     """
     Sync gcs bucket folder with local cache dir.
 
@@ -109,20 +110,17 @@ def sync_download(bucket_name: str, folder_name: str, cache_dir: str, sync_mode:
 
 @dataclasses.dataclass
 class FileStruct:
-    name: str # cache file name, e.g. x.gpg.1234, x.gpg.new
-    type: str # cache file type, e.g. new, version
+    name: str  # cache file name, e.g. x.gpg.1234, x.gpg.new
+    type: str  # cache file type, e.g. new, version
+
 
 def _cache_files_map(cache_files: list[str]) -> dict[str, FileStruct]:
-    """
-    """
+    """ """
     files_map = {}
 
     for file in sorted(cache_files):
         if not re.search(r"(\.\d+)|(\.new)$", file):
-            files_map[file] = FileStruct(
-                name="",
-                type=""
-            )
+            files_map[file] = FileStruct(name="", type="")
         else:
             file_root = re.sub(r"(\.\d+)|(\.new)$", "", file)
             if not (file_struct := files_map.get(file_root, None)):

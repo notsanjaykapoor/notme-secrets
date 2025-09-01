@@ -20,9 +20,7 @@ class Bookmark(sqlmodel.SQLModel, table=True):
         sa_column=sqlalchemy.Column(sqlalchemy.DateTime(timezone=True), nullable=False),
         default_factory=lambda: datetime.datetime.now(datetime.UTC),
     )
-    data: dict = sqlmodel.Field(
-        default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON)
-    )
+    data: dict = sqlmodel.Field(default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON))
     links: list[str] = sqlmodel.Field(
         default=[],
         sa_column=sqlmodel.Column(sqlalchemy.dialects.postgresql.ARRAY(sqlmodel.String())),
@@ -46,7 +44,6 @@ class Bookmark(sqlmodel.SQLModel, table=True):
     )
     user_id: int = sqlmodel.Field(index=True, nullable=False)
     uri: str = sqlmodel.Field(index=True, nullable=False)
-
 
     @property
     def categories_string(self) -> str:

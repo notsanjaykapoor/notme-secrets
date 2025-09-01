@@ -1,11 +1,13 @@
 import dataclasses
 import json
 
+
 @dataclasses.dataclass
 class SecretData:
     """
     Plaintext representation of secrets.data_cipher field.
     """
+
     name: str
     passw: str = ""
     path: str = ""

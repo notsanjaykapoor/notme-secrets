@@ -16,11 +16,15 @@ def test_places_create(db_session: sqlmodel.Session, user_1: models.User, city_c
             "lat": city_chi.lat_f,
             "lon": city_chi.lon_f,
             "place_id": ulid.new().str,
-        }
+        },
     }
 
     code, place_db = services.places.create(
-        db_session=db_session, user=user_1, city=city_chi, geo_json=geo_json, name="Place 1",
+        db_session=db_session,
+        user=user_1,
+        city=city_chi,
+        geo_json=geo_json,
+        name="Place 1",
     )
 
     assert code == 0
@@ -32,11 +36,14 @@ def test_places_create(db_session: sqlmodel.Session, user_1: models.User, city_c
     assert place_db.point.y == place_db.lat_f
     assert place_db.source_id
 
-
     # create with duplicate name should return 409
 
     code, place_dup = services.places.create(
-        db_session=db_session, user=user_1, city=city_chi, geo_json=geo_json, name="Place 1",
+        db_session=db_session,
+        user=user_1,
+        city=city_chi,
+        geo_json=geo_json,
+        name="Place 1",
     )
 
     assert code == 409

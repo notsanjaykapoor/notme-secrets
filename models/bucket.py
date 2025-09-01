@@ -10,10 +10,7 @@ class Bucket(sqlmodel.SQLModel, table=True):
 
     id: typing.Optional[int] = sqlmodel.Field(default=None, primary_key=True)
 
-    data: dict = sqlmodel.Field(
-        default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON)
-    )
+    data: dict = sqlmodel.Field(default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON))
     name: str = sqlmodel.Field(index=True, nullable=True)
     location: str = sqlmodel.Field(index=False, nullable=True)
     user_id: int = sqlmodel.Field(index=True, nullable=False)
-

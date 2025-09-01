@@ -7,6 +7,7 @@ import anthropic.types.message
 MAX_TOKENS_DEFAULT = 1024
 MODEL_DEFAULT = "claude-sonnet-4-20250514"
 
+
 @dataclasses.dataclass
 class AnthropicMsgStruct:
     blocks_text: list[str]
@@ -14,6 +15,7 @@ class AnthropicMsgStruct:
     blocks_total: int
     msg_role: str
     msg_stop: str
+
 
 def query_doc(file_id: str, query: str) -> tuple[anthropic.types.message.Message, AnthropicMsgStruct]:
     """
@@ -27,7 +29,7 @@ def query_doc(file_id: str, query: str) -> tuple[anthropic.types.message.Message
         api_key=os.environ["ANTHROPIC_API_KEY"],
         default_headers={
             "anthropic-beta": "files-api-2025-04-14",  # required header for file api
-        }
+        },
     )
 
     response = client.messages.create(
@@ -37,20 +39,17 @@ def query_doc(file_id: str, query: str) -> tuple[anthropic.types.message.Message
             {
                 "role": "user",
                 "content": [
-                    {
-                        "type": "text",
-                        "text": f"Answer the following question using the referenced document: {query}"
-                    },
+                    {"type": "text", "text": f"Answer the following question using the referenced document: {query}"},
                     {
                         "type": "document",
                         "source": {
                             "type": "file",
                             "file_id": file_id,
-                        }
-                    }
-                ]
+                        },
+                    },
+                ],
             }
-        ]
+        ],
     )
 
     return response, _anthropic_message_parse(msg=response)
@@ -77,7 +76,7 @@ def query_tools(query: str, tools: list[dict]) -> tuple[anthropic.types.message.
             }
         ],
         tool_choice={
-            "type": "auto" # claude decides to use or not
+            "type": "auto"  # claude decides to use or not
         },
         tools=tools,
     )

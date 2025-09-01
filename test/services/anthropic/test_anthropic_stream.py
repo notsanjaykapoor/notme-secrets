@@ -13,7 +13,6 @@ async def test_anthropic_stream(mocker):
         yield "some initial content"
         raise anthropic.APIStatusError(message="overloaded", body="body", response=unittest.mock.MagicMock(status_code=529))
 
-
     mock_anthropic_client = unittest.mock.MagicMock(spec=anthropic.Anthropic)
 
     mock_stream = unittest.mock.MagicMock()

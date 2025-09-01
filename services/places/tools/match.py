@@ -7,9 +7,7 @@ def match_tool_use(query: str) -> int:
     """
 
     if re.search(r"find|search", query) and re.search(r"brand|fashion|hotel|places|restaurants?", query):
-    # if re.search(r"find|search fashion|hotel|places|restaurants?", query):
+        # if re.search(r"find|search fashion|hotel|places|restaurants?", query):
         return 1
-    
+
     return 0
-
-

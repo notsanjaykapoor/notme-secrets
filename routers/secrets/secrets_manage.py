@@ -60,10 +60,7 @@ def secrets_create(
             )
 
         # create cipher text from raw data
-        data = {
-            "passw": secret_struct.password,
-            "user": secret_struct.user
-        }
+        data = {"passw": secret_struct.password, "user": secret_struct.user}
 
         if user_key.type == models.crypto_key.TYPE_GPG_SYM:
             pgp_msg = services.crypto_keys.gpg.encrypt(key=user_key, plain_text=json.dumps(data))
@@ -106,7 +103,7 @@ def secrets_new(
                 "app_name": "Pass",
                 "key_id": key_id,
                 "name": name,
-            }
+            },
         )
     except Exception as e:
         logger.error(f"{context.rid_get()} secrets user {user_id} new render exception '{e}'")
@@ -130,7 +127,7 @@ def secrets_new_generate(
         {
             "app_name": "Pass",
             "password": password,
-        }
+        },
     )
 
     return response

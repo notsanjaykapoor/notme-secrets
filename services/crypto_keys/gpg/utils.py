@@ -13,12 +13,12 @@ def file_uri_parse(source_uri: str) -> tuple[str, str, str]:
     dir - /users/notme/foo/
     file - bar.txt
     """
-    if not (match := re.match(r'^file:\/\/(\/.+)$', source_uri)):
+    if not (match := re.match(r"^file:\/\/(\/.+)$", source_uri)):
         raise ValueError(f"invalid source_uri {source_uri}")
 
     source_path = match[1]
 
-    match = re.match(r'^(.+)\/([^\/]*)$', source_path)
+    match = re.match(r"^(.+)\/([^\/]*)$", source_path)
     source_dir = f"{match[1]}/"
     source_file = match[2]
 

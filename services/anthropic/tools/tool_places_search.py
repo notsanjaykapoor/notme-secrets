@@ -5,6 +5,7 @@ import services.cities
 import services.database
 import services.geo
 
+
 def schemas() -> list[dict]:
     return [
         {
@@ -13,17 +14,11 @@ def schemas() -> list[dict]:
             "input_schema": {
                 "type": "object",
                 "properties": {
-                    "location": {
-                        "type": "string",
-                        "description": "The city or the city and state, e.g. Chicago, IL or Tokyo"
-                    },
-                    "name": {
-                        "type": "string",
-                        "description": "The name of the place, e.g. 'pizza hut', 'atelier o'"
-                    }
+                    "location": {"type": "string", "description": "The city or the city and state, e.g. Chicago, IL or Tokyo"},
+                    "name": {"type": "string", "description": "The name of the place, e.g. 'pizza hut', 'atelier o'"},
                 },
-                "required": ["location", "name"]
-            }
+                "required": ["location", "name"],
+            },
         },
         {
             "name": "places_search_by_city",
@@ -31,27 +26,19 @@ def schemas() -> list[dict]:
             "input_schema": {
                 "type": "object",
                 "properties": {
-                    "location": {
-                        "type": "string",
-                        "description": "The city or the city and state, e.g. Chicago, IL or Tokyo"
-                    },
+                    "location": {"type": "string", "description": "The city or the city and state, e.g. Chicago, IL or Tokyo"},
                 },
-                "required": ["location"]
-            }
+                "required": ["location"],
+            },
         },
         {
             "name": "places_search_by_tag",
             "description": "Search for places by tag anywhere",
             "input_schema": {
                 "type": "object",
-                "properties": {
-                    "tag": {
-                        "type": "string",
-                        "description": "The tag of the type of place, e.g. bar, fashion, food, hotel"
-                    }
-                },
-                "required": ["tag"]
-            }
+                "properties": {"tag": {"type": "string", "description": "The tag of the type of place, e.g. bar, fashion, food, hotel"}},
+                "required": ["tag"],
+            },
         },
         {
             "name": "places_search_by_tag_city",
@@ -59,24 +46,17 @@ def schemas() -> list[dict]:
             "input_schema": {
                 "type": "object",
                 "properties": {
-                    "location": {
-                        "type": "string",
-                        "description": "The city or the city and state, e.g. Chicago, IL or Tokyo"
-                    },
-                    "tag": {
-                        "type": "string",
-                        "description": "The tag of the type of place, e.g. bar, fashion, food, hotel"
-                    }
+                    "location": {"type": "string", "description": "The city or the city and state, e.g. Chicago, IL or Tokyo"},
+                    "tag": {"type": "string", "description": "The tag of the type of place, e.g. bar, fashion, food, hotel"},
                 },
-                "required": ["location", "tag"]
-            }
+                "required": ["location", "tag"],
+            },
         },
     ]
 
 
 def places_search_by_name_city(location: str, name: str) -> str:
-    """
-    """
+    """ """
     with services.database.session.get() as db_session:
         box = services.geo.get_by_name(db_session=db_session, name=location)
 
@@ -90,8 +70,7 @@ def places_search_by_name_city(location: str, name: str) -> str:
 
 
 def places_search_by_city(location: str) -> str:
-    """
-    """
+    """ """
     with services.database.session.get() as db_session:
         box = _city_get_or_create(db_session=db_session, location=location)
 
@@ -102,8 +81,7 @@ def places_search_by_city(location: str) -> str:
 
 
 def places_search_by_tag(tag: str) -> str:
-    """
-    """
+    """ """
     url = "/geo/places"
     params = f"query=tag:{tag}"
 
@@ -111,8 +89,7 @@ def places_search_by_tag(tag: str) -> str:
 
 
 def places_search_by_tag_city(location: str, tag: str) -> str:
-    """
-    """
+    """ """
     with services.database.session.get() as db_session:
         box = services.geo.get_by_name(db_session=db_session, name=location)
 
@@ -130,7 +107,7 @@ def _city_get_or_create(db_session: sqlmodel.Session, location: str) -> models.C
 
     if box:
         return box
-    
+
     code, box = services.cities.create(db_session=db_session, name=location)
 
     return box
