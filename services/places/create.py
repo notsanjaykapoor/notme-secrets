@@ -30,7 +30,7 @@ def create(
         lon = geo_props.get("lon")
     else:
         # get lat/lon from geometry
-        lon, lat = geo_json.get("geometry", {}).get("coordinates", [])
+        lon, lat = geo_json.get("geometry", {}).get("coordinates", [0.0, 0.0])
 
     if datasource := geo_props.get("datasource", {}):
         source_name = datasource.get("sourcename", "")
@@ -75,6 +75,7 @@ def create(
         name=name_norm,
         source_id=source_id,
         source_name=source_name,
+        tags=[],
         user_id=user.id,
     )
 

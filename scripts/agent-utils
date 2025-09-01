@@ -1,0 +1,132 @@
+#!/usr/bin/env python
+
+import os
+import re
+import sys
+
+sys.path.insert(1, os.path.join(sys.path[0], ".."))
+
+import dot_init
+
+import asyncclick as click
+import pydantic_ai
+import pydantic_ai.models.anthropic
+import pydantic_ai.models.google
+import pydantic_ai.providers.anthropic
+import pydantic_ai.providers.google
+
+import services.anthropic
+import services.console
+import services.database.session
+import services.places.tools
+
+
+@click.group()
+def cli():
+    pass
+
+@click.command()
+async def conv_start() -> int:
+    """
+    Start a new conversation
+    """
+    services.console.print_status("conversation start: \r\n")
+
+    agent_anth = _agent_anthropic()
+    agent_places = _agent_places(output_types=services.places.tools.list_all())
+
+    msgs_history = []
+
+    while True:
+        user_query = input("query: ")
+
+        if re.match(r"^(bye|exit|quit)", user_query):
+            services.console.print_status("conversation exiting")
+            break
+
+        if re.match(r"^(breakpoint|debug)", user_query):
+            services.console.print_status("conversation debugger")
+            breakpoint()
+
+        print("")
+
+        if services.places.tools.match_tool_use(query=user_query):
+            result = await agent_places.run(user_prompt=user_query)
+
+            services.console.print_fragment(
+                services.places.tools.output_markdown(places=result.output)
+            )
+            print("")
+
+            print(f"messages turn size {len(result.new_messages())}") # xxx
+            print(result.new_messages_json())
+            print("")
+        else:
+            async with agent_anth.run_stream(
+                user_prompt=user_query,
+                message_history=msgs_history,
+            ) as response:
+                async for text in response.stream_text(delta=True):
+                    if text:
+                        services.console.print_fragment(text)
+
+                print("")
+
+                msgs_history.extend(response.new_messages())
+
+                services.console.print_status(f"\r\nconversation history {len(msgs_history)} messages:\r\n")
+            
+                print(msgs_history) # xxx
+                print("")
+
+    return 0
+
+
+def _agent_anthropic() -> pydantic_ai.Agent:
+    agent = pydantic_ai.Agent(
+        deps_type=dict,
+        model=_model_anthropic(),
+        # model="google-gla:gemini-1.5-flash",
+        output_type=[str],
+        system_prompt=(
+            "You are a helpful agent. "
+            "Be concise, reply with one sentence if possible."
+        ),
+        tools=[]
+    )
+
+    return agent
+
+
+def _agent_places(output_types: list) -> pydantic_ai.Agent:
+    agent = pydantic_ai.Agent(
+        deps_type=dict,
+        # model=_model_anthropic(),
+        model=_model_gemini(),
+        output_type=output_types,
+        system_prompt=(
+            "You are a helpful agent. "
+            "Use one of the following tools to help compose your answer."
+        ),
+        tools=[]
+    )
+
+    return agent
+
+
+def _model_anthropic() -> pydantic_ai.models:
+    return pydantic_ai.models.anthropic.AnthropicModel(
+        model_name=services.anthropic.query.MODEL_DEFAULT,
+        provider=pydantic_ai.providers.anthropic.AnthropicProvider(api_key=os.getenv("ANTHROPIC_API_KEY")),
+    )
+
+def _model_gemini() -> pydantic_ai.models:
+    return pydantic_ai.models.google.GoogleModel(
+        model_name="gemini-1.5-flash",
+        provider=pydantic_ai.providers.google.GoogleProvider(api_key=os.getenv("GOOGLE_GEMINI_KEY"), vertexai=False),
+    )
+
+cli.add_command(conv_start)
+
+if __name__ == "__main__":
+    cli()
