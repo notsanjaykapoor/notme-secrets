@@ -6,7 +6,9 @@ import services.database
 import services.places
 
 
-def test_places_create(db_session: sqlmodel.Session, user_1: models.User, city_chi: models.City):
+def test_places_create(
+    db_session: sqlmodel.Session, user_1: models.User, city_chi: models.City
+):
     # example geo search result
 
     geo_json = {

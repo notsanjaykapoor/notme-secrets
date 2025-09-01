@@ -29,7 +29,9 @@ def search_by_city(city: models.City, query: str) -> list[dict]:
     places_list = data_json.get("places", [])
 
     # map places dict into geo_json features
-    features_list = [_google_place_to_feature(place=place_dict) for place_dict in places_list]
+    features_list = [
+        _google_place_to_feature(place=place_dict) for place_dict in places_list
+    ]
 
     return features_list
 
@@ -47,7 +49,11 @@ def _google_place_to_feature(place: dict) -> dict:
     address = place.get("shortFormattedAddress", "")
     name = place.get("displayName", {}).get("text")
 
-    country, city, locality, area = services.goog_places.address_components_city_country(addr_components=place.get("addressComponents", []))
+    country, city, locality, area = (
+        services.goog_places.address_components_city_country(
+            addr_components=place.get("addressComponents", [])
+        )
+    )
 
     feature = {
         "type": "Feature",

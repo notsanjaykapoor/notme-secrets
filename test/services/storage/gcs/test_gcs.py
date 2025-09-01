@@ -22,14 +22,18 @@ def test_gcs_sync_download(user_1: models.User):
 
     # should be 1 file in org-1 folder
 
-    blobs_list = services.storage.gcs.files_list(bucket_name=bucket_name, folder_name="folder-1")
+    blobs_list = services.storage.gcs.files_list(
+        bucket_name=bucket_name, folder_name="folder-1"
+    )
     file_names = [blob.name for blob in blobs_list]
 
     assert file_names == ["folder-1/secret-1.txt"]
 
     # clean cache dir
 
-    cache_dir = services.storage.gcs.user_cache_dir(user=user_1, env=os.environ.get("APP_ENV"))
+    cache_dir = services.storage.gcs.user_cache_dir(
+        user=user_1, env=os.environ.get("APP_ENV")
+    )
 
     if os.path.exists(cache_dir):
         shutil.rmtree(cache_dir)
@@ -55,7 +59,9 @@ def test_gcs_sync_download(user_1: models.User):
 
     assert len(os.listdir(cache_folder_dir)) == 2
 
-    cache_file_version = sorted(os.listdir(cache_folder_dir))[1]  # should be secret-1.txt.version
+    cache_file_version = sorted(os.listdir(cache_folder_dir))[
+        1
+    ]  # should be secret-1.txt.version
     cache_path_cur = f"{cache_folder_dir}{cache_file_version}"
     cache_path_new = f"{cache_folder_dir}secret-1.txt.0000"
 
@@ -146,7 +152,9 @@ def test_gcs_sync_upload(user_1: models.User):
 
     # clean cache dir
 
-    cache_dir = services.storage.gcs.user_cache_dir(user=user_1, env=os.environ.get("APP_ENV"))
+    cache_dir = services.storage.gcs.user_cache_dir(
+        user=user_1, env=os.environ.get("APP_ENV")
+    )
 
     if os.path.exists(cache_dir):
         shutil.rmtree(cache_dir)
@@ -180,7 +188,9 @@ def test_gcs_sync_upload(user_1: models.User):
     file_2.close()
 
     # the new secret .gpg and .new files should exist in local cache
-    assert (set(["new-1.gpg", "new-1.gpg.new"]) - set(os.listdir(cache_folder_dir))) == set()
+    assert (
+        set(["new-1.gpg", "new-1.gpg.new"]) - set(os.listdir(cache_folder_dir))
+    ) == set()
 
     # sync_download should not delete new secrets file
 
@@ -236,4 +246,6 @@ def test_gcs_sync_upload(user_1: models.User):
 
     # cleanup gcs storage
 
-    services.storage.gcs.blob_delete(bucket_name=bucket_name, blob_name="folder-1/new-1.gpg")
+    services.storage.gcs.blob_delete(
+        bucket_name=bucket_name, blob_name="folder-1/new-1.gpg"
+    )

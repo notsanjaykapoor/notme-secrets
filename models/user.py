@@ -23,7 +23,9 @@ class User(sqlmodel.SQLModel, table=True):
         sa_column=sqlalchemy.Column(sqlalchemy.DateTime(timezone=True), nullable=False),
         default_factory=lambda: datetime.datetime.now(datetime.UTC),
     )
-    data: dict = sqlmodel.Field(default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON))
+    data: dict = sqlmodel.Field(
+        default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON)
+    )
     email: str = sqlmodel.Field(index=True, nullable=False)
     idp: str = sqlmodel.Field(index=True, nullable=False)
     name: str = sqlmodel.Field(index=False, nullable=True)

@@ -18,7 +18,10 @@ def test_crypto_keys_create(db_session: sqlmodel.Session, user_1: models.User):
     )
 
     assert key.id
-    assert key.location == "kms:projects/notme-xxx/locations/us-central1/keyRings/ring-1/cryptoKeys/key-symmetric"
+    assert (
+        key.location
+        == "kms:projects/notme-xxx/locations/us-central1/keyRings/ring-1/cryptoKeys/key-symmetric"
+    )
     assert key.name == "key-1"
     assert key.type == "kms-sym"
 
@@ -34,4 +37,6 @@ def test_crypto_keys_create(db_session: sqlmodel.Session, user_1: models.User):
 
     db_session.rollback()
 
-    services.database.truncate_tables(db_session=db_session, table_names=["crypto_keys"])
+    services.database.truncate_tables(
+        db_session=db_session, table_names=["crypto_keys"]
+    )

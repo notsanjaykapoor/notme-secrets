@@ -14,7 +14,11 @@ def search_by_city(city: models.City, query: str, radius: int) -> list[dict]:
     geo_key = os.getenv("GEOAPIFY_KEY")
 
     meters = radius * 1609.34
-    geo_params = {"apiKey": geo_key, "filter": f"circle:{city.lon},{city.lat},{meters}", "text": query}
+    geo_params = {
+        "apiKey": geo_key,
+        "filter": f"circle:{city.lon},{city.lat},{meters}",
+        "text": query,
+    }
 
     response = requests.get(geo_url, params=geo_params)
     data_json = response.json()

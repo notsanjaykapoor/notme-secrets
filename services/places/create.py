@@ -12,6 +12,7 @@ def create(
     city: models.City,
     geo_json: dict,
     name: str,
+    tags: list[str] = [],
 ) -> tuple[int, models.Place | None]:
     """
     Create place and persist to database
@@ -74,7 +75,7 @@ def create(
         name=name_norm,
         source_id=source_id,
         source_name=source_name,
-        tags=[],
+        tags=tags,
         user_id=user.id,
     )
 

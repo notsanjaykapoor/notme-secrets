@@ -14,7 +14,9 @@ class FileGetStruct:
     errors: list[str]
 
 
-def file_download(bucket_name: str, folder_name: str, file_name: str, cache_dir: str) -> FileGetStruct:
+def file_download(
+    bucket_name: str, folder_name: str, file_name: str, cache_dir: str
+) -> FileGetStruct:
     """
     Download gcs blob from bucket 'bucket_name', blob 'folder_name/file)name' to local 'cache_dir'
     """
@@ -24,17 +26,25 @@ def file_download(bucket_name: str, folder_name: str, file_name: str, cache_dir:
     struct.cache_dir = cache_dir
     struct.cache_path = f"{struct.cache_dir}{file_name}"
 
-    services.storage.gcs.blob_download(bucket_name=bucket_name, blob_name=struct.blob_name, file_path_dst=struct.cache_path)
+    services.storage.gcs.blob_download(
+        bucket_name=bucket_name,
+        blob_name=struct.blob_name,
+        file_path_dst=struct.cache_path,
+    )
 
     return struct
 
 
-def files_list(bucket_name: str, folder_name: str) -> list[google.cloud.storage.blob.Blob]:
+def files_list(
+    bucket_name: str, folder_name: str
+) -> list[google.cloud.storage.blob.Blob]:
     """ "
     List all files/blobs in bucket 'bucket_name' under the top level folder 'folder_name'.
     """
     folder_prefix = f"{folder_name}/"
-    blobs_list = services.storage.gcs.blobs_list(bucket_name=bucket_name, prefix=folder_prefix, delimiter="/")
+    blobs_list = services.storage.gcs.blobs_list(
+        bucket_name=bucket_name, prefix=folder_prefix, delimiter="/"
+    )
 
     blobs_list = [blob for blob in blobs_list if blob.name != folder_prefix]
 

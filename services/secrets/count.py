@@ -11,4 +11,6 @@ def count_by_key(db_session: sqlmodel.Session, key_id: int) -> int:
     model = models.Secret
     dataset = sqlmodel.select(model).where(model.key_id == key_id)
 
-    return db_session.scalar(sqlmodel.select(sqlalchemy.func.count("*")).select_from(dataset.subquery()))
+    return db_session.scalar(
+        sqlmodel.select(sqlalchemy.func.count("*")).select_from(dataset.subquery())
+    )

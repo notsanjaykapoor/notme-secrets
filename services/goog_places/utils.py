@@ -3,7 +3,9 @@ import unicodedata
 import models
 
 
-def address_components_city_country(addr_components: list[dict]) -> tuple[str, str, str, str]:
+def address_components_city_country(
+    addr_components: list[dict],
+) -> tuple[str, str, str, str]:
     """
     Get city name from list of google place address components.
 
@@ -26,15 +28,24 @@ def address_components_city_country(addr_components: list[dict]) -> tuple[str, s
         # first check 'locality', then check 'administrative_area_level_1'
 
         if "locality" in addr_component.get("types", []):
-            locality_name = addr_component.get("longText", "").lower() or addr_component.get("long_name", "").lower()
+            locality_name = (
+                addr_component.get("longText", "").lower()
+                or addr_component.get("long_name", "").lower()
+            )
             locality_name = name_remove_accents(name=locality_name)
 
         if "administrative_area_level_1" in addr_component.get("types", []):
-            area_name = addr_component.get("longText", "").lower() or addr_component.get("long_name", "").lower()
+            area_name = (
+                addr_component.get("longText", "").lower()
+                or addr_component.get("long_name", "").lower()
+            )
             area_name = name_remove_accents(name=area_name)
 
         if "country" in addr_component.get("types", []):
-            country_code = addr_component.get("shortText", "").lower() or addr_component.get("short_name", "").lower()
+            country_code = (
+                addr_component.get("shortText", "").lower()
+                or addr_component.get("short_name", "").lower()
+            )
 
     if country_code in models.region.ASIA_CODES:
         city_name = area_name
@@ -45,7 +56,9 @@ def address_components_city_country(addr_components: list[dict]) -> tuple[str, s
 
     if not city_name:
         # whoops, this probably means we need to look at a higher level administrative area for the "city" name
-        raise ValueError(f"city name not found in '{city_key}' address component - area '{area_name}', locality '{locality_name}'")
+        raise ValueError(
+            f"city name not found in '{city_key}' address component - area '{area_name}', locality '{locality_name}'"
+        )
 
     return country_code, city_name, locality_name, area_name
 

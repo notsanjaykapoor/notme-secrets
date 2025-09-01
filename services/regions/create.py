@@ -52,7 +52,9 @@ def create(
 
     # check region name again for uniqueness, the city search will normalize the name so its a good check here
 
-    if region_db := services.regions.get_by_name(db_session=db_session, name=region_name):
+    if region_db := services.regions.get_by_name(
+        db_session=db_session, name=region_name
+    ):
         return 409, region_db
 
     region_db = models.Region(

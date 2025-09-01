@@ -4,7 +4,9 @@ import models
 import services.bookmarks
 
 
-def test_bookmarks_list_with_name_query(db_session: sqlmodel.Session, bm_1: models.Bookmark):
+def test_bookmarks_list_with_name_query(
+    db_session: sqlmodel.Session, bm_1: models.Bookmark
+):
     assert bm_1.name == "bookmark-1"
 
     # name match
@@ -44,7 +46,9 @@ def test_bookmarks_list_with_name_query(db_session: sqlmodel.Session, bm_1: mode
     assert list_result.total == 0
 
 
-def test_bookmarks_list_with_tags_query(db_session: sqlmodel.Session, bm_1: models.Bookmark):
+def test_bookmarks_list_with_tags_query(
+    db_session: sqlmodel.Session, bm_1: models.Bookmark
+):
     # tags match
     list_result = services.bookmarks.list(
         db_session=db_session,

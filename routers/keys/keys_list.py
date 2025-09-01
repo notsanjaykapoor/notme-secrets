@@ -16,7 +16,9 @@ PASSW_BLUR_SECS = 3
 logger = log.init("app")
 
 # initialize templates dir
-templates = fastapi.templating.Jinja2Templates(directory="routers", context_processors=[main_shared.jinja_context])
+templates = fastapi.templating.Jinja2Templates(
+    directory="routers", context_processors=[main_shared.jinja_context]
+)
 
 app = fastapi.APIRouter(
     tags=["app"],
@@ -52,12 +54,17 @@ def keys_list(
         keys_total = list_result.total
 
         # map each key to count of secrets
-        keys_map = {key.id: services.secrets.count_by_key(db_session=db_session, key_id=key.id) for key in keys_list}
+        keys_map = {
+            key.id: services.secrets.count_by_key(db_session=db_session, key_id=key.id)
+            for key in keys_list
+        }
 
         query_code = 0
         query_result = f"query '{query}' returned {len(keys_list)} results"
 
-        logger.info(f"{context.rid_get()} keys user {user.id} list ok - total {keys_total}")
+        logger.info(
+            f"{context.rid_get()} keys user {user.id} list ok - total {keys_total}"
+        )
     except Exception as e:
         keys_list = []
         keys_map = {}
@@ -89,7 +96,9 @@ def keys_list(
         if "HX-Request" in request.headers:
             response.headers["HX-Push-Url"] = f"/keys?query={query}"
     except Exception as e:
-        logger.error(f"{context.rid_get()} keys user {user.id} list render exception '{e}'")
+        logger.error(
+            f"{context.rid_get()} keys user {user.id} list render exception '{e}'"
+        )
         return templates.TemplateResponse(request, "500.html", {})
 
     return response

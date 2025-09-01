@@ -18,7 +18,9 @@ import services.users
 logger = log.init("app")
 
 # initialize templates dir
-templates = fastapi.templating.Jinja2Templates(directory="routers", context_processors=[main_shared.jinja_context])
+templates = fastapi.templating.Jinja2Templates(
+    directory="routers", context_processors=[main_shared.jinja_context]
+)
 
 app = fastapi.APIRouter(
     tags=["app"],
@@ -45,7 +47,9 @@ def geo_maps(
         cities_names_slugs = services.cities.get_all_names_slugs(db_session=db_session)
         cities_count = len(cities_names_slugs)
 
-        regions_names_slugs = services.regions.get_all_names_slugs(db_session=db_session)
+        regions_names_slugs = services.regions.get_all_names_slugs(
+            db_session=db_session
+        )
         regions_count = len(regions_names_slugs)
     except Exception as e:
         logger.error(f"{context.rid_get()} geo maps exception '{e}'")
@@ -161,7 +165,9 @@ def geo_maps_box(
     return response
 
 
-@app.get("/geo/maps/box/{box_name}/tileset", response_class=fastapi.responses.JSONResponse)
+@app.get(
+    "/geo/maps/box/{box_name}/tileset", response_class=fastapi.responses.JSONResponse
+)
 def geo_maps_box_tileset(
     request: fastapi.Request,
     box_name: str,
@@ -172,7 +178,9 @@ def geo_maps_box_tileset(
     if user_id == 0:
         return fastapi.responses.RedirectResponse("/login")
 
-    logger.info(f"{context.rid_get()} maps box '{box_name}' query '{query}' tileset try")
+    logger.info(
+        f"{context.rid_get()} maps box '{box_name}' query '{query}' tileset try"
+    )
 
     try:
         # normalize query
@@ -184,7 +192,9 @@ def geo_maps_box_tileset(
         box = services.geo.get_by_slug(db_session=db_session, slug=box_name)
 
         places_query = f"{query_norm} {box.type}:{box.name} user_id:{user_id}".strip()
-        places_struct = services.places.list(db_session=db_session, query=places_query, offset=0, limit=50, sort="name+")
+        places_struct = services.places.list(
+            db_session=db_session, query=places_query, offset=0, limit=50, sort="name+"
+        )
         places_list = places_struct.objects
         places_count = len(places_list)
         places_total = places_struct.total
@@ -194,7 +204,9 @@ def geo_maps_box_tileset(
 
         if places_count > 1:
             # generate bounding box from list of places
-            places_points = [shapely.Point(place.lon_f, place.lat_f) for place in places_list]
+            places_points = [
+                shapely.Point(place.lon_f, place.lat_f) for place in places_list
+            ]
             places_multi = shapely.MultiPoint(places_points)
             places_bbox = places_multi.bounds
         else:

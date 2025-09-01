@@ -14,8 +14,14 @@ def schemas() -> list[dict]:
             "input_schema": {
                 "type": "object",
                 "properties": {
-                    "location": {"type": "string", "description": "The city or the city and state, e.g. Chicago, IL or Tokyo"},
-                    "name": {"type": "string", "description": "The name of the place, e.g. 'pizza hut', 'atelier o'"},
+                    "location": {
+                        "type": "string",
+                        "description": "The city or the city and state, e.g. Chicago, IL or Tokyo",
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the place, e.g. 'pizza hut', 'atelier o'",
+                    },
                 },
                 "required": ["location", "name"],
             },
@@ -26,7 +32,10 @@ def schemas() -> list[dict]:
             "input_schema": {
                 "type": "object",
                 "properties": {
-                    "location": {"type": "string", "description": "The city or the city and state, e.g. Chicago, IL or Tokyo"},
+                    "location": {
+                        "type": "string",
+                        "description": "The city or the city and state, e.g. Chicago, IL or Tokyo",
+                    },
                 },
                 "required": ["location"],
             },
@@ -36,7 +45,12 @@ def schemas() -> list[dict]:
             "description": "Search for places by tag anywhere",
             "input_schema": {
                 "type": "object",
-                "properties": {"tag": {"type": "string", "description": "The tag of the type of place, e.g. bar, fashion, food, hotel"}},
+                "properties": {
+                    "tag": {
+                        "type": "string",
+                        "description": "The tag of the type of place, e.g. bar, fashion, food, hotel",
+                    }
+                },
                 "required": ["tag"],
             },
         },
@@ -46,8 +60,14 @@ def schemas() -> list[dict]:
             "input_schema": {
                 "type": "object",
                 "properties": {
-                    "location": {"type": "string", "description": "The city or the city and state, e.g. Chicago, IL or Tokyo"},
-                    "tag": {"type": "string", "description": "The tag of the type of place, e.g. bar, fashion, food, hotel"},
+                    "location": {
+                        "type": "string",
+                        "description": "The city or the city and state, e.g. Chicago, IL or Tokyo",
+                    },
+                    "tag": {
+                        "type": "string",
+                        "description": "The tag of the type of place, e.g. bar, fashion, food, hotel",
+                    },
                 },
                 "required": ["location", "tag"],
             },
@@ -102,7 +122,9 @@ def places_search_by_tag_city(location: str, tag: str) -> str:
         return f"{url}?{params}"
 
 
-def _city_get_or_create(db_session: sqlmodel.Session, location: str) -> models.City | None:
+def _city_get_or_create(
+    db_session: sqlmodel.Session, location: str
+) -> models.City | None:
     box = services.geo.get_by_name(db_session=db_session, name=location)
 
     if box:

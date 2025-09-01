@@ -15,7 +15,9 @@ def test_kms_encrypt(key_kms_1: models.CryptoKey):
         "password": "secret",
     }
 
-    kms_base64 = services.crypto_keys.kms.encrypt(key=key_kms_1, plain_text=json.dumps(data))
+    kms_base64 = services.crypto_keys.kms.encrypt(
+        key=key_kms_1, plain_text=json.dumps(data)
+    )
 
     # should return base64 encrypted string
     assert isinstance(kms_base64, str)

@@ -14,10 +14,14 @@ def test_bookmarks_tags_list(db_session: sqlmodel.Session, bm_1: models.Bookmark
 
     assert tag_set == set(["tag-1"])
 
-    tag_set = services.bookmarks.tags.list_by_categories(db_session=db_session, categories=["category-1"])
+    tag_set = services.bookmarks.tags.list_by_categories(
+        db_session=db_session, categories=["category-1"]
+    )
 
     assert tag_set == set(["tag-1"])
 
-    tag_set = services.bookmarks.tags.list_by_categories(db_session=db_session, categories=["category-0"])
+    tag_set = services.bookmarks.tags.list_by_categories(
+        db_session=db_session, categories=["category-0"]
+    )
 
     assert tag_set == set([])

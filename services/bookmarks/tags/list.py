@@ -22,7 +22,9 @@ def list_by_categories(db_session: sqlmodel.Session, categories: list[str]):
     """
     Get set of all bookmark tags with any of the specified category tags.
     """
-    dataset = sqlmodel.select(models.Bookmark.tags).where(models.Bookmark.categories.contains(categories))
+    dataset = sqlmodel.select(models.Bookmark.tags).where(
+        models.Bookmark.categories.contains(categories)
+    )
     db_result = db_session.exec(dataset).all()
 
     tags_set = set()

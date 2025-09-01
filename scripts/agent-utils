@@ -9,12 +9,13 @@ sys.path.insert(1, os.path.join(sys.path[0], ".."))
 import dot_init
 
 import asyncclick as click
+import pydantic_ai
 
 import models
 import services.agents
 import services.console
 import services.database.session
-import services.places.tools
+import services.places.functions
 
 
 @click.group()
@@ -28,10 +29,14 @@ async def conv_start() -> int:
     """
     services.console.print_status("conversation start: \r\n")
 
-    agent_anth = services.agents.create_agent_anthropic()
+    agent_anth = services.agents.create_agent_anthropic(
+        tools=[],
+        # tools=services.places.functions.list_tools()
+    )
+
     agent_places = services.agents.create_agent_places(
         model=services.agents.model_gemini(),
-        output_types=services.places.tools.list_all(),
+        output_types=services.places.functions.list_outputs(),
     )
 
     msgs_history = []
@@ -49,13 +54,10 @@ async def conv_start() -> int:
 
         print("")
 
-        if services.places.tools.match_tool_use(query=user_query):
+        if services.places.functions.match_tool_use(query=user_query):
             result = await agent_places.run(user_prompt=user_query)
-            places: list[models.Place] = result.output
 
-            services.console.print_fragment(
-                services.places.tools.output_markdown(places=places)
-            )
+            services.console.print_fragment(result.output)
             print("")
 
             print(f"messages turn size {len(result.new_messages())}") # xxx

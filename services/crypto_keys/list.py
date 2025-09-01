@@ -17,7 +17,9 @@ class Struct:
     errors: list[str]
 
 
-def list(db_session: sqlmodel.Session, query: str = "", offset: int = 0, limit: int = 20) -> Struct:
+def list(
+    db_session: sqlmodel.Session, query: str = "", offset: int = 0, limit: int = 20
+) -> Struct:
     """
     Search crypto_keys table
     """
@@ -44,18 +46,26 @@ def list(db_session: sqlmodel.Session, query: str = "", offset: int = 0, limit: 
 
         if token["field"] in ["location"]:
             value_normal = re.sub(r"~", "", value).lower()
-            dataset = dataset.where(sqlalchemy.func.lower(model.location).like("%" + value_normal + "%"))
+            dataset = dataset.where(
+                sqlalchemy.func.lower(model.location).like("%" + value_normal + "%")
+            )
         elif token["field"] == "name":
             # always like query
             value_normal = re.sub(r"~", "", value).lower()
-            dataset = dataset.where(sqlalchemy.func.lower(model.name).like("%" + value_normal + "%"))
+            dataset = dataset.where(
+                sqlalchemy.func.lower(model.name).like("%" + value_normal + "%")
+            )
         elif token["field"] in ["type"]:
             dataset = dataset.where(model.type == value)
         elif token["field"] in ["uid", "user_id"]:
             dataset = dataset.where(model.user_id == int(value))
 
-    struct.objects = db_session.exec(dataset.offset(offset).limit(limit).order_by(model.name)).all()
+    struct.objects = db_session.exec(
+        dataset.offset(offset).limit(limit).order_by(model.name)
+    ).all()
     struct.count = len(struct.objects)
-    struct.total = db_session.scalar(sqlmodel.select(sqlalchemy.func.count("*")).select_from(dataset.subquery()))
+    struct.total = db_session.scalar(
+        sqlmodel.select(sqlalchemy.func.count("*")).select_from(dataset.subquery())
+    )
 
     return struct

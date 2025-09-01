@@ -4,7 +4,11 @@ import models
 import services.crypto_keys
 
 
-def test_crypto_keys_list(db_session: sqlmodel.Session, key_kms_1: models.CryptoKey, key_gpg_1: models.CryptoKey):
+def test_crypto_keys_list(
+    db_session: sqlmodel.Session,
+    key_kms_1: models.CryptoKey,
+    key_gpg_1: models.CryptoKey,
+):
     assert key_kms_1.name == "kms-1"
     assert key_gpg_1.name == "gpg-1"
 

@@ -23,7 +23,9 @@ def search_address(addr: str) -> list[dict]:
     results_list = data_json.get("results", [])
 
     # map address objects dict into geo_json features
-    features_list = [_google_addr_to_feature(addr=addr_dict) for addr_dict in results_list]
+    features_list = [
+        _google_addr_to_feature(addr=addr_dict) for addr_dict in results_list
+    ]
 
     return features_list
 
@@ -46,7 +48,11 @@ def _google_addr_to_feature(addr: dict) -> dict:
 
     # parse address components into city name and country code
     addr_components = addr.get("address_components", [])
-    country_code, city_name, locality, area = services.goog_places.address_components_city_country(addr_components=addr_components)
+    country_code, city_name, locality, area = (
+        services.goog_places.address_components_city_country(
+            addr_components=addr_components
+        )
+    )
 
     feature = {
         "type": "Feature",

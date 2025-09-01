@@ -1,7 +1,9 @@
 import starlette.datastructures
 
 
-def page_links(path: str, params: starlette.datastructures, limit: int, total: int) -> tuple[str, str]:
+def page_links(
+    path: str, params: starlette.datastructures, limit: int, total: int
+) -> tuple[str, str]:
     """
     Generate next and previous page links from the current url request.
     """

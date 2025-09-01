@@ -28,7 +28,9 @@ def create(
     return key_db
 
 
-def create_default(db_session: sqlmodel.Session, user_id: int) -> typing.Optional[models.CryptoKey]:
+def create_default(
+    db_session: sqlmodel.Session, user_id: int
+) -> typing.Optional[models.CryptoKey]:
     """
     Create default crypto key
     """

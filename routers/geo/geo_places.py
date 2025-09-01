@@ -17,7 +17,9 @@ import services.users
 logger = log.init("app")
 
 # initialize templates dir
-templates = fastapi.templating.Jinja2Templates(directory="routers", context_processors=[main_shared.jinja_context])
+templates = fastapi.templating.Jinja2Templates(
+    directory="routers", context_processors=[main_shared.jinja_context]
+)
 
 app = fastapi.APIRouter(
     tags=["app"],
@@ -50,7 +52,9 @@ def geo_places_list(
     else:
         query_norm = query
 
-    logger.info(f"{context.rid_get()} places list query '{query_norm}' box '{box_name}' try")
+    logger.info(
+        f"{context.rid_get()} places list query '{query_norm}' box '{box_name}' try"
+    )
 
     box = None
     geo_api_path = ""
@@ -84,13 +88,19 @@ def geo_places_list(
 
         brands_cur_list = sorted(places_struct.brands)
 
-        tags_all_list = sorted(list(services.places.tags.list_all(db_session=db_session, box=box)))
+        tags_all_list = sorted(
+            list(services.places.tags.list_all(db_session=db_session, box=box))
+        )
         tags_cur_list = sorted(places_struct.tags)
         tags_cur_str = ",".join(tags_cur_list)
 
         if tags_cur_list:
             # filter brands by tags
-            brands_all_list = sorted(services.places.brands.list_by_box_tags(db_session=db_session, box=box, tags=tags_cur_list))
+            brands_all_list = sorted(
+                services.places.brands.list_by_box_tags(
+                    db_session=db_session, box=box, tags=tags_cur_list
+                )
+            )
         else:
             brands_all_list = []
 
@@ -114,7 +124,12 @@ def geo_places_list(
 
         logger.error(f"{context.rid_get()} places list exception '{e}'")
 
-    page_prev, page_next = routers.utils.page_links(path=request.url.path, params=request.query_params, limit=limit, total=places_total)
+    page_prev, page_next = routers.utils.page_links(
+        path=request.url.path,
+        params=request.query_params,
+        limit=limit,
+        total=places_total,
+    )
 
     if "HX-Request" in request.headers:
         template = "geo/places/list_table.html"
@@ -157,6 +172,8 @@ def geo_places_list(
         logger.error(f"{context.rid_get()} places list render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
 
-    logger.info(f"{context.rid_get()} places list query '{query_norm}' box '{box_name}' ok")
+    logger.info(
+        f"{context.rid_get()} places list query '{query_norm}' box '{box_name}' ok"
+    )
 
     return response

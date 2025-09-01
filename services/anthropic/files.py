@@ -12,7 +12,9 @@ def file_delete(file_id: str) -> anthropic.types.beta.file_metadata.FileMetadata
     return result
 
 
-def file_upload(name: str, data: io.IOBase, mime_type: str) -> anthropic.types.beta.file_metadata.FileMetadata:
+def file_upload(
+    name: str, data: io.IOBase, mime_type: str
+) -> anthropic.types.beta.file_metadata.FileMetadata:
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
     result = client.beta.files.upload(

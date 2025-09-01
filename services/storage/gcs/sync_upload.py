@@ -14,7 +14,13 @@ class Struct:
     errors: list[str]
 
 
-def sync_upload(cache_dir: str, bucket_name: str, folder_name: str, sync_mode: str, match_glob: str = "") -> Struct:
+def sync_upload(
+    cache_dir: str,
+    bucket_name: str,
+    folder_name: str,
+    sync_mode: str,
+    match_glob: str = "",
+) -> Struct:
     """
     Sync local secrets cache dir with gcs bucket.
     """
@@ -36,7 +42,9 @@ def sync_upload(cache_dir: str, bucket_name: str, folder_name: str, sync_mode: s
     cache_files_list = os.listdir(cache_org_dir)
     cache_files_list_new = [s for s in cache_files_list if s.endswith(".new")]
 
-    blobs_list = services.storage.gcs.files_list(bucket_name=bucket_name, folder_name=folder_name)
+    blobs_list = services.storage.gcs.files_list(
+        bucket_name=bucket_name, folder_name=folder_name
+    )
     blobs_names = [blob.name.split("/")[-1] for blob in blobs_list]
 
     file_upload_list = []
@@ -59,10 +67,16 @@ def sync_upload(cache_dir: str, bucket_name: str, folder_name: str, sync_mode: s
             blob_name_dst = f"{folder_name}/{cache_file_gpg}"
 
             # upload blob to storage bucket
-            services.storage.gcs.blob_upload(bucket_name=bucket_name, file_name_src=cache_path_gpg, blob_name_dst=blob_name_dst)
+            services.storage.gcs.blob_upload(
+                bucket_name=bucket_name,
+                file_name_src=cache_path_gpg,
+                blob_name_dst=blob_name_dst,
+            )
 
             # get blob so we can get metadata
-            blob = services.storage.gcs.blob_get(bucket_name=bucket_name, blob_name=blob_name_dst)
+            blob = services.storage.gcs.blob_get(
+                bucket_name=bucket_name, blob_name=blob_name_dst
+            )
 
             # create cache version file
             cache_file_gpg_version = f"{cache_file_gpg}.{blob.generation}"

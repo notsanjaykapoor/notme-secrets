@@ -13,7 +13,9 @@ import services.places
 
 # set env vars
 os.environ["APP_ENV"] = "tst"
-os.environ["KMS_KEY_TEST"] = "kms:projects/notme-330419/locations/us-central1/keyRings/ring-tst/cryptoKeys/tst-1"
+os.environ["KMS_KEY_TEST"] = (
+    "kms:projects/notme-330419/locations/us-central1/keyRings/ring-tst/cryptoKeys/tst-1"
+)
 
 test_db_name = os.environ.get("DATABASE_TEST_URL")
 connect_args: dict = {}
@@ -158,7 +160,9 @@ def crypto_key_gpg_1_fixture(db_session: sqlmodel.Session, user_1: models.User):
 
     yield key
 
-    services.database.truncate_tables(db_session=db_session, table_names=["crypto_keys"])
+    services.database.truncate_tables(
+        db_session=db_session, table_names=["crypto_keys"]
+    )
 
 
 @pytest.fixture(name="key_gpg_me")
@@ -177,7 +181,9 @@ def crypto_key_gpg_me_fixture(db_session: sqlmodel.Session, user_1: models.User)
 
     yield key
 
-    services.database.truncate_tables(db_session=db_session, table_names=["crypto_keys"])
+    services.database.truncate_tables(
+        db_session=db_session, table_names=["crypto_keys"]
+    )
 
 
 @pytest.fixture(name="key_kms_1")
@@ -196,17 +202,22 @@ def crypto_key_kms_1_fixture(db_session: sqlmodel.Session, user_1: models.User):
 
     yield key
 
-    services.database.truncate_tables(db_session=db_session, table_names=["crypto_keys"])
+    services.database.truncate_tables(
+        db_session=db_session, table_names=["crypto_keys"]
+    )
 
 
 @pytest.fixture(name="place_1")
-def place_1_fixture(db_session: sqlmodel.Session, user_1: models.User, city_chi: models.City):
+def place_1_fixture(
+    db_session: sqlmodel.Session, user_1: models.User, city_chi: models.City
+):
     code, place_db = services.places.create(
         db_session=db_session,
         user=user_1,
         city=city_chi,
         geo_json={},
         name="Place 1",
+        tags=["fashion"],
     )
 
     assert code == 0

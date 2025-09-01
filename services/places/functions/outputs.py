@@ -3,17 +3,7 @@ import services.database
 import services.places
 
 
-def list_all() -> list:
-    return [
-        list_by_brands_anywhere,
-        list_by_brands_city,
-        list_by_brands_country,
-        list_by_tags_city,
-        list_by_tags_country,
-    ]
-
-
-def list_by_brands_anywhere(brands: list[str]) -> list[models.Place]:
+def list_by_brands_anywhere(brands: list[str]) -> str:
     """
     Search places by brand.
 
@@ -28,7 +18,7 @@ def list_by_brands_anywhere(brands: list[str]) -> list[models.Place]:
     return _list_by_query(query=f"brands:{brands_str}")
 
 
-def list_by_brands_city(city: str, brands: list[str]) -> list[models.Place]:
+def list_by_brands_city(city: str, brands: list[str]) -> str:
     """
     Search places by city and brand.
 
@@ -45,7 +35,7 @@ def list_by_brands_city(city: str, brands: list[str]) -> list[models.Place]:
     return _list_by_query(query=f"city:{city_normal} brands:{brands_str}")
 
 
-def list_by_brands_country(country: str, brands: list[str]) -> list[models.Place]:
+def list_by_brands_country(country: str, brands: list[str]) -> str:
     """
     Search places by country and tags.
 
@@ -62,7 +52,7 @@ def list_by_brands_country(country: str, brands: list[str]) -> list[models.Place
     return _list_by_query(query=f"country_code:{country_normal} brands:{brands_str}")
 
 
-def list_by_tags_city(city: str, tags: list[str]) -> list[models.Place]:
+def list_by_tags_city(city: str, tags: list[str]) -> str:
     """
     Search places by city and tags.
 
@@ -79,7 +69,7 @@ def list_by_tags_city(city: str, tags: list[str]) -> list[models.Place]:
     return _list_by_query(query=f"city:{city_normal} tags:{tags_str}")
 
 
-def list_by_tags_country(country: str, tags: list[str]) -> list[models.Place]:
+def list_by_tags_country(country: str, tags: list[str]) -> str:
     """
     Search places by country and tags.
 
@@ -96,7 +86,9 @@ def list_by_tags_country(country: str, tags: list[str]) -> list[models.Place]:
     return _list_by_query(query=f"country_code:{country_normal} tags:{tags_str}")
 
 
-def _list_by_query(query: str, offset: int = 0, limit: int = 50, sort: str = "name+") -> list[models.Place]:
+def _list_by_query(
+    query: str, offset: int = 0, limit: int = 50, sort: str = "name+"
+) -> str:
     with services.database.session.get() as db_session:
         places_struct = services.places.list(
             db_session=db_session,
@@ -106,4 +98,27 @@ def _list_by_query(query: str, offset: int = 0, limit: int = 50, sort: str = "na
             sort=sort,
         )
 
-        return [place for place in places_struct.objects]
+        return _output_markdown(places=places_struct.objects)
+
+
+def _output_markdown(places: list[models.Place]) -> str:
+    """
+    Convert list of models to markdown text
+    """
+
+    md_list = []
+
+    md_list.append(f"found {len(places)} places:\n\n")
+
+    for i, place in enumerate(places):
+        md_list.append(f"- {place.name}, {place.city}\n")
+
+        if place.brands_count > 0:
+            md_list.append(f"  brands: {place.brands_string}\n")
+
+        if place.website:
+            md_list.append(f"  website: {place.website}\n")
+
+        md_list.append("\n")
+
+    return "".join(md_list)

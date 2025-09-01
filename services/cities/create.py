@@ -19,7 +19,9 @@ def create(
     """
     name_norm = name.lower()
 
-    city_db = services.cities.get_by_name(db_session=db_session, name=name_norm, country_code=country_code)
+    city_db = services.cities.get_by_name(
+        db_session=db_session, name=name_norm, country_code=country_code
+    )
 
     if city_db:
         return 409, city_db
@@ -50,7 +52,9 @@ def create(
 
     # check city name again for uniqueness, the city search will normalize the name so its a good check here
 
-    if city_db := services.cities.get_by_name(db_session=db_session, name=city_name, country_code=country_code):
+    if city_db := services.cities.get_by_name(
+        db_session=db_session, name=city_name, country_code=country_code
+    ):
         return 409, city_db
 
     city_db = models.City(

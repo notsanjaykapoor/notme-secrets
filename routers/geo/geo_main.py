@@ -15,7 +15,9 @@ import services.users
 logger = log.init("app")
 
 # initialize templates dir
-templates = fastapi.templating.Jinja2Templates(directory="routers", context_processors=[main_shared.jinja_context])
+templates = fastapi.templating.Jinja2Templates(
+    directory="routers", context_processors=[main_shared.jinja_context]
+)
 
 app = fastapi.APIRouter(
     tags=["app"],
@@ -59,7 +61,9 @@ def geo_root(
 
             if antropic_struct.blocks_tools:
                 # parse tool results
-                tools_uses = ", ".join([tool_block.name for tool_block in antropic_struct.blocks_tools])
+                tools_uses = ", ".join(
+                    [tool_block.name for tool_block in antropic_struct.blocks_tools]
+                )
 
                 tool_name = antropic_struct.blocks_tools[0].name
                 tool_args = antropic_struct.blocks_tools[0].input
@@ -105,7 +109,9 @@ def geo_root(
         if "HX-Request" in request.headers:
             response.headers["HX-Push-Url"] = f"/geo?query={query}"
     except Exception as e:
-        logger.error(f"{context.rid_get()} geo roo query '{query}' render exception '{e}'")
+        logger.error(
+            f"{context.rid_get()} geo roo query '{query}' render exception '{e}'"
+        )
         return templates.TemplateResponse(request, "500.html", {})
 
     logger.info(f"{context.rid_get()} geo root query '{query}' ok")

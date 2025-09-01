@@ -12,9 +12,15 @@ def get_by_id(db_session: sqlmodel.Session, id: int) -> models.CryptoKey | None:
     return db_object
 
 
-def get_by_id_user(db_session: sqlmodel.Session, id: int, user_id: int) -> models.CryptoKey | None:
+def get_by_id_user(
+    db_session: sqlmodel.Session, id: int, user_id: int
+) -> models.CryptoKey | None:
     """ """
-    db_select = sqlmodel.select(models.CryptoKey).where(models.CryptoKey.id == id).where(models.CryptoKey.user_id == user_id)
+    db_select = (
+        sqlmodel.select(models.CryptoKey)
+        .where(models.CryptoKey.id == id)
+        .where(models.CryptoKey.user_id == user_id)
+    )
     db_object = db_session.exec(db_select).first()
 
     return db_object
@@ -28,7 +34,9 @@ def get_by_name(db_session: sqlmodel.Session, name: str) -> models.CryptoKey | N
     return db_object
 
 
-def get_user_default(db_session: sqlmodel.Session, user_id: int) -> models.CryptoKey | None:
+def get_user_default(
+    db_session: sqlmodel.Session, user_id: int
+) -> models.CryptoKey | None:
     """ """
     list_result = services.crypto_keys.list(
         db_session=db_session,

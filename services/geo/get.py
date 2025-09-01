@@ -3,7 +3,9 @@ import sqlmodel
 import models
 
 
-def get_by_name(db_session: sqlmodel.Session, name: str) -> models.City | models.Region | None:
+def get_by_name(
+    db_session: sqlmodel.Session, name: str
+) -> models.City | models.Region | None:
     """
     Get geo object by name.
 
@@ -21,7 +23,9 @@ def get_by_name(db_session: sqlmodel.Session, name: str) -> models.City | models
     return None
 
 
-def get_by_slug(db_session: sqlmodel.Session, slug: str) -> models.City | models.Region | None:
+def get_by_slug(
+    db_session: sqlmodel.Session, slug: str
+) -> models.City | models.Region | None:
     """
     Get geo object by name.
 

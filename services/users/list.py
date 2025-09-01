@@ -17,7 +17,9 @@ class Struct:
     errors: list[str]
 
 
-def list(db_session: sqlmodel.Session, query: str = "", offset: int = 0, limit: int = 20) -> Struct:
+def list(
+    db_session: sqlmodel.Session, query: str = "", offset: int = 0, limit: int = 20
+) -> Struct:
     """
     Search users table
     """
@@ -45,10 +47,16 @@ def list(db_session: sqlmodel.Session, query: str = "", offset: int = 0, limit: 
         if token["field"] == "email":
             # always like query
             value_normal = re.sub(r"~", "", value).lower()
-            dataset = dataset.where(sqlalchemy.func.lower(model.email).like("%" + value_normal + "%"))
+            dataset = dataset.where(
+                sqlalchemy.func.lower(model.email).like("%" + value_normal + "%")
+            )
 
-    struct.objects = db_session.exec(dataset.offset(offset).limit(limit).order_by(model.id)).all()
+    struct.objects = db_session.exec(
+        dataset.offset(offset).limit(limit).order_by(model.id)
+    ).all()
     struct.count = len(struct.objects)
-    struct.total = db_session.scalar(sqlmodel.select(sqlalchemy.func.count("*")).select_from(dataset.subquery()))
+    struct.total = db_session.scalar(
+        sqlmodel.select(sqlalchemy.func.count("*")).select_from(dataset.subquery())
+    )
 
     return struct

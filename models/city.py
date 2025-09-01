@@ -21,21 +21,39 @@ class City(sqlmodel.SQLModel, table=True):
 
     bbox: list[float] = sqlmodel.Field(
         default=[],
-        sa_column=sqlmodel.Column(sqlalchemy.dialects.postgresql.ARRAY(sqlmodel.Float())),
+        sa_column=sqlmodel.Column(
+            sqlalchemy.dialects.postgresql.ARRAY(sqlmodel.Float())
+        ),
     )
     country_code: str = sqlmodel.Field(index=True, nullable=False, max_length=5)
-    data: dict = sqlmodel.Field(default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON))
-    geo_json: dict = sqlmodel.Field(default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON))
-    geom: shapely.geometry.Point = sqlmodel.Field(sa_column=sqlmodel.Column(geoalchemy2.Geometry("POINT", srid=4326)))
-    lat: decimal.Decimal = sqlmodel.Field(max_digits=11, decimal_places=7, index=False, nullable=False)
-    lon: decimal.Decimal = sqlmodel.Field(max_digits=11, decimal_places=7, index=False, nullable=False)
+    data: dict = sqlmodel.Field(
+        default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON)
+    )
+    geo_json: dict = sqlmodel.Field(
+        default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON)
+    )
+    geom: shapely.geometry.Point = sqlmodel.Field(
+        sa_column=sqlmodel.Column(geoalchemy2.Geometry("POINT", srid=4326))
+    )
+    lat: decimal.Decimal = sqlmodel.Field(
+        max_digits=11, decimal_places=7, index=False, nullable=False
+    )
+    lon: decimal.Decimal = sqlmodel.Field(
+        max_digits=11, decimal_places=7, index=False, nullable=False
+    )
     name: str = sqlmodel.Field(index=True, nullable=False)
     slug: str = sqlmodel.Field(index=True, nullable=False)
-    source_id: str = sqlmodel.Field(index=False, nullable=True, max_length=100, default="")
-    source_name: str = sqlmodel.Field(index=False, nullable=True, max_length=50, default="")
+    source_id: str = sqlmodel.Field(
+        index=False, nullable=True, max_length=100, default=""
+    )
+    source_name: str = sqlmodel.Field(
+        index=False, nullable=True, max_length=50, default=""
+    )
     tags: list[str] = sqlmodel.Field(
         default=[],
-        sa_column=sqlmodel.Column(sqlalchemy.dialects.postgresql.ARRAY(sqlmodel.String())),
+        sa_column=sqlmodel.Column(
+            sqlalchemy.dialects.postgresql.ARRAY(sqlmodel.String())
+        ),
     )
     updated_at: datetime.datetime = sqlmodel.Field(
         sa_column=sqlalchemy.Column(
