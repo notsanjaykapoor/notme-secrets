@@ -64,9 +64,7 @@ def list(
         elif token["field"] == "city":
             # always like query
             value_normal = re.sub(r"~", "", value).lower()
-            dataset = dataset.where(
-                sqlalchemy.func.lower(model.city).like("%" + value_normal + "%")
-            )
+            dataset = dataset.where(sqlalchemy.func.lower(model.city).like("%" + value_normal + "%"))
         elif token["field"] in ["continent"]:
             # get region
             region_db = services.regions.get_by_continent(
@@ -92,9 +90,7 @@ def list(
         elif token["field"] == "name":
             # always like query
             value_normal = re.sub(r"~", "", value).lower()
-            dataset = dataset.where(
-                sqlalchemy.func.lower(model.name).like("%" + value_normal + "%")
-            )
+            dataset = dataset.where(sqlalchemy.func.lower(model.name).like("%" + value_normal + "%"))
         elif token["field"] == "source_id":
             dataset = dataset.where(model.source_id == value)
         elif token["field"] == "source_name":
@@ -121,8 +117,6 @@ def list(
 
     struct.objects = db_session.exec(db_query).all()
     struct.count = len(struct.objects)
-    struct.total = db_session.scalar(
-        sqlmodel.select(sqlalchemy.func.count("*")).select_from(dataset.subquery())
-    )
+    struct.total = db_session.scalar(sqlmodel.select(sqlalchemy.func.count("*")).select_from(dataset.subquery()))
 
     return struct

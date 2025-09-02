@@ -2,9 +2,7 @@ import contextvars
 
 import ulid
 
-request_id: contextvars.ContextVar = contextvars.ContextVar(
-    "request_id", default=ulid.new().str
-)
+request_id: contextvars.ContextVar = contextvars.ContextVar("request_id", default=ulid.new().str)
 user_id: contextvars.ContextVar = contextvars.ContextVar("user_id", default=0)
 
 

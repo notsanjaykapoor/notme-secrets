@@ -17,9 +17,7 @@ class AnthropicMsgStruct:
     msg_stop: str
 
 
-def query_doc(
-    file_id: str, query: str
-) -> tuple[anthropic.types.message.Message, AnthropicMsgStruct]:
+def query_doc(file_id: str, query: str) -> tuple[anthropic.types.message.Message, AnthropicMsgStruct]:
     """
     Query model with a referenced document.
 
@@ -60,9 +58,7 @@ def query_doc(
     return response, _anthropic_message_parse(msg=response)
 
 
-def query_tools(
-    query: str, tools: list[dict]
-) -> tuple[anthropic.types.message.Message, AnthropicMsgStruct]:
+def query_tools(query: str, tools: list[dict]) -> tuple[anthropic.types.message.Message, AnthropicMsgStruct]:
     """
     Query model with a set of tools that can be used.
 

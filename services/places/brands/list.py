@@ -26,9 +26,7 @@ def list_by_box_tags(
     """
     Get set of all place brands, scoped by places with specified tags and city.
     """
-    dataset = sqlmodel.select(models.Place.brands).where(
-        models.Place.tags.contains(tags)
-    )
+    dataset = sqlmodel.select(models.Place.brands).where(models.Place.tags.contains(tags))
 
     if box:
         dataset = dataset.where(models.Place.city == box.name)

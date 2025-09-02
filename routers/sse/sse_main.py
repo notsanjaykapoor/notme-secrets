@@ -13,9 +13,7 @@ import services.users
 logger = log.init("app")
 
 # initialize templates dir
-templates = fastapi.templating.Jinja2Templates(
-    directory="routers", context_processors=[main_shared.jinja_context]
-)
+templates = fastapi.templating.Jinja2Templates(directory="routers", context_processors=[main_shared.jinja_context])
 
 app = fastapi.APIRouter(
     tags=["app"],
@@ -39,8 +37,6 @@ async def see_root(
     logger.info(f"{context.rid_get()} sse query '{query}' try")
 
     return fastapi.responses.StreamingResponse(
-        services.anthropic.stream(
-            query=query, tools=services.anthropic.tools.list_schemas()
-        ),
+        services.anthropic.stream(query=query, tools=services.anthropic.tools.list_schemas()),
         media_type="text/event-stream",
     )

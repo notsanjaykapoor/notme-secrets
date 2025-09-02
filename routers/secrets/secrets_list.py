@@ -20,9 +20,7 @@ PASSW_BLUR_SECS = 3
 logger = log.init("app")
 
 # initialize templates dir
-templates = fastapi.templating.Jinja2Templates(
-    directory="routers", context_processors=[main_shared.jinja_context]
-)
+templates = fastapi.templating.Jinja2Templates(directory="routers", context_processors=[main_shared.jinja_context])
 
 app = fastapi.APIRouter(
     tags=["app"],
@@ -63,9 +61,7 @@ def secrets_list(
         query_code = 0
         query_result = f"query '{query}' returned {len(secrets_list)} results"
 
-        logger.info(
-            f"{context.rid_get()} secrets user {user.id} list ok - total {secrets_total}"
-        )
+        logger.info(f"{context.rid_get()} secrets user {user.id} list ok - total {secrets_total}")
     except Exception as e:
         secrets_list = []
         secrets_map = {}
@@ -99,9 +95,7 @@ def secrets_list(
         if "HX-Request" in request.headers:
             response.headers["HX-Push-Url"] = f"/secrets?query={query}"
     except Exception as e:
-        logger.error(
-            f"{context.rid_get()} secrets user {user.id} list render exception '{e}'"
-        )
+        logger.error(f"{context.rid_get()} secrets user {user.id} list render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
 
     return response
@@ -123,14 +117,10 @@ def secrets_blur(
             id=secret_id,
             user_id=user_id,
         )
-        logger.info(
-            f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' blur ok"
-        )
+        logger.info(f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' blur ok")
     except Exception as e:
         secret_db = None
-        logger.error(
-            f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' blur exception '{e}'"
-        )
+        logger.error(f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' blur exception '{e}'")
 
     secret_data = models.SecretData
 
@@ -182,9 +172,7 @@ def secrets_decrypt(
         )
 
         if user_key.type == models.crypto_key.TYPE_GPG_SYM:
-            plain_text, t_secs = services.crypto_keys.gpg.decrypt_with_time(
-                key=user_key, pgp_msg=secret_db.data_cipher
-            )
+            plain_text, t_secs = services.crypto_keys.gpg.decrypt_with_time(key=user_key, pgp_msg=secret_db.data_cipher)
         elif user_key.type == models.crypto_key.TYPE_KMS_SYM:
             plain_text, t_secs = services.crypto_keys.kms.decrypt_with_time(
                 key=user_key, base64_text=secret_db.data_cipher
@@ -203,9 +191,7 @@ def secrets_decrypt(
         )
     except Exception as e:
         secret_data = None
-        logger.error(
-            f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' decrypt exception '{e}'"
-        )
+        logger.error(f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' decrypt exception '{e}'")
 
     try:
         response = templates.TemplateResponse(

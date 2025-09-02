@@ -9,9 +9,7 @@ import services.secrets
 import services.database
 
 
-def test_secrets_create(
-    db_session: sqlmodel.Session, user_1: models.User, key_kms_1: models.CryptoKey
-):
+def test_secrets_create(db_session: sqlmodel.Session, user_1: models.User, key_kms_1: models.CryptoKey):
     # create valid secret
     secret_db = services.secrets.create(
         db_session=db_session,

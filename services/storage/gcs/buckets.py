@@ -15,9 +15,7 @@ def bucket_folders(bucket_name: str) -> list[str]:
     """
     folder_names = set()
 
-    blobs_list = services.storage.gcs.blobs_list(
-        bucket_name=bucket_name, prefix="", delimiter=""
-    )
+    blobs_list = services.storage.gcs.blobs_list(bucket_name=bucket_name, prefix="", delimiter="")
 
     for blob in blobs_list:
         folder_names.add(blob.name.split("/")[0])

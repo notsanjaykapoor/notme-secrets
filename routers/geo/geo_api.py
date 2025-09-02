@@ -13,9 +13,7 @@ import services.users
 logger = log.init("app")
 
 # initialize templates dir
-templates = fastapi.templating.Jinja2Templates(
-    directory="routers", context_processors=[main_shared.jinja_context]
-)
+templates = fastapi.templating.Jinja2Templates(directory="routers", context_processors=[main_shared.jinja_context])
 
 app = fastapi.APIRouter(
     tags=["app"],
@@ -49,9 +47,7 @@ def geo_api_query(
         box = services.geo.get_by_slug(db_session=db_session, slug=box_name)
 
         if query:
-            query_code, geo_list = services.places.geo_search_by_name(
-                city=box, name=query
-            )
+            query_code, geo_list = services.places.geo_search_by_name(city=box, name=query)
             query_result = f"query '{query}' returned {len(geo_list)} results"
 
             # get current places to cross reference vs additions list

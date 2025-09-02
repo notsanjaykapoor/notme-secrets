@@ -35,9 +35,7 @@ def search_by_city(city: models.City, query: str, limit: int = 10) -> list[dict]
     places_list = data_json.get("suggestions", [])
 
     # map places dict into geo_json features
-    features_list = [
-        _mapbox_place_to_feature(place=place_dict) for place_dict in places_list
-    ]
+    features_list = [_mapbox_place_to_feature(place=place_dict) for place_dict in places_list]
 
     return features_list
 

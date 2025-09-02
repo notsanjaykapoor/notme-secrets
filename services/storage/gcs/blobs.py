@@ -63,9 +63,7 @@ def blob_upload(bucket_name: str, file_name_src: str, blob_name_dst: str) -> int
     return generation_match_val
 
 
-def blobs_list(
-    bucket_name: str, prefix: str, delimiter: str
-) -> list[google.cloud.storage.blob.Blob]:
+def blobs_list(bucket_name: str, prefix: str, delimiter: str) -> list[google.cloud.storage.blob.Blob]:
     """ "
     Lists all the blobs in the bucket that begin with the prefix.
 

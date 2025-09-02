@@ -14,6 +14,4 @@ def list_outputs() -> list:
 
 
 def list_tools() -> list[pydantic_ai.Tool]:
-    return [
-        pydantic_ai.Tool(services.places.functions.list_by_tags_city, takes_ctx=False)
-    ]
+    return [pydantic_ai.Tool(services.places.functions.list_by_tags_city, takes_ctx=False)]

@@ -19,9 +19,7 @@ import services.crypto_keys.kms
 logger = log.init("app")
 
 # initialize templates dir
-templates = fastapi.templating.Jinja2Templates(
-    directory="routers", context_processors=[main_shared.jinja_context]
-)
+templates = fastapi.templating.Jinja2Templates(directory="routers", context_processors=[main_shared.jinja_context])
 
 app = fastapi.APIRouter(
     tags=["app"],
@@ -44,9 +42,7 @@ def secrets_create(
     user_id: int = fastapi.Depends(main_shared.get_user_id),
     db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
 ):
-    logger.info(
-        f"{context.rid_get()} secrets user {user_id} create '{secret_struct.name}' try"
-    )
+    logger.info(f"{context.rid_get()} secrets user {user_id} create '{secret_struct.name}' try")
 
     try:
         if secret_struct.key_id == 0:
@@ -67,13 +63,9 @@ def secrets_create(
         data = {"passw": secret_struct.password, "user": secret_struct.user}
 
         if user_key.type == models.crypto_key.TYPE_GPG_SYM:
-            pgp_msg = services.crypto_keys.gpg.encrypt(
-                key=user_key, plain_text=json.dumps(data)
-            )
+            pgp_msg = services.crypto_keys.gpg.encrypt(key=user_key, plain_text=json.dumps(data))
         elif user_key.type == models.crypto_key.TYPE_KMS_SYM:
-            pgp_msg = services.crypto_keys.kms.encrypt(
-                key=user_key, plain_text=json.dumps(data)
-            )
+            pgp_msg = services.crypto_keys.kms.encrypt(key=user_key, plain_text=json.dumps(data))
 
         # create database secret
         services.secrets.create(
@@ -84,13 +76,9 @@ def secrets_create(
             user_id=user_id,
         )
 
-        logger.info(
-            f"{context.rid_get()} secrets user {user_id} create '{secret_struct.name}' ok"
-        )
+        logger.info(f"{context.rid_get()} secrets user {user_id} create '{secret_struct.name}' ok")
     except Exception as e:
-        logger.error(
-            f"{context.rid_get()} secrets user {user_id} create '{secret_struct.name}' exception - {e}"
-        )
+        logger.error(f"{context.rid_get()} secrets user {user_id} create '{secret_struct.name}' exception - {e}")
 
     response = fastapi.responses.JSONResponse(content={"response": "ok"})
     response.headers["HX-Redirect"] = "/secrets"
@@ -118,9 +106,7 @@ def secrets_new(
             },
         )
     except Exception as e:
-        logger.error(
-            f"{context.rid_get()} secrets user {user_id} new render exception '{e}'"
-        )
+        logger.error(f"{context.rid_get()} secrets user {user_id} new render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
 
     return response

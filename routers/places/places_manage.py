@@ -19,9 +19,7 @@ import services.users
 logger = log.init("app")
 
 # initialize templates dir
-templates = fastapi.templating.Jinja2Templates(
-    directory="routers", context_processors=[main_shared.jinja_context]
-)
+templates = fastapi.templating.Jinja2Templates(directory="routers", context_processors=[main_shared.jinja_context])
 
 app = fastapi.APIRouter(
     tags=["app"],
@@ -44,9 +42,7 @@ def places_add(
 
     user = services.users.get_by_id(db_session=db_session, id=user_id)
 
-    logger.info(
-        f"{context.rid_get()} places add box '{box_name}' source '{source_name}' try"
-    )
+    logger.info(f"{context.rid_get()} places add box '{box_name}' source '{source_name}' try")
 
     try:
         box = services.geo.get_by_slug(db_session=db_session, slug=box_name)
@@ -62,14 +58,10 @@ def places_add(
             # get or create city
             city_name = geo_json.get("properties", {}).get("city", "")
             country_code = geo_json.get("properties", {}).get("country", "")
-            city = services.cities.get_by_name(
-                db_session=db_session, name=city_name, country_code=country_code
-            )
+            city = services.cities.get_by_name(db_session=db_session, name=city_name, country_code=country_code)
 
             if not city:
-                _, city = services.cities.create(
-                    db_session=db_session, name=city_name, country_code=country_code
-                )
+                _, city = services.cities.create(db_session=db_session, name=city_name, country_code=country_code)
         else:
             city = box
 
@@ -84,15 +76,11 @@ def places_add(
         place_id = place_db.id
         add_code = code
 
-        logger.info(
-            f"{context.rid_get()} places add box '{box_name}' source '{source_name}' ok"
-        )
+        logger.info(f"{context.rid_get()} places add box '{box_name}' source '{source_name}' ok")
     except Exception as e:
         place_id = -1
         add_code = 500
-        logger.error(
-            f"{context.rid_get()} places add box '{box_name}' source '{source_name} exception - '{e}'"
-        )
+        logger.error(f"{context.rid_get()} places add box '{box_name}' source '{source_name} exception - '{e}'")
 
     # shared template with geo_mapbox list
 
@@ -127,14 +115,10 @@ def places_edit(
 
     place_db = services.places.get_by_id(db_session=db_session, id=place_id)
 
-    brands_match_list = sorted(
-        list(services.places.brands.list_all(db_session=db_session))
-    )
+    brands_match_list = sorted(list(services.places.brands.list_all(db_session=db_session)))
     brands_match_list = sorted(set(brands_match_list) - set(place_db.brands))
 
-    tags_match_list = sorted(
-        list(services.places.tags.list_all(db_session=db_session, box=None))
-    )
+    tags_match_list = sorted(list(services.places.tags.list_all(db_session=db_session, box=None)))
     tags_match_list = sorted(set(tags_match_list) - set(place_db.tags))
 
     if "HX-Request" in request.headers:
@@ -173,9 +157,7 @@ def places_edit(
     return response
 
 
-@app.get(
-    "/places/{place_id}/brands/search", response_class=fastapi.responses.HTMLResponse
-)
+@app.get("/places/{place_id}/brands/search", response_class=fastapi.responses.HTMLResponse)
 def places_brands_search(
     request: fastapi.Request,
     place_id: int,
@@ -192,9 +174,7 @@ def places_brands_search(
 
     brand_search = name
 
-    brands_all_list = sorted(
-        list(services.places.brands.list_all(db_session=db_session))
-    )
+    brands_all_list = sorted(list(services.places.brands.list_all(db_session=db_session)))
 
     if not name:
         brands_match_list = brands_all_list
@@ -216,9 +196,7 @@ def places_brands_search(
             },
         )
     except Exception as e:
-        logger.error(
-            f"{context.rid_get()} places {place_id} brands 'search' exception '{e}'"
-        )
+        logger.error(f"{context.rid_get()} places {place_id} brands 'search' exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
 
     logger.info(f"{context.rid_get()} places {place_id} brands 'search' '{name}' ok")
@@ -226,9 +204,7 @@ def places_brands_search(
     return response
 
 
-@app.get(
-    "/places/{place_id}/brands/{edit_op}", response_class=fastapi.responses.HTMLResponse
-)
+@app.get("/places/{place_id}/brands/{edit_op}", response_class=fastapi.responses.HTMLResponse)
 def places_brands_update(
     request: fastapi.Request,
     place_id: int,
@@ -240,9 +216,7 @@ def places_brands_update(
     if user_id == 0:
         return fastapi.responses.RedirectResponse("/login")
 
-    logger.info(
-        f"{context.rid_get()} places {place_id} brands '{edit_op}' '{value}' try"
-    )
+    logger.info(f"{context.rid_get()} places {place_id} brands '{edit_op}' '{value}' try")
 
     place_db = services.places.get_by_id(db_session=db_session, id=place_id)
 
@@ -256,9 +230,7 @@ def places_brands_update(
     db_session.add(place_db)
     db_session.commit()
 
-    brands_match_list = sorted(
-        list(services.places.brands.list_all(db_session=db_session))
-    )
+    brands_match_list = sorted(list(services.places.brands.list_all(db_session=db_session)))
     brands_match_list = sorted(set(brands_match_list) - set(place_db.brands))
 
     try:
@@ -276,9 +248,7 @@ def places_brands_update(
         logger.error(f"{context.rid_get()} places edit render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
 
-    logger.info(
-        f"{context.rid_get()} places {place_id} brands '{edit_op}' '{value}' ok"
-    )
+    logger.info(f"{context.rid_get()} places {place_id} brands '{edit_op}' '{value}' ok")
 
     return response
 
@@ -321,9 +291,7 @@ def places_notes_update(
     return response
 
 
-@app.get(
-    "/places/{place_id}/tags/search", response_class=fastapi.responses.HTMLResponse
-)
+@app.get("/places/{place_id}/tags/search", response_class=fastapi.responses.HTMLResponse)
 def places_tags_search(
     request: fastapi.Request,
     place_id: int,
@@ -340,9 +308,7 @@ def places_tags_search(
 
     tag_search = name
 
-    tags_all_list = sorted(
-        list(services.places.tags.list_all(db_session=db_session, box=None))
-    )
+    tags_all_list = sorted(list(services.places.tags.list_all(db_session=db_session, box=None)))
 
     if not name:
         tags_match_list = tags_all_list
@@ -364,9 +330,7 @@ def places_tags_search(
             },
         )
     except Exception as e:
-        logger.error(
-            f"{context.rid_get()} places {place_id} tags 'search' exception '{e}'"
-        )
+        logger.error(f"{context.rid_get()} places {place_id} tags 'search' exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
 
     logger.info(f"{context.rid_get()} places {place_id} tags 'search' '{name}' ok")
@@ -374,9 +338,7 @@ def places_tags_search(
     return response
 
 
-@app.get(
-    "/places/{place_id}/tags/{edit_op}", response_class=fastapi.responses.HTMLResponse
-)
+@app.get("/places/{place_id}/tags/{edit_op}", response_class=fastapi.responses.HTMLResponse)
 def places_tags_update(
     request: fastapi.Request,
     place_id: int,
@@ -402,9 +364,7 @@ def places_tags_update(
     db_session.add(place_db)
     db_session.commit()
 
-    tags_match_list = sorted(
-        list(services.places.tags.list_all(db_session=db_session, box=None))
-    )
+    tags_match_list = sorted(list(services.places.tags.list_all(db_session=db_session, box=None)))
     tags_match_list = sorted(set(tags_match_list) - set(place_db.tags))
 
     try:
@@ -427,9 +387,7 @@ def places_tags_update(
     return response
 
 
-@app.get(
-    "/places/{place_id}/website/mod", response_class=fastapi.responses.JSONResponse
-)
+@app.get("/places/{place_id}/website/mod", response_class=fastapi.responses.JSONResponse)
 def places_website_update(
     request: fastapi.Request,
     place_id: int,

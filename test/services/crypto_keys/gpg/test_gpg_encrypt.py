@@ -12,9 +12,7 @@ def test_gpg_encrypt(key_gpg_me: models.CryptoKey):
         "password": "secret",
     }
 
-    pgp_msg = services.crypto_keys.gpg.encrypt(
-        key=key_gpg_me, plain_text=json.dumps(data)
-    )
+    pgp_msg = services.crypto_keys.gpg.encrypt(key=key_gpg_me, plain_text=json.dumps(data))
 
     assert pgp_msg.startswith("-----BEGIN PGP MESSAGE-----")
 

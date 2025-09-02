@@ -110,9 +110,7 @@ async def notme_middleware(request: fastapi.Request, call_next):
 
 
 # initialize templates dir
-templates = fastapi.templating.Jinja2Templates(
-    directory="routers", context_processors=[main_shared.jinja_context]
-)
+templates = fastapi.templating.Jinja2Templates(directory="routers", context_processors=[main_shared.jinja_context])
 
 
 @app.get("/favicon.ico")

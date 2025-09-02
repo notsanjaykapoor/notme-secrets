@@ -14,9 +14,7 @@ import services.users
 logger = log.init("app")
 
 # initialize templates dir
-templates = fastapi.templating.Jinja2Templates(
-    directory="routers", context_processors=[main_shared.jinja_context]
-)
+templates = fastapi.templating.Jinja2Templates(directory="routers", context_processors=[main_shared.jinja_context])
 
 app = fastapi.APIRouter(
     tags=["app"],
@@ -41,9 +39,7 @@ def bookmarks_list(
 
     logger.info(f"{context.rid_get()} bookmarks list query '{query}' try")
 
-    categories_all_list = sorted(
-        list(services.bookmarks.categories.list_all(db_session=db_session))
-    )
+    categories_all_list = sorted(list(services.bookmarks.categories.list_all(db_session=db_session)))
 
     try:
         list_result = services.bookmarks.list(
@@ -61,9 +57,7 @@ def bookmarks_list(
         if categories_cur_list:
             # filter tags by categories
             tags_all_list = sorted(
-                services.bookmarks.tags.list_by_categories(
-                    db_session=db_session, categories=categories_cur_list
-                )
+                services.bookmarks.tags.list_by_categories(db_session=db_session, categories=categories_cur_list)
             )
         else:
             tags_all_list = []
@@ -71,18 +65,14 @@ def bookmarks_list(
         query_code = 0
         query_result = f"query '{query}' returned {len(bookmarks_list)} results"
 
-        logger.info(
-            f"{context.rid_get()} bookmarks list query '{query}' ok - {len(bookmarks_list)} results"
-        )
+        logger.info(f"{context.rid_get()} bookmarks list query '{query}' ok - {len(bookmarks_list)} results")
     except Exception as e:
         bookmarks_list = []
 
         query_code = 500
         query_result = f"exception {e}"
 
-        logger.error(
-            f"{context.rid_get()} bookmarks list query '{query}' exception '{e}'"
-        )
+        logger.error(f"{context.rid_get()} bookmarks list query '{query}' exception '{e}'")
 
     if "HX-Request" in request.headers:
         template = "bookmarks/list_table.html"
@@ -111,9 +101,7 @@ def bookmarks_list(
         if "HX-Request" in request.headers:
             response.headers["HX-Push-Url"] = f"/bookmarks?query={query}"
     except Exception as e:
-        logger.error(
-            f"{context.rid_get()} bookmarks list query '{query}' render exception '{e}'"
-        )
+        logger.error(f"{context.rid_get()} bookmarks list query '{query}' render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
 
     return response

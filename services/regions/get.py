@@ -12,9 +12,7 @@ def get_all_names_slugs(db_session: sqlmodel.Session) -> list[models.Region]:
 def get_by_continent(db_session: sqlmodel.Session, name: str) -> models.Region | None:
     """ """
     db_select = (
-        sqlmodel.select(models.Region)
-        .where(models.Region.name == name)
-        .where(models.Region.type == "continent")
+        sqlmodel.select(models.Region).where(models.Region.name == name).where(models.Region.type == "continent")
     )
     db_object = db_session.exec(db_select).first()
 
@@ -23,11 +21,7 @@ def get_by_continent(db_session: sqlmodel.Session, name: str) -> models.Region |
 
 def get_by_country(db_session: sqlmodel.Session, name: str) -> models.Region | None:
     """ """
-    db_select = (
-        sqlmodel.select(models.Region)
-        .where(models.Region.name == name)
-        .where(models.Region.type == "country")
-    )
+    db_select = sqlmodel.select(models.Region).where(models.Region.name == name).where(models.Region.type == "country")
     db_object = db_session.exec(db_select).first()
 
     return db_object

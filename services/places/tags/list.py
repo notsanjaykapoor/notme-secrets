@@ -1,9 +1,11 @@
+import typing
+
 import sqlmodel
 
 import models
 
 
-def list_all(db_session: sqlmodel.Session, box: models.City | models.Region | None):
+def list_all(db_session: sqlmodel.Session, box: models.City | models.Region | None) -> typing.Set[str]:
     """
     Get set of all places tags, optionally filter by a city.
     """

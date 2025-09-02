@@ -46,9 +46,7 @@ def sync_download(
     cache_files_map = _cache_files_map(cache_files=os.listdir(cache_dir))
     cache_files_seen = []
 
-    blobs_list = services.storage.gcs.files_list(
-        bucket_name=bucket_name, folder_name=folder_name
-    )
+    blobs_list = services.storage.gcs.files_list(bucket_name=bucket_name, folder_name=folder_name)
 
     for blob in blobs_list:
         secret_file = blob.name.split("/")[-1]
@@ -107,9 +105,7 @@ def sync_download(
                 continue
 
             # find all related files and delete
-            cache_files_del_list = [
-                f for f in os.listdir(cache_dir) if f.startswith(cache_file_secret)
-            ]
+            cache_files_del_list = [f for f in os.listdir(cache_dir) if f.startswith(cache_file_secret)]
 
             for cache_file in cache_files_del_list:
                 os.remove(f"{cache_dir}{cache_file}")

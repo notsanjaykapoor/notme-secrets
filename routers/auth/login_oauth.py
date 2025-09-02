@@ -19,9 +19,7 @@ import services.utils
 logger = log.init("app")
 
 # initialize templates dir
-templates = fastapi.templating.Jinja2Templates(
-    directory="routers", context_processors=[main_shared.jinja_context]
-)
+templates = fastapi.templating.Jinja2Templates(directory="routers", context_processors=[main_shared.jinja_context])
 
 app = fastapi.APIRouter(
     tags=["app.oauth"],
@@ -120,16 +118,12 @@ def oauth_login_oauth2callback(
         user = services.users.get_by_email(db_session=db_session, email=user_email)
 
         if not user:
-            logger.error(
-                f"{context.rid_get()} oauth callback user '{user_email}' invalid"
-            )
+            logger.error(f"{context.rid_get()} oauth callback user '{user_email}' invalid")
             return fastapi.responses.RedirectResponse("/login/denied")
 
         # create jwt token
 
-        jwt_expires = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
-            days=30
-        )
+        jwt_expires = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=30)
         # jwt_expires = credentials.expiry  # google tokens last about an hour
 
         jwt_token = services.users.jwt_token_create(
@@ -143,9 +137,7 @@ def oauth_login_oauth2callback(
         )
     except Exception as e:
         jwt_token = ""
-        logger.error(
-            f"{context.rid_get()} oauth callback exception '{e}' - {traceback.format_exc()}"
-        )
+        logger.error(f"{context.rid_get()} oauth callback exception '{e}' - {traceback.format_exc()}")
         return fastapi.responses.RedirectResponse("/login/denied")
 
     logger.info(f"{context.rid_get()} oauth callback ok")

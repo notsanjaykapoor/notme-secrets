@@ -42,9 +42,7 @@ def sync_upload(
     cache_files_list = os.listdir(cache_org_dir)
     cache_files_list_new = [s for s in cache_files_list if s.endswith(".new")]
 
-    blobs_list = services.storage.gcs.files_list(
-        bucket_name=bucket_name, folder_name=folder_name
-    )
+    blobs_list = services.storage.gcs.files_list(bucket_name=bucket_name, folder_name=folder_name)
     blobs_names = [blob.name.split("/")[-1] for blob in blobs_list]
 
     file_upload_list = []
@@ -74,9 +72,7 @@ def sync_upload(
             )
 
             # get blob so we can get metadata
-            blob = services.storage.gcs.blob_get(
-                bucket_name=bucket_name, blob_name=blob_name_dst
-            )
+            blob = services.storage.gcs.blob_get(bucket_name=bucket_name, blob_name=blob_name_dst)
 
             # create cache version file
             cache_file_gpg_version = f"{cache_file_gpg}.{blob.generation}"

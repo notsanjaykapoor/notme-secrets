@@ -36,9 +36,7 @@ def list(org: str, query: str, offset: int, limit: int) -> Struct:
         file_name = match[2]  # e.g. notme/goog, without the .gpg extension
 
         if org:
-            file_name = file_name.replace(
-                f"{org}/", "", 1
-            )  # strip org from file_name, notme/goog become goog
+            file_name = file_name.replace(f"{org}/", "", 1)  # strip org from file_name, notme/goog become goog
 
         if not query or query.lower() in file_name.lower():
             file_uri = f"file://{source_host}/{file}"

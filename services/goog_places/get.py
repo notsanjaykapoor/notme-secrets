@@ -28,10 +28,8 @@ def get_by_id(goog_id: str) -> dict:  # noqa: F821
 
     # get city name
 
-    country, city, locality, area = (
-        services.goog_places.address_components_city_country(
-            addr_components=data_json.get("addressComponents", [])
-        )
+    country, city, locality, area = services.goog_places.address_components_city_country(
+        addr_components=data_json.get("addressComponents", [])
     )
 
     # map google data to geo_json format

@@ -14,9 +14,7 @@ import main_shared
 logger = log.init("app")
 
 # initialize templates dir
-templates = fastapi.templating.Jinja2Templates(
-    directory="routers", context_processors=[main_shared.jinja_context]
-)
+templates = fastapi.templating.Jinja2Templates(directory="routers", context_processors=[main_shared.jinja_context])
 
 app = fastapi.APIRouter(
     tags=["app"],
@@ -55,9 +53,7 @@ def turnstile(request: fastapi.Request):
 
 
 @app.post("/turnstile/verify")
-def turnstile_verify(
-    request: fastapi.Request, turnstile_struct: TurnstileStruct
-) -> fastapi.responses.JSONResponse:
+def turnstile_verify(request: fastapi.Request, turnstile_struct: TurnstileStruct) -> fastapi.responses.JSONResponse:
     logger.info(f"{context.rid_get()} turnstile verify try")
 
     data = {
@@ -69,9 +65,7 @@ def turnstile_verify(
 
     if turnstile_response.status_code != 200:
         logger.error(f"{context.rid_get()} turnstile error")
-        return fastapi.responses.JSONResponse(
-            content={"code": response.status_code}, status_code=200
-        )
+        return fastapi.responses.JSONResponse(content={"code": response.status_code}, status_code=200)
 
     site_response = turnstile_response.json()
 
@@ -79,9 +73,7 @@ def turnstile_verify(
 
     if not site_response.get("success", False):
         logger.error(f"{context.rid_get()} turnstile error")
-        response = fastapi.responses.JSONResponse(
-            content={"code": 400}, status_code=200
-        )
+        response = fastapi.responses.JSONResponse(content={"code": 400}, status_code=200)
         response.delete_cookie(cookie_name)
     else:
         logger.info(f"{context.rid_get()} turnstile verify ok")

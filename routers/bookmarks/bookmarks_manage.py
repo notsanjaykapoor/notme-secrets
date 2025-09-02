@@ -14,9 +14,7 @@ import services.users
 logger = log.init("app")
 
 # initialize templates dir
-templates = fastapi.templating.Jinja2Templates(
-    directory="routers", context_processors=[main_shared.jinja_context]
-)
+templates = fastapi.templating.Jinja2Templates(directory="routers", context_processors=[main_shared.jinja_context])
 
 app = fastapi.APIRouter(
     tags=["app"],
@@ -53,9 +51,7 @@ def bookmarks_create(
         uri=bm_struct.uri,
     )
 
-    logger.info(
-        f"{context.rid_get()} bookmarks create '{bm_struct.name}' ok - id {bm.id}"
-    )
+    logger.info(f"{context.rid_get()} bookmarks create '{bm_struct.name}' ok - id {bm.id}")
 
     response = fastapi.responses.JSONResponse(content={"response": "ok"})
     response.headers["HX-Redirect"] = f"/bookmarks/{bm.id}/edit"
@@ -130,9 +126,7 @@ def bookmarks_edit_categories(
     try:
         bm = services.bookmarks.get_by_id(db_session=db_session, id=bookmark_id)
 
-        logger.info(
-            f"{context.rid_get()} bookmarks {bm.id} edit categories {edit_op} '{categories}' try"
-        )
+        logger.info(f"{context.rid_get()} bookmarks {bm.id} edit categories {edit_op} '{categories}' try")
 
         categories_mod = [s.lower().strip() for s in categories.split(",")]
 
@@ -144,13 +138,9 @@ def bookmarks_edit_categories(
         db_session.add(bm)
         db_session.commit()
 
-        logger.info(
-            f"{context.rid_get()} bookmarks {bm.id} edit categories {edit_op} '{categories}' ok"
-        )
+        logger.info(f"{context.rid_get()} bookmarks {bm.id} edit categories {edit_op} '{categories}' ok")
     except Exception as e:
-        logger.error(
-            f"{context.rid_get()} bookmarks {bm.id} edit categories exception '{e}'"
-        )
+        logger.error(f"{context.rid_get()} bookmarks {bm.id} edit categories exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
 
     try:
@@ -164,9 +154,7 @@ def bookmarks_edit_categories(
             },
         )
     except Exception as e:
-        logger.error(
-            f"{context.rid_get()} bookmarks {bm.id} edit categories render exception '{e}'"
-        )
+        logger.error(f"{context.rid_get()} bookmarks {bm.id} edit categories render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
 
     return response
@@ -192,9 +180,7 @@ def bookmarks_edit_links(
     try:
         bm = services.bookmarks.get_by_id(db_session=db_session, id=bookmark_id)
 
-        logger.info(
-            f"{context.rid_get()} bookmarks {bm.id} links {edit_op} '{link}' try"
-        )
+        logger.info(f"{context.rid_get()} bookmarks {bm.id} links {edit_op} '{link}' try")
 
         if edit_op == "add":
             if not link.startswith("https://"):
@@ -207,13 +193,9 @@ def bookmarks_edit_links(
         db_session.add(bm)
         db_session.commit()
 
-        logger.info(
-            f"{context.rid_get()} bookmarks {bm.id} links {edit_op} '{link}' ok"
-        )
+        logger.info(f"{context.rid_get()} bookmarks {bm.id} links {edit_op} '{link}' ok")
     except Exception as e:
-        logger.error(
-            f"{context.rid_get()} bookmarks {bm.id} links {edit_op} exception '{e}'"
-        )
+        logger.error(f"{context.rid_get()} bookmarks {bm.id} links {edit_op} exception '{e}'")
 
     try:
         response = templates.TemplateResponse(
@@ -226,17 +208,13 @@ def bookmarks_edit_links(
             },
         )
     except Exception as e:
-        logger.error(
-            f"{context.rid_get()} bookmarks {bm.id} links add render exception '{e}'"
-        )
+        logger.error(f"{context.rid_get()} bookmarks {bm.id} links add render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
 
     return response
 
 
-@app.get(
-    "/bookmarks/{bookmark_id}/name/mod", response_class=fastapi.responses.JSONResponse
-)
+@app.get("/bookmarks/{bookmark_id}/name/mod", response_class=fastapi.responses.JSONResponse)
 def bookmarks_edit_name(
     request: fastapi.Request,
     bookmark_id: int,
@@ -275,17 +253,13 @@ def bookmarks_edit_name(
             },
         )
     except Exception as e:
-        logger.error(
-            f"{context.rid_get()} bookmarks {bm.id} edit notes render exception '{e}'"
-        )
+        logger.error(f"{context.rid_get()} bookmarks {bm.id} edit notes render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
 
     return response
 
 
-@app.get(
-    "/bookmarks/{bookmark_id}/notes/mod", response_class=fastapi.responses.JSONResponse
-)
+@app.get("/bookmarks/{bookmark_id}/notes/mod", response_class=fastapi.responses.JSONResponse)
 def bookmarks_edit_notes(
     request: fastapi.Request,
     bookmark_id: int,
@@ -310,9 +284,7 @@ def bookmarks_edit_notes(
 
         logger.info(f"{context.rid_get()} bookmarks {bm.id} edit notes ok")
     except Exception as e:
-        logger.error(
-            f"{context.rid_get()} bookmarks {bm.id} edit notes exception '{e}'"
-        )
+        logger.error(f"{context.rid_get()} bookmarks {bm.id} edit notes exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
 
     try:
@@ -326,9 +298,7 @@ def bookmarks_edit_notes(
             },
         )
     except Exception as e:
-        logger.error(
-            f"{context.rid_get()} bookmarks {bm.id} edit notes render exception '{e}'"
-        )
+        logger.error(f"{context.rid_get()} bookmarks {bm.id} edit notes render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
 
     return response
@@ -354,9 +324,7 @@ def bookmarks_edit_tags(
     try:
         bm = services.bookmarks.get_by_id(db_session=db_session, id=bookmark_id)
 
-        logger.info(
-            f"{context.rid_get()} bookmarks {bm.id} edit tags {edit_op} '{tags}' try"
-        )
+        logger.info(f"{context.rid_get()} bookmarks {bm.id} edit tags {edit_op} '{tags}' try")
 
         tags_mod = [tag.lower().strip() for tag in tags.split(",")]
 
@@ -368,9 +336,7 @@ def bookmarks_edit_tags(
         db_session.add(bm)
         db_session.commit()
 
-        logger.info(
-            f"{context.rid_get()} bookmarks {bm.id} edit tags {edit_op} '{tags}' ok"
-        )
+        logger.info(f"{context.rid_get()} bookmarks {bm.id} edit tags {edit_op} '{tags}' ok")
     except Exception as e:
         logger.error(f"{context.rid_get()} bookmarks {bm.id} edit tags exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
@@ -386,17 +352,13 @@ def bookmarks_edit_tags(
             },
         )
     except Exception as e:
-        logger.error(
-            f"{context.rid_get()} bookmarks {bm.id} edit tags render exception '{e}'"
-        )
+        logger.error(f"{context.rid_get()} bookmarks {bm.id} edit tags render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
 
     return response
 
 
-@app.get(
-    "/bookmarks/{bookmark_id}/uri/mod", response_class=fastapi.responses.JSONResponse
-)
+@app.get("/bookmarks/{bookmark_id}/uri/mod", response_class=fastapi.responses.JSONResponse)
 def bookmarks_edit_uri(
     request: fastapi.Request,
     bookmark_id: int,
@@ -435,9 +397,7 @@ def bookmarks_edit_uri(
             },
         )
     except Exception as e:
-        logger.error(
-            f"{context.rid_get()} bookmarks {bm.id} edit uri render exception '{e}'"
-        )
+        logger.error(f"{context.rid_get()} bookmarks {bm.id} edit uri render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
 
     return response

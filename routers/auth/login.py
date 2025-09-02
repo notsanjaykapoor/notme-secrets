@@ -17,9 +17,7 @@ import services.users
 logger = log.init("app")
 
 # initialize templates dir
-templates = fastapi.templating.Jinja2Templates(
-    directory="routers", context_processors=[main_shared.jinja_context]
-)
+templates = fastapi.templating.Jinja2Templates(directory="routers", context_processors=[main_shared.jinja_context])
 
 app = fastapi.APIRouter(
     tags=["app.oauth"],
@@ -79,9 +77,7 @@ def users_login(
         login_pass = os.environ.get("OAUTH_PASS", "")
 
         if not user or not login_pass or user_pass != login_pass:
-            logger.info(
-                f"{context.rid_get()} users login '{user_email}' credentials invalid"
-            )
+            logger.info(f"{context.rid_get()} users login '{user_email}' credentials invalid")
             return templates.TemplateResponse(
                 request,
                 "auth/login_error.html",
@@ -91,9 +87,7 @@ def users_login(
                 },
             )
 
-        jwt_expires = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
-            days=30
-        )
+        jwt_expires = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=30)
 
         jwt_token = services.users.jwt_token_create(
             user=user,

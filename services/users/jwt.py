@@ -9,9 +9,7 @@ import models
 JWT_ALGORITHM = "HS256"
 
 
-def jwt_token_create(
-    user: models.User, oauth_token: str, oauth_expiry: datetime.datetime
-) -> str:
+def jwt_token_create(user: models.User, oauth_token: str, oauth_expiry: datetime.datetime) -> str:
     jwt_payload = {
         "exp": oauth_expiry,
         "sub": os.environ["JWT_ISSUER"],
@@ -27,8 +25,6 @@ def jwt_token_create(
 def jwt_token_decode(token: str) -> dict:
     try:
         token_raw = re.sub("(Bearer|bearer)\s+", "", token)
-        return jwt.decode(
-            token_raw, os.environ["JWT_SECRET"], algorithms=[JWT_ALGORITHM]
-        )
+        return jwt.decode(token_raw, os.environ["JWT_SECRET"], algorithms=[JWT_ALGORITHM])
     except Exception:
         return {}

@@ -16,8 +16,6 @@ def get_by_name(org: str, name: str) -> models.SecretData | None:
     if not os.path.exists(file_path):
         return None
 
-    secret_data = models.SecretData(
-        name=name, path=file_path, uri=f"file://{source_host}/{file_path}"
-    )
+    secret_data = models.SecretData(name=name, path=file_path, uri=f"file://{source_host}/{file_path}")
 
     return secret_data

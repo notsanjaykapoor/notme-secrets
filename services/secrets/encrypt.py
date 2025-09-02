@@ -15,8 +15,6 @@ def encrypt(password: str, user: str = "") -> gnupg.Crypt:
     if user:
         data.append(f"user: {user}")
 
-    crypt_struct = gpg.encrypt(
-        data="\n".join(data), recipients=[gpg_key.get("fingerprint")]
-    )
+    crypt_struct = gpg.encrypt(data="\n".join(data), recipients=[gpg_key.get("fingerprint")])
 
     return crypt_struct
