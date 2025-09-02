@@ -9,9 +9,7 @@ sys.path.insert(1, os.path.join(sys.path[0], ".."))
 import dot_init
 
 import asyncclick as click
-import pydantic_ai
 
-import models
 import services.agents
 import services.console
 import services.database.session
@@ -29,9 +27,15 @@ async def conv_start() -> int:
     """
     services.console.print_status("conversation start: \r\n")
 
+    #
+    # the pydantic_ai framework distinguishes between tools and output types.
+    # 
+    # tools are used during the user turn to run and provide data for the query.
+    # output types are called during the user turn to end the turn.
+    #
+
     agent_anth = services.agents.create_agent_anthropic(
-        tools=[],
-        # tools=services.places.functions.list_tools()
+        tools=services.places.functions.list_tools()
     )
 
     agent_places = services.agents.create_agent_places(
@@ -64,22 +68,13 @@ async def conv_start() -> int:
             print(result.new_messages_json())
             print("")
         else:
-            async with agent_anth.run_stream(
-                user_prompt=user_query,
-                message_history=msgs_history,
-            ) as response:
-                async for text in response.stream_text(delta=True):
-                    if text:
-                        services.console.print_fragment(text)
+            async with agent_anth.iter(user_prompt=user_query, message_history=msgs_history) as agent_run:
+                async for node in agent_run:
+                    print(node)
+                    print("")
 
-                print("")
-
-                msgs_history.extend(response.new_messages())
-
-                services.console.print_status(f"\r\nconversation history {len(msgs_history)} messages:\r\n")
-            
-                print(msgs_history) # xxx
-                print("")
+                services.console.print_fragment(agent_run.result.output)
+                print("\r\n")
 
     return 0
 

@@ -9,12 +9,14 @@ import pydantic_ai.providers.google
 import services.anthropic
 
 
-def create_agent_anthropic(tools: list) -> pydantic_ai.Agent:
+def create_agent_anthropic(
+    output_types: list = [str], tools: list = []
+) -> pydantic_ai.Agent:
     agent = pydantic_ai.Agent(
         deps_type=dict,
         model=model_anthropic(),
         # model="google-gla:gemini-1.5-flash",
-        output_type=[str],
+        output_type=output_types,
         system_prompt=(
             "You are a helpful agent. Be concise, reply with one sentence if possible."
         ),
@@ -24,12 +26,14 @@ def create_agent_anthropic(tools: list) -> pydantic_ai.Agent:
     return agent
 
 
-def create_agent_google(tools: list) -> pydantic_ai.Agent:
+def create_agent_google(
+    output_types: list = [str], tools: list = []
+) -> pydantic_ai.Agent:
     agent = pydantic_ai.Agent(
         deps_type=dict,
         model=model_gemini(),
         # model="google-gla:gemini-1.5-flash",
-        output_type=[str],
+        output_type=output_types,
         system_prompt=(
             "You are a helpful agent. Be concise, reply with one sentence if possible."
         ),
