@@ -9,8 +9,10 @@ sys.path.insert(1, os.path.join(sys.path[0], ".."))
 import dot_init
 
 import asyncclick as click
+import pydantic_ai.mcp
 
 import services.agents
+import services.agents.tools
 import services.console
 import services.database.session
 import services.places.functions
@@ -21,7 +23,7 @@ def cli():
     pass
 
 @click.command()
-async def conv_start() -> int:
+async def c_start() -> int:
     """
     Start a new conversation
     """
@@ -31,16 +33,17 @@ async def conv_start() -> int:
     # the pydantic_ai framework distinguishes between tools and output types.
     # 
     # tools are used during the user turn to run and provide data for the query.
-    # output types are called during the user turn to end the turn.
+    # output types are called during a user turn and end that turn with their output.
     #
 
-    agent_anth = services.agents.create_agent_anthropic(
-        tools=services.places.functions.list_tools()
+    agent_anth = services.agents.create_agent_general(
+        model=services.agents.model_anthropic(),
+        tools=services.agents.tools.list(),
     )
 
     agent_places = services.agents.create_agent_places(
         model=services.agents.model_gemini(),
-        output_types=services.places.functions.list_outputs(),
+        output_types=services.places.functions.list(),
     )
 
     msgs_history = []
@@ -58,7 +61,10 @@ async def conv_start() -> int:
 
         print("")
 
-        if services.places.functions.match_tool_use(query=user_query):
+        with services.database.session.get() as db_session:
+            tool_use = services.places.functions.match_tool_use(db_session=db_session, query=user_query)
+
+        if tool_use:
             result = await agent_places.run(user_prompt=user_query)
 
             services.console.print_fragment(result.output)
@@ -78,7 +84,7 @@ async def conv_start() -> int:
 
     return 0
 
-cli.add_command(conv_start)
+cli.add_command(c_start)
 
 if __name__ == "__main__":
     cli()

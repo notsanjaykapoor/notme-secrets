@@ -1,9 +1,11 @@
 import re
 
+import sqlmodel
+
 import services.places.tags
 
 
-def match_tool_use(query: str) -> int:
+def match_tool_use(db_session: sqlmodel.Session, query: str) -> int:
     """
     Returns 1 if query looks like a places tool signature, 0 otherwise.
     """
@@ -11,8 +13,14 @@ def match_tool_use(query: str) -> int:
     if re.search(r"web search", query):
         return 0
 
-    if re.search(r"find|search", query) and re.search(r"brand|fashion|hotel|places|restaurants?", query):
-        # if re.search(r"find|search fashion|hotel|places|restaurants?", query):
+    tags_set = services.places.tags.list_all(
+        db_session=db_session,
+        box=None,
+    )
+
+    tags_re = "|".join(list(tags_set))
+
+    if re.search(r"find|search", query) and re.search(rf"{tags_re}", query):
         return 1
 
     return 0

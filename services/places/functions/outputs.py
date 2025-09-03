@@ -11,7 +11,7 @@ def list_by_brands_anywhere(brands: list[str]) -> str:
       brands: List of brands.
 
     Returns:
-        list of places.
+        list of places as a markdown string
     """
     brands_str = ",".join([s.lower() for s in brands if s])
 
@@ -27,7 +27,7 @@ def list_by_brands_city(city: str, brands: list[str]) -> str:
       brands: List of brands.
 
     Returns:
-        list of places.
+        list of places as a markdown string
     """
     city_normal = city.lower()
     brands_str = ",".join([s.lower() for s in brands if s])
@@ -44,7 +44,7 @@ def list_by_brands_country(country: str, brands: list[str]) -> str:
       brands: List of brands.
 
     Returns:
-        list of places.
+        list of places as a markdown string
     """
     country_normal = country.lower()
     brands_str = ",".join([s.lower() for s in brands if s])
@@ -61,7 +61,7 @@ def list_by_tags_city(city: str, tags: list[str]) -> str:
       tags: List of tags.
 
     Returns:
-        list of places.
+        list of places as a markdown string
     """
     city_normal = city.lower()
     tags_str = ",".join([s.lower() for s in tags if s])
@@ -78,7 +78,7 @@ def list_by_tags_country(country: str, tags: list[str]) -> str:
       tags: List of tags.
 
     Returns:
-        list of places.
+        list of places as a markdown string
     """
     country_normal = country.lower()
     tags_str = ",".join([s.lower() for s in tags if s])
@@ -108,14 +108,14 @@ def _output_markdown(places: list[models.Place]) -> str:
 
     md_list.append(f"found {len(places)} places:\n\n")
 
-    for i, place in enumerate(places):
-        md_list.append(f"- {place.name}, {place.city}\n")
+    for place in places:
+        md_list.append(f"**{place.name}, {place.city}**\n")
 
         if place.brands_count > 0:
-            md_list.append(f"  brands: {place.brands_string}\n")
+            md_list.append(f"- brands: {place.brands_string}\n")
 
         if place.website:
-            md_list.append(f"  website: {place.website}\n")
+            md_list.append(f"- website: {place.website}\n")
 
         md_list.append("\n")
 

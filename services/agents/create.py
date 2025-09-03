@@ -8,33 +8,21 @@ import pydantic_ai.providers.google
 
 import services.anthropic
 
-SYSTEM_PROMPT_OUTPUTS = "You are a helpful agent. Use one of the following tools to help compose your answer."
+system_prompt_general = "You are a helpful agent."
 
-SYSTEM_PROMPT_TOOLS = (
-    "You are a helpful agent. Be concise, reply with one sentence if possible. "
-    "Never mention tools if you can't use them in the query."
+system_prompt_outputs = (
+    "You are a helpful agent. Use one of the following tools if possible to help compose your answer."
 )
 
 
-def create_agent_anthropic(output_types: list = [str], tools: list = [], toolsets: list = []) -> pydantic_ai.Agent:
+def create_agent_general(
+    model: pydantic_ai.models, output_types: list = [str], tools: list = [], toolsets: list = []
+) -> pydantic_ai.Agent:
     agent = pydantic_ai.Agent(
         deps_type=dict,
-        model=model_anthropic(),
+        model=model,
         output_type=output_types,
-        system_prompt=SYSTEM_PROMPT_TOOLS,
-        tools=tools,
-        toolsets=toolsets,
-    )
-
-    return agent
-
-
-def create_agent_google(output_types: list = [str], tools: list = [], toolsets: list = []) -> pydantic_ai.Agent:
-    agent = pydantic_ai.Agent(
-        deps_type=dict,
-        model=model_gemini(),  # "google-gla:gemini-1.5-flash"
-        output_type=output_types,
-        system_prompt=SYSTEM_PROMPT_TOOLS,
+        system_prompt=system_prompt_general,
         tools=tools,
         toolsets=toolsets,
     )
@@ -47,7 +35,7 @@ def create_agent_places(model: pydantic_ai.models, output_types: list) -> pydant
         deps_type=dict,
         model=model,
         output_type=output_types,
-        system_prompt=SYSTEM_PROMPT_OUTPUTS,
+        system_prompt=system_prompt_outputs,
         tools=[],
     )
 

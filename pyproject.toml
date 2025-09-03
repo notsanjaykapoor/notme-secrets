@@ -20,7 +20,7 @@ dependencies = [
     "jinja2>=3.1.4",
     "psycopg2>=2.9.10",
     "pydantic>=2.9.0",
-    "pydantic-ai-slim[anthropic,google]>=0.8.1",
+    "pydantic-ai-slim[anthropic,google,mcp]>=0.8.1",
     "pyjwt>=2.9.0",
     "pytest>=8.3.2",
     "pytest-asyncio>=1.1.0",
@@ -39,6 +39,9 @@ dependencies = [
 ]
 
 ignore = ["lint.ignore"]
+
+[tool.ruff]
+line-length = 120
 
 [tool.ruff.lint]
 # Enable Pyflakes `E` and `F` codes by default.

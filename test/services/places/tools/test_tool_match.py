@@ -1,10 +1,9 @@
 import sqlmodel
 
-import models
 import services.places.functions
 
 
-def test_tool_match():
+def test_tool_match(db_session: sqlmodel.Session):
     queries_match = [
         "find fashion in paris",
         "find fashion in france",
@@ -14,7 +13,7 @@ def test_tool_match():
     ]
 
     for query in queries_match:
-        code = services.places.functions.match_tool_use(query=query)
+        code = services.places.functions.match_tool_use(db_session=db_session, query=query)
         assert code == 1
 
     queries_nomatch = [
@@ -22,5 +21,5 @@ def test_tool_match():
     ]
 
     for query in queries_nomatch:
-        code = services.places.functions.match_tool_use(query=query)
+        code = services.places.functions.match_tool_use(db_session=db_session, query=query)
         assert code == 0

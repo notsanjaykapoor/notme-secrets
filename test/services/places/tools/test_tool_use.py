@@ -1,7 +1,6 @@
 import sqlmodel
 
 import models
-import services.database
 import services.places.functions
 
 

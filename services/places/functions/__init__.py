@@ -1,4 +1,4 @@
-from .list import list_outputs, list_tools
+from .list import list
 from .outputs import (
     list_by_brands_anywhere,
     list_by_brands_city,
