@@ -5,9 +5,11 @@ import sqlalchemy
 import sqlalchemy.future
 import sqlmodel
 import sqlmodel.pool
+import ulid
 
 import dot_init  # noqa: F401
 import models
+import services.convs
 import services.database
 import services.places
 
@@ -140,6 +142,22 @@ def city_tokyo_fixture(db_session: sqlmodel.Session):
     yield city
 
     services.database.truncate_tables(db_session=db_session, table_names=["cities"])
+
+
+@pytest.fixture(name="conv_1")
+def conv_obj_fixture(db_session: sqlmodel.Session, user_1: models.User):
+    code, conv_db = services.convs.create(
+        db_session=db_session,
+        name=f"c-{ulid.new().str}",
+        user_id=user_1.id,
+    )
+
+    assert code == 0
+    assert conv_db.id
+
+    yield conv_db
+
+    services.database.truncate_tables(db_session=db_session, table_names=["conv_objs"])
 
 
 @pytest.fixture(name="key_gpg_1")

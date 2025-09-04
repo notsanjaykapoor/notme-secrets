@@ -1,6 +1,6 @@
 import pydantic_ai
 
-import services.agents.tools
+import services.tools.parallel
 
 
 def list() -> list[pydantic_ai.Tool]:
@@ -8,6 +8,6 @@ def list() -> list[pydantic_ai.Tool]:
     List all available tools
     """
     return [
-        pydantic_ai.Tool(services.agents.tools.parallel_search, takes_ctx=False),
+        pydantic_ai.Tool(services.tools.parallel.par_search, takes_ctx=True),
         # pydantic_ai.Tool(services.places.functions.list_by_tags_city, takes_ctx=False),
     ]

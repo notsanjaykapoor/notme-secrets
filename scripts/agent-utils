@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import json
 import os
 import re
 import sys
@@ -9,13 +10,17 @@ sys.path.insert(1, os.path.join(sys.path[0], ".."))
 import dot_init
 
 import asyncclick as click
-import pydantic_ai.mcp
+import pydantic_core
+import ulid
 
+import models
 import services.agents
-import services.agents.tools
 import services.console
+import services.convs
+import services.convs.msgs
 import services.database.session
 import services.places.functions
+import services.tools
 
 
 @click.group()
@@ -23,7 +28,24 @@ def cli():
     pass
 
 @click.command()
-async def c_start() -> int:
+@click.option("--id", "conv_id", default=None, required=True, help="conv id")
+async def conv_load(conv_id: int) -> int:
+    """
+    Load an existing conversation
+    """
+    services.console.print_status(f"conversation load {conv_id}: \r\n")
+
+    with services.database.session.get() as db_session:
+        _code, model_msgs = services.convs.msgs.load_by_conv_id(db_session=db_session, conv_id=conv_id)
+
+        for model_msg in model_msgs:
+            breakpoint() #
+            print(model_msg)
+
+
+@click.command()
+@click.option("--user", "user_id", default=1, required=False, help="user id")
+async def conv_start(user_id: int) -> int:
     """
     Start a new conversation
     """
@@ -38,7 +60,7 @@ async def c_start() -> int:
 
     agent_anth = services.agents.create_agent_general(
         model=services.agents.model_anthropic(),
-        tools=services.agents.tools.list(),
+        tools=services.tools.list(),
     )
 
     agent_places = services.agents.create_agent_places(
@@ -46,16 +68,17 @@ async def c_start() -> int:
         output_types=services.places.functions.list(),
     )
 
+    conv_db: models.ConvObj = None
     msgs_history = []
 
     while True:
-        user_query = input("query: ")
+        user_query = input("user: ")
 
         if re.match(r"^(bye|exit|quit)", user_query):
             services.console.print_status("conversation exiting")
             break
 
-        if re.match(r"^(breakpoint|debug)", user_query):
+        if re.match(r"^(break|breakpoint|debug)", user_query):
             services.console.print_status("conversation debugger")
             breakpoint()
 
@@ -64,27 +87,61 @@ async def c_start() -> int:
         with services.database.session.get() as db_session:
             tool_use = services.places.functions.match_tool_use(db_session=db_session, query=user_query)
 
-        if tool_use:
-            result = await agent_places.run(user_prompt=user_query)
+            if tool_use:
+                agent_result = await agent_places.run(user_prompt=user_query, deps={})
 
-            services.console.print_fragment(result.output)
-            print("")
+                services.console.print_fragment(agent_result.output)
+                print("")
 
-            print(f"messages turn size {len(result.new_messages())}") # xxx
-            print(result.new_messages_json())
-            print("")
-        else:
-            async with agent_anth.iter(user_prompt=user_query, message_history=msgs_history) as agent_run:
-                async for node in agent_run:
-                    print(node)
+                print(f"messages turn size {len(agent_result.new_messages())}") # xxx
+
+                # print json output
+                json_bytes = agent_result.new_messages_json()
+                json_list = json.loads(json_bytes.decode("utf-8"))
+
+                print("")
+                for msg in json_list:
+                    print(msg)
                     print("")
+            else:
+                if not conv_db:
+                    code, conv_db = services.convs.create(db_session=db_session, name=f"c-{ulid.new().str}", user_id=user_id)
 
-                services.console.print_fragment(agent_run.result.output)
-                print("\r\n")
+                agent_deps = {
+                    "conv_id": conv_db.id,
+                    "user_id": user_id,
+                }
+
+                async with agent_anth.iter(user_prompt=user_query, message_history=msgs_history, deps=agent_deps) as agent_run:
+                    async for node in agent_run:
+                        print(node)
+                        print("")
+
+                    agent_result = agent_run.result
+                    model_msgs = agent_result.new_messages()
+
+                    services.console.print_fragment(agent_result.output)
+                    print("\r\n")
+
+                    breakpoint() #
+
+                    msgs_history.extend(model_msgs)
+
+                    services.convs.msgs.persist(
+                        db_session=db_session, conv_id=conv_db.id, user_id=user_id, model_msgs=model_msgs
+                    )
+
+                    # json_list = pydantic_core.to_jsonable_python(agent_msgs)
+
+                    # print("")
+                    # for msg in json_list:
+                    #     print(msg)
+                    #     print("")
 
     return 0
 
-cli.add_command(c_start)
+cli.add_command(conv_load)
+cli.add_command(conv_start)
 
 if __name__ == "__main__":
     cli()
