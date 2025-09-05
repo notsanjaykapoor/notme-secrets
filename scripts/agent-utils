@@ -30,6 +30,26 @@ def cli():
 
 @click.command()
 @click.pass_context
+@click.option("--id", "conv_ids", default=None, type=str, required=True, help="conv id")
+async def conv_delete(ctx, conv_ids: str) -> int:
+    """
+    Delete an existing conversation
+    """
+    conv_ids = [int(id) for id in conv_ids.split(",")]
+
+    with services.database.session.get() as db_session:
+        for conv_id in conv_ids:
+            code, msg_ids = services.convs.delete_by_id(db_session, id=conv_id)
+
+            if code != 0:
+                services.console.print_error(f"conv id {conv_id} delete error {code}")
+                continue
+            
+            services.console.print_ok(f"conv_id {conv_id}, msg_ids {msg_ids} deleted")
+
+
+@click.command()
+@click.pass_context
 @click.option("--id", "conv_id", default=None, required=True, help="conv id")
 async def conv_load(ctx, conv_id: int) -> int:
     """
@@ -57,7 +77,7 @@ async def conv_load(ctx, conv_id: int) -> int:
     await ctx.invoke(conv_start, user_id=conv_db.user_id, conv_id=conv_db.id)
 
 @click.command()
-@click.option("--user", "user_id", default=1, required=False, help="user id")
+@click.option("--user-id", "user_id", default=1, required=False, help="user id")
 @click.option("--conv-id", "conv_id", default=0, required=False, help="conv id to resume")
 async def conv_start(user_id: int, conv_id: int) -> int:
     """
@@ -72,7 +92,7 @@ async def conv_start(user_id: int, conv_id: int) -> int:
 
     agent_anth = services.agents.create_agent_general(
         model=services.agents.model_anthropic(),
-        tools=services.tools.list(),
+        tools=[], # services.tools.list(),
     )
 
     agent_places = services.agents.create_agent_places(
@@ -123,8 +143,16 @@ async def conv_start(user_id: int, conv_id: int) -> int:
 
                 async with agent_anth.iter(user_prompt=user_query, message_history=msgs_history, deps=agent_deps) as agent_run:
                     async for node in agent_run:
-                        print(node)
-                        print("")
+                        # print(node)
+                        # print("")
+                        output_struct = services.agents.output_node(node=node)
+
+                        if output_struct.kind == "request":
+                            services.console.print_fragment_user(output_struct.text, end="\n\n")
+                        elif output_struct.kind == "response":
+                            services.console.print_fragment_system(output_struct.text, end="\n\n")
+                        elif output_struct.kind == "end":
+                            pass # skip
 
                     agent_result = agent_run.result
                     model_msgs = agent_result.new_messages()
@@ -140,6 +168,7 @@ async def conv_start(user_id: int, conv_id: int) -> int:
 
     return 0
 
+cli.add_command(conv_delete)
 cli.add_command(conv_load)
 cli.add_command(conv_start)
 

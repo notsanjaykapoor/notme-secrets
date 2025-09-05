@@ -11,6 +11,7 @@ import dot_init
 import asyncclick as click
 
 import services.tools
+import services.tools.anthropic
 import services.tools.exa
 import services.tools.parallel
 
@@ -19,6 +20,21 @@ import services.tools.parallel
 def cli():
     pass
 
+
+
+@click.command()
+@click.option("--query", "query", default=None, required=True, help="user query")
+@click.option("--max-uses", "max_uses", default=1, required=True, help="max search queries")
+async def anth_search(query: str, max_uses: int) -> int:
+    """
+    Run anthropic web_search tool
+    """
+    results_list = await services.tools.anthropic.anth_search(context=None, query=query, max_uses=max_uses)
+
+    for i, result in enumerate(results_list):
+        print(f"result {i+1}:")
+        print(json.dumps(result, indent=2))
+        print("")
 
 
 @click.command()
@@ -74,6 +90,7 @@ async def par_search(query: str) -> int:
         print("")
 
 
+cli.add_command(anth_search)
 cli.add_command(exa_answer)
 cli.add_command(exa_search)
 cli.add_command(par_search)

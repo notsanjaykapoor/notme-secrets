@@ -19,6 +19,7 @@ def create_agent_general(
     model: pydantic_ai.models, output_types: list = [str], tools: list = [], toolsets: list = []
 ) -> pydantic_ai.Agent:
     agent = pydantic_ai.Agent(
+        builtin_tools=[pydantic_ai.WebSearchTool(max_uses=1, search_context_size="low")],
         deps_type=dict,
         model=model,
         output_type=output_types,
@@ -43,9 +44,7 @@ def create_agent_places(model: pydantic_ai.models, output_types: list) -> pydant
 
 
 def model_anthropic() -> pydantic_ai.models:
-    settings = pydantic_ai.models.ModelSettings(
-        parallel_tool_calls=True
-    )
+    settings = pydantic_ai.models.ModelSettings(parallel_tool_calls=True)
 
     return pydantic_ai.models.anthropic.AnthropicModel(
         model_name=services.anthropic.query.MODEL_DEFAULT,
