@@ -43,9 +43,14 @@ def create_agent_places(model: pydantic_ai.models, output_types: list) -> pydant
 
 
 def model_anthropic() -> pydantic_ai.models:
+    settings = pydantic_ai.models.ModelSettings(
+        parallel_tool_calls=True
+    )
+
     return pydantic_ai.models.anthropic.AnthropicModel(
         model_name=services.anthropic.query.MODEL_DEFAULT,
         provider=pydantic_ai.providers.anthropic.AnthropicProvider(api_key=os.getenv("ANTHROPIC_API_KEY")),
+        settings=settings,
     )
 
 

@@ -1,5 +1,3 @@
-import pydantic_ai
-
 import services.places.functions
 
 

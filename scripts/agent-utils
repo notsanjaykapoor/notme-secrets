@@ -10,6 +10,7 @@ sys.path.insert(1, os.path.join(sys.path[0], ".."))
 import dot_init
 
 import asyncclick as click
+import pydantic_ai.agent
 import pydantic_core
 import ulid
 
@@ -28,29 +29,40 @@ def cli():
     pass
 
 @click.command()
+@click.pass_context
 @click.option("--id", "conv_id", default=None, required=True, help="conv id")
-async def conv_load(conv_id: int) -> int:
+async def conv_load(ctx, conv_id: int) -> int:
     """
     Load an existing conversation
     """
-    services.console.print_status(f"conversation load {conv_id}: \r\n")
+    print("")
 
     with services.database.session.get() as db_session:
+        conv_db = services.convs.get_by_id(db_session, id=conv_id)
+
+        if not conv_db:
+            services.console.print_error(f"conv {conv_id} invalid")
+            exit(-1)
+
         _code, model_msgs = services.convs.msgs.load_by_conv_id(db_session=db_session, conv_id=conv_id)
 
         for model_msg in model_msgs:
-            breakpoint() #
-            print(model_msg)
+            if model_msg.kind == "request":
+                output_str = services.agents.output_model_request(msg=model_msg)
+                services.console.print_fragment_user(output_str, end="\n\n")
+            elif model_msg.kind == "response":
+                output_str = services.agents.output_model_response(msg=model_msg)
+                services.console.print_fragment_system(output_str, end="\n\n")
 
+    await ctx.invoke(conv_start, user_id=conv_db.user_id, conv_id=conv_db.id)
 
 @click.command()
 @click.option("--user", "user_id", default=1, required=False, help="user id")
-async def conv_start(user_id: int) -> int:
+@click.option("--conv-id", "conv_id", default=0, required=False, help="conv id to resume")
+async def conv_start(user_id: int, conv_id: int) -> int:
     """
-    Start a new conversation
+    Start or resume a conversation
     """
-    services.console.print_status("conversation start: \r\n")
-
     #
     # the pydantic_ai framework distinguishes between tools and output types.
     # 
@@ -72,14 +84,14 @@ async def conv_start(user_id: int) -> int:
     msgs_history = []
 
     while True:
-        user_query = input("user: ")
+        user_query = input("\x1b[1;33muser: \x1b[0m")
 
         if re.match(r"^(bye|exit|quit)", user_query):
-            services.console.print_status("conversation exiting")
+            services.console.print_status("\nconversation exiting")
             break
 
         if re.match(r"^(break|breakpoint|debug)", user_query):
-            services.console.print_status("conversation debugger")
+            services.console.print_status("\nconversation debugger")
             breakpoint()
 
         print("")
@@ -90,22 +102,19 @@ async def conv_start(user_id: int) -> int:
             if tool_use:
                 agent_result = await agent_places.run(user_prompt=user_query, deps={})
 
-                services.console.print_fragment(agent_result.output)
+                services.console.print_fragment_system(
+                    services.agents.output_tool(output=agent_result.output)
+                )
                 print("")
 
                 print(f"messages turn size {len(agent_result.new_messages())}") # xxx
-
-                # print json output
-                json_bytes = agent_result.new_messages_json()
-                json_list = json.loads(json_bytes.decode("utf-8"))
-
-                print("")
-                for msg in json_list:
-                    print(msg)
-                    print("")
             else:
                 if not conv_db:
-                    code, conv_db = services.convs.create(db_session=db_session, name=f"c-{ulid.new().str}", user_id=user_id)
+                    if conv_id == 0:
+                        # create new conversation
+                        code, conv_db = services.convs.create(db_session=db_session, name=f"c-{ulid.new().str}", user_id=user_id)
+                    else:
+                        conv_db = services.convs.get_by_id(db_session=db_session, id=conv_id)
 
                 agent_deps = {
                     "conv_id": conv_db.id,
@@ -120,23 +129,14 @@ async def conv_start(user_id: int) -> int:
                     agent_result = agent_run.result
                     model_msgs = agent_result.new_messages()
 
-                    services.console.print_fragment(agent_result.output)
+                    services.console.print_fragment_system(agent_result.output)
                     print("\r\n")
-
-                    breakpoint() #
 
                     msgs_history.extend(model_msgs)
 
                     services.convs.msgs.persist(
                         db_session=db_session, conv_id=conv_db.id, user_id=user_id, model_msgs=model_msgs
                     )
-
-                    # json_list = pydantic_core.to_jsonable_python(agent_msgs)
-
-                    # print("")
-                    # for msg in json_list:
-                    #     print(msg)
-                    #     print("")
 
     return 0
 
