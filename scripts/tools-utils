@@ -29,12 +29,9 @@ async def anth_search(query: str, max_uses: int) -> int:
     """
     Run anthropic web_search tool
     """
-    results_list = await services.tools.anthropic.anth_search(context=None, query=query, max_uses=max_uses)
+    response_dict = await services.tools.anthropic.anth_search(context=None, query=query, max_uses=max_uses)
 
-    for i, result in enumerate(results_list):
-        print(f"result {i+1}:")
-        print(json.dumps(result, indent=2))
-        print("")
+    print(json.dumps(response_dict, indent=2))
 
 
 @click.command()
