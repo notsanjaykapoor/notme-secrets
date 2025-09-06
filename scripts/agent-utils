@@ -10,11 +10,8 @@ sys.path.insert(1, os.path.join(sys.path[0], ".."))
 import dot_init
 
 import asyncclick as click
-import pydantic_ai.agent
-import pydantic_core
 import ulid
 
-import models
 import services.agents
 import services.console
 import services.convs
@@ -30,7 +27,7 @@ def cli():
 
 @click.command()
 @click.pass_context
-@click.option("--id", "conv_ids", default=None, type=str, required=True, help="conv id")
+@click.option("--ids", "conv_ids", default=None, type=str, required=True, help="conv id")
 async def conv_delete(ctx, conv_ids: str) -> int:
     """
     Delete an existing conversation
@@ -67,12 +64,28 @@ async def conv_load(ctx, conv_id: int) -> int:
         _code, model_msgs = services.convs.msgs.load_by_conv_id(db_session=db_session, conv_id=conv_id)
 
         for model_msg in model_msgs:
-            if model_msg.kind == "request":
-                output_str = services.agents.output_model_request(msg=model_msg)
-                services.console.print_fragment_user(output_str, end="\n\n")
-            elif model_msg.kind == "response":
-                output_str = services.agents.output_model_response(msg=model_msg)
-                services.console.print_fragment_system(output_str, end="\n\n")
+            output_struct = services.agents.output_model_msg(model_msg=model_msg)
+            output_nodes = output_struct.nodes
+            node_index = 0
+
+            while node_index < len(output_nodes):
+                output_node = output_nodes[node_index]
+
+                if output_node.name in ["user-prompt"]:
+                    services.console.print_fragment_user(f"user: {output_node.text}", end="\n\n")
+                elif output_node.name in ["builtin-tool-call", "builtin-tool-return", "tool-call", "tool-return"]:
+                    services.console.print_fragment_tool(f"{output_node.name}: {output_node.text}", end="\n\n")
+                elif output_node.name in ["model-text"]:
+                    # collect model-text nodes
+                    node_index, text = services.agents.output_nodes_collect(
+                        output_nodes=output_nodes, name="model-text", index=node_index
+                    )
+                    services.console.print_fragment_model(text, end="\n\n")
+                elif output_node.name in ["model-end"]:
+                    # todo
+                    services.console.print_fragment_model("model-end", end="\n\n")
+
+                node_index += 1
 
     await ctx.invoke(conv_start, user_id=conv_db.user_id, conv_id=conv_db.id)
 
@@ -100,18 +113,17 @@ async def conv_start(user_id: int, conv_id: int) -> int:
         output_types=services.places.functions.list(),
     )
 
-    conv_db: models.ConvObj = None
     msgs_history = []
 
     while True:
-        user_query = input("\x1b[1;33muser: \x1b[0m")
+        user_query = input("user: ")
 
         if re.match(r"^(bye|exit|quit)", user_query):
-            services.console.print_status("\nconversation exiting")
+            services.console.print_ok(f"\nconversation {conv_id} exiting")
             break
 
         if re.match(r"^(break|breakpoint|debug)", user_query):
-            services.console.print_status("\nconversation debugger")
+            services.console.print_ok(f"\nconversation {conv_id} debugger")
             breakpoint()
 
         print("")
@@ -122,43 +134,53 @@ async def conv_start(user_id: int, conv_id: int) -> int:
             if tool_use:
                 agent_result = await agent_places.run(user_prompt=user_query, deps={})
 
-                services.console.print_fragment_system(
+                services.console.print_fragment_model(
                     services.agents.output_tool(output=agent_result.output)
                 )
                 print("")
 
                 print(f"messages turn size {len(agent_result.new_messages())}") # xxx
             else:
-                if not conv_db:
-                    if conv_id == 0:
-                        # create new conversation
-                        code, conv_db = services.convs.create(db_session=db_session, name=f"c-{ulid.new().str}", user_id=user_id)
-                    else:
-                        conv_db = services.convs.get_by_id(db_session=db_session, id=conv_id)
+                if conv_id == 0:
+                    # create new conversation
+                    code, conv_db = services.convs.create(db_session=db_session, name=f"c-{ulid.new().str}", user_id=user_id)
+                else:
+                    conv_db = services.convs.get_by_id(db_session=db_session, id=conv_id)
+
+                conv_id = conv_db.id
 
                 agent_deps = {
-                    "conv_id": conv_db.id,
+                    "conv_id": conv_id,
                     "user_id": user_id,
                 }
 
                 async with agent_anth.iter(user_prompt=user_query, message_history=msgs_history, deps=agent_deps) as agent_run:
                     async for node in agent_run:
-                        # print(node)
-                        # print("")
-                        output_struct = services.agents.output_node(node=node)
+                        output_struct = services.agents.output_nodes(node=node)
+                        output_nodes = output_struct.nodes
+                        node_index = 0
 
-                        if output_struct.kind == "request":
-                            services.console.print_fragment_user(output_struct.text, end="\n\n")
-                        elif output_struct.kind == "response":
-                            services.console.print_fragment_system(output_struct.text, end="\n\n")
-                        elif output_struct.kind == "end":
-                            pass # skip
+                        while node_index < len(output_nodes):
+                            output_node = output_nodes[node_index]
+
+                            if output_node.name in ["user-prompt"]:
+                                # this script is interactive so the user prompt is already on display
+                                pass
+                            elif output_node.name in ["builtin-tool-call", "builtin-tool-return", "tool-call", "tool-return"]:
+                                services.console.print_fragment_tool(f"{output_node.name}: {output_node.text}", end="\n\n")
+                            elif output_node.name in ["model-text"]:
+                                # collect model-text nodes
+                                node_index, text = services.agents.output_nodes_collect(
+                                    output_nodes=output_nodes, name="model-text", index=node_index
+                                )
+                                services.console.print_fragment_model(text, end="\n\n")
+                            elif output_node.name in ["model-end"]:
+                                pass
+
+                            node_index += 1
 
                     agent_result = agent_run.result
                     model_msgs = agent_result.new_messages()
-
-                    services.console.print_fragment_system(agent_result.output)
-                    print("\r\n")
 
                     msgs_history.extend(model_msgs)
 

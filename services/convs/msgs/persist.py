@@ -18,9 +18,8 @@ def persist(
     try:
         json_list = pydantic_core.to_jsonable_python(model_msgs)
     except Exception as e:
-        # see this occasionally
-        # TypeError: 'MockValSer' object cannot be converted to 'SchemaSerializer'
-        # use the fallback versions
+        # see this occasionally - TypeError: 'MockValSer' object cannot be converted to 'SchemaSerializer'
+        # use the fallback serializer
         json_list = services.agents.serialize_model_msgs(model_msgs=model_msgs)
 
     msgs_list = []
@@ -30,4 +29,3 @@ def persist(
         msgs_list.append(msg_db)
 
     return 0, msgs_list
-
