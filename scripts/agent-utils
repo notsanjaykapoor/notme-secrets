@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 
-import json
 import os
 import re
 import sys
+import typing
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
 
 import dot_init
 
 import asyncclick as click
+import pydantic_ai
+import pydantic_ai.messages
 import ulid
 
 import services.agents
@@ -87,12 +89,13 @@ async def conv_load(ctx, conv_id: int) -> int:
 
                 node_index += 1
 
-    await ctx.invoke(conv_start, user_id=conv_db.user_id, conv_id=conv_db.id)
+    await ctx.invoke(conv_start, user_id=conv_db.user_id, conv_id=conv_db.id, mode="async")
 
 @click.command()
 @click.option("--user-id", "user_id", default=1, required=False, help="user id")
 @click.option("--conv-id", "conv_id", default=0, required=False, help="conv id to resume")
-async def conv_start(user_id: int, conv_id: int) -> int:
+@click.option("--mode", "mode", default="async", required=False, help="streaming mode, async or sync")
+async def conv_start(user_id: int, conv_id: int, mode: str=typing.Literal["async", "sync"]) -> int:
     """
     Start or resume a conversation
     """
@@ -132,14 +135,13 @@ async def conv_start(user_id: int, conv_id: int) -> int:
             tool_use = services.places.functions.match_tool_use(db_session=db_session, query=user_query)
 
             if tool_use:
+                # run agent with registered output tools
                 agent_result = await agent_places.run(user_prompt=user_query, deps={})
 
                 services.console.print_fragment_model(
                     services.agents.output_tool(output=agent_result.output)
                 )
                 print("")
-
-                print(f"messages turn size {len(agent_result.new_messages())}") # xxx
             else:
                 if conv_id == 0:
                     # create new conversation
@@ -156,6 +158,22 @@ async def conv_start(user_id: int, conv_id: int) -> int:
 
                 async with agent_anth.iter(user_prompt=user_query, message_history=msgs_history, deps=agent_deps) as agent_run:
                     async for node in agent_run:
+                        if mode == "async" and pydantic_ai.Agent.is_model_request_node(node):
+                            # stream the request node
+                            async with node.stream(agent_run.ctx) as request_stream:
+                                async for event in request_stream:
+                                    services.console.print_fragment_model(s=services.agents.output_event_stream(event=event))
+                            # request node complete
+                            print("\n")
+                        elif mode == "async" and pydantic_ai.Agent.is_call_tools_node(node):
+                            # stream the tools node
+                            async with node.stream(agent_run.ctx) as handle_stream:
+                                async for event in handle_stream:
+                                    if isinstance(event, (pydantic_ai.messages.FunctionToolCallEvent, pydantic_ai.messages.BuiltinToolCallEvent)):
+                                        print(f"tool args: tool:{event.part.tool_name} args:{event.part.args} tool_call_id:{event.part.tool_call_id}")
+                                    elif isinstance(event, (pydantic_ai.messages.FunctionToolResultEvent,  pydantic_ai.messages.BuiltinToolResultEvent)):
+                                        print(f"tool result - {event.result.content}")
+ 
                         output_struct = services.agents.output_nodes(node=node)
                         output_nodes = output_struct.nodes
                         node_index = 0
@@ -164,16 +182,17 @@ async def conv_start(user_id: int, conv_id: int) -> int:
                             output_node = output_nodes[node_index]
 
                             if output_node.name in ["user-prompt"]:
-                                # this script is interactive so the user prompt is already on display
+                                # this script is interactive, the user prompt is already on display
                                 pass
                             elif output_node.name in ["builtin-tool-call", "builtin-tool-return", "tool-call", "tool-return"]:
                                 services.console.print_fragment_tool(f"{output_node.name}: {output_node.text}", end="\n\n")
                             elif output_node.name in ["model-text"]:
-                                # collect model-text nodes
-                                node_index, text = services.agents.output_nodes_collect(
-                                    output_nodes=output_nodes, name="model-text", index=node_index
-                                )
-                                services.console.print_fragment_model(text, end="\n\n")
+                                if mode == "sync":
+                                    # sync mode - collect model-text nodes
+                                    node_index, text = services.agents.output_nodes_collect(
+                                        output_nodes=output_nodes, name="model-text", index=node_index
+                                    )
+                                    services.console.print_fragment_model(text, end="\n\n")
                             elif output_node.name in ["model-end"]:
                                 pass
 

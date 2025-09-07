@@ -1,6 +1,5 @@
 import os
 
-import anthropic
 import httpx
 import pydantic_ai
 

@@ -32,6 +32,30 @@ class OutputStruct:
     text: str = ""
 
 
+def output_event_stream(
+    event: pydantic_ai.messages.PartStartEvent
+    | pydantic_ai.messages.PartDeltaEvent
+    | pydantic_ai.messages.FinalResultEvent,
+) -> OutputStruct:
+    if isinstance(event, pydantic_ai.messages.PartStartEvent):
+        return event.part.content
+    elif isinstance(event, pydantic_ai.messages.PartDeltaEvent):
+        if isinstance(event.delta, pydantic_ai.messages.TextPartDelta):
+            return event.delta.content_delta
+        elif isinstance(event.delta, pydantic_ai.messages.ThinkingPartDelta):
+            # todo
+            print("thinking delta: ", event.delta.content_delta)
+            return ""
+        elif isinstance(event.delta, pydantic_ai.messages.ToolCallPartDelta):
+            # todo
+            print("tool call delta: ", event.delta.args_delta)
+            return ""
+    elif isinstance(event, pydantic_ai.messages.FinalResultEvent):
+        # todo
+        # print(f"the model started producing a final result, tool_name={event.tool_name}")
+        return ""
+
+
 def output_model_msg(model_msg: pydantic_ai.messages.ModelMessage) -> OutputStruct:
     if model_msg.kind == "request":
         nodes = _output_model_request(msg=model_msg)
@@ -186,7 +210,10 @@ def _output_places_markdown(places: list[models.Place]) -> str:
     """
     md_list = []
 
-    md_list.append(f"here are {len(places)} matching places:\n\n")
+    if len(places) == 0:
+        md_list.append("found no matching places for your query.\n\n")
+    else:
+        md_list.append(f"here are {len(places)} matching places:\n\n")
 
     for place in places:
         md_list.append(f"**{place.name}, {place.city}**\n")
