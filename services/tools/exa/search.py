@@ -1,3 +1,4 @@
+import json
 import os
 
 import httpx
@@ -35,7 +36,7 @@ async def exa_search(
     }
 
     print("exa_search params:")
-    print(payload)
+    print(json.dumps(payload, indent=2))
     print("")
 
     async with httpx.AsyncClient() as client:

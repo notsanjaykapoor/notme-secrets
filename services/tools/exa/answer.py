@@ -1,3 +1,4 @@
+import json
 import os
 
 import httpx
@@ -31,7 +32,7 @@ async def exa_answer(context: pydantic_ai.RunContext[str], query: str, text: boo
     }
 
     print("exa_answer params:")
-    print(payload)
+    print(json.dumps(payload, indent=2))
     print("")
 
     async with httpx.AsyncClient() as client:

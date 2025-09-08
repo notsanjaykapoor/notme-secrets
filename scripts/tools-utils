@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 import sys
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
@@ -10,6 +11,8 @@ import dot_init
 
 import asyncclick as click
 
+import services.anthropic
+import services.console
 import services.tools
 import services.tools.anthropic
 import services.tools.exa
@@ -20,6 +23,41 @@ import services.tools.parallel
 def cli():
     pass
 
+
+
+@click.command()
+@click.option("--query", "query", default=None, required=True, help="user query")
+@click.option("--file", "file", default=None, required=True, help="input file path")
+async def anth_cite(query: str, file: str) -> int:
+    """
+    Run anthropic cite tool.
+
+    The input file can be txt or json.
+    """
+    match = re.search(r"(json|txt)$", file)
+
+    if not match:
+        services.console.print_error("file invalid")
+        exit(-1)
+
+    with open(file, "r") as f:
+        data = f.read()
+        title = file.split("/")[-1]
+
+        if match[1] == "json":
+            doc = services.anthropic.DocCustom(
+                content=[], # todo
+                title=title,
+            )
+        elif match[1] == "txt":
+            doc = services.anthropic.DocText(
+                data=data,
+                title=title,
+            )
+
+    response_dict = await services.tools.anthropic.anth_cite(context=None, query=query, doc=doc)
+
+    print(json.dumps(response_dict, indent=2))
 
 
 @click.command()
@@ -87,6 +125,7 @@ async def par_search(query: str) -> int:
         print("")
 
 
+cli.add_command(anth_cite)
 cli.add_command(anth_search)
 cli.add_command(exa_answer)
 cli.add_command(exa_search)

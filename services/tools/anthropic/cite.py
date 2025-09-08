@@ -4,29 +4,57 @@ import os
 import httpx
 import pydantic_ai
 
+import services.anthropic
+
 url = "https://api.anthropic.com/v1/messages"
 
 
-async def anth_search(
+async def anth_cite(
     context: pydantic_ai.RunContext[str],
     query: str,
-    max_uses: int = 5,
+    doc: services.anthropic.DocCustom | services.anthropic.DocPdf | services.anthropic.DocText,
 ) -> dict:
     """
-    Search the web.
+    Use anthropic with citations enabled.
 
     Args:
-      query: The query string for the search.
-      max_uses: Optional limit the number of searches per request.
+        query: The query string for the search.
+        doc: Document to cite.
 
     Returns:
         A list of search results containing type, text, and citations.
     """
+    # generate content params
+    content = [
+        {
+            "type": "text",
+            "text": query,
+        }
+    ]
+
+    if isinstance(doc, services.anthropic.DocText):
+        content.append(
+            {
+                "citations": {"enabled": True},
+                "source": {
+                    "data": doc.data,
+                    "media_type": doc.media_type,
+                    "type": doc.type,
+                },
+                "title": doc.title,
+                "type": "document",
+            }
+        )
+
     payload = {
         "model": "claude-opus-4-1-20250805",
         "max_tokens": 1024,
-        "messages": [{"role": "user", "content": query}],
-        "tools": [{"type": "web_search_20250305", "name": "web_search", "max_uses": max_uses}],
+        "messages": [
+            {
+                "role": "user",
+                "content": content,
+            }
+        ],
     }
     headers = {
         "x-api-key": f"{os.getenv('ANTHROPIC_API_KEY')}",
@@ -34,7 +62,7 @@ async def anth_search(
         "Content-Type": "application/json",
     }
 
-    print("anth_search params:")
+    print("anth_cite params:")
     print(json.dumps(payload, indent=2))
     print("")
 
