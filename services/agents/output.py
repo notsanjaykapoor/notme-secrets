@@ -36,19 +36,24 @@ def output_event_stream(
     event: pydantic_ai.messages.PartStartEvent
     | pydantic_ai.messages.PartDeltaEvent
     | pydantic_ai.messages.FinalResultEvent,
-) -> OutputStruct:
+) -> str:
     if isinstance(event, pydantic_ai.messages.PartStartEvent):
-        return event.part.content
+        if isinstance(event.part, pydantic_ai.messages.ToolCallPart):
+            return f"tool-call: {event.part.tool_name}"
+        else:
+            return event.part.content
     elif isinstance(event, pydantic_ai.messages.PartDeltaEvent):
         if isinstance(event.delta, pydantic_ai.messages.TextPartDelta):
             return event.delta.content_delta
         elif isinstance(event.delta, pydantic_ai.messages.ThinkingPartDelta):
             # todo
-            print("thinking delta: ", event.delta.content_delta)
-            return ""
+            # print("thinking delta: ", event.delta.content_delta)
+            return event.delta.content_delta
         elif isinstance(event.delta, pydantic_ai.messages.ToolCallPartDelta):
-            # todo
-            print("tool call delta: ", event.delta.args_delta)
+            # e.g. each args_delta contains a piece of the tool params
+            # {"query":
+            # " the imperial"
+            # print("tool call delta: ", event.delta.args_delta)
             return ""
     elif isinstance(event, pydantic_ai.messages.FinalResultEvent):
         # todo

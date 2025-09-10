@@ -35,7 +35,7 @@ async def par_search(
         "Content-Type": "application/json",
     }
 
-    print("par_search params:")
+    print("\npar_search params:")
     print(payload)
     print("")
 

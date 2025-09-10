@@ -34,6 +34,7 @@ async def anth_search(
         "Content-Type": "application/json",
     }
 
+    print("")
     print("anth_search params:")
     print(json.dumps(payload, indent=2))
     print("")

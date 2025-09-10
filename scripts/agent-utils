@@ -10,6 +10,7 @@ sys.path.insert(1, os.path.join(sys.path[0], ".."))
 import dot_init
 
 import asyncclick as click
+import logfire
 import pydantic_ai
 import pydantic_ai.messages
 import ulid
@@ -106,9 +107,17 @@ async def conv_start(user_id: int, conv_id: int, mode: str=typing.Literal["async
     # output types are called during a user turn and end that turn with their output.
     #
 
+    logfire.configure(
+        console=False,
+        service_name=os.getenv("LOGFIRE_SERVICE_NAME"),
+        token=os.getenv("LOGFIRE_TOKEN"),
+    )
+    logfire.instrument_pydantic_ai()
+
     agent_anth = services.agents.create_agent_general(
+        # builtins=pydantic_ai.WebSearchTool(max_uses=1, search_context_size="low"),
         model=services.agents.model_anthropic(),
-        tools=[], # services.tools.list(),
+        tools=services.tools.list(),
     )
 
     agent_places = services.agents.create_agent_places(
@@ -145,7 +154,7 @@ async def conv_start(user_id: int, conv_id: int, mode: str=typing.Literal["async
             else:
                 if conv_id == 0:
                     # create new conversation
-                    code, conv_db = services.convs.create(db_session=db_session, name=f"c-{ulid.new().str}", user_id=user_id)
+                    code, conv_db = services.convs.create(db_session=db_session, commit=1, name=f"c-{ulid.new().str}", user_id=user_id)
                 else:
                     conv_db = services.convs.get_by_id(db_session=db_session, id=conv_id)
 
@@ -170,9 +179,18 @@ async def conv_start(user_id: int, conv_id: int, mode: str=typing.Literal["async
                             async with node.stream(agent_run.ctx) as handle_stream:
                                 async for event in handle_stream:
                                     if isinstance(event, (pydantic_ai.messages.FunctionToolCallEvent, pydantic_ai.messages.BuiltinToolCallEvent)):
-                                        print(f"tool args: tool:{event.part.tool_name} args:{event.part.args} tool_call_id:{event.part.tool_call_id}")
-                                    elif isinstance(event, (pydantic_ai.messages.FunctionToolResultEvent,  pydantic_ai.messages.BuiltinToolResultEvent)):
-                                        print(f"tool result - {event.result.content}")
+                                        services.console.print_fragment_model(
+                                            s=f"tool-call:{event.part.tool_name} args:{event.part.args}, id:{event.part.tool_call_id}"
+                                        )
+                                    elif isinstance(event, pydantic_ai.messages.FunctionToolResultEvent):
+                                        # event.result.content contains the entire tool result, which can be pretty long
+                                        services.console.print_fragment_model(
+                                            s=f"tool-result:id:{event.tool_call_id}\n"
+                                        )
+                                    elif isinstance(event, pydantic_ai.messages.BuiltinToolResultEvent):
+                                        services.console.print_fragment_model(
+                                            s="tool-result:builtin\n"
+                                        )
  
                         output_struct = services.agents.output_nodes(node=node)
                         output_nodes = output_struct.nodes
