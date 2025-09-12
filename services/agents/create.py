@@ -16,10 +16,10 @@ system_prompt_outputs = (
 
 
 def create_agent_general(
-    model: pydantic_ai.models, output_types: list = [str], tools: list = [], toolsets: list = []
+    model: pydantic_ai.models, builtins: list = [], output_types: list = [str], tools: list = [], toolsets: list = []
 ) -> pydantic_ai.Agent:
     agent = pydantic_ai.Agent(
-        builtin_tools=[pydantic_ai.WebSearchTool(max_uses=1, search_context_size="low")],
+        builtin_tools=builtins,
         deps_type=dict,
         model=model,
         output_type=output_types,

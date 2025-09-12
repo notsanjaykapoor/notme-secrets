@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import asyncio
 import os
 import re
 import sys
@@ -18,7 +19,6 @@ import ulid
 import services.agents
 import services.console
 import services.convs
-import services.convs.msgs
 import services.database.session
 import services.places.functions
 import services.tools
@@ -27,6 +27,7 @@ import services.tools
 @click.group()
 def cli():
     pass
+
 
 @click.command()
 @click.pass_context
@@ -44,19 +45,17 @@ async def conv_delete(ctx, conv_ids: str) -> int:
             if code != 0:
                 services.console.print_error(f"conv id {conv_id} delete error {code}")
                 continue
-            
+
             services.console.print_ok(f"conv_id {conv_id}, msg_ids {msg_ids} deleted")
 
 
 @click.command()
 @click.pass_context
-@click.option("--id", "conv_id", default=None, required=True, help="conv id")
+@click.option("--id", "conv_id", default=None, type=int, required=True, help="conv id")
 async def conv_load(ctx, conv_id: int) -> int:
     """
     Load an existing conversation
     """
-    print("")
-
     with services.database.session.get() as db_session:
         conv_db = services.convs.get_by_id(db_session, id=conv_id)
 
@@ -64,49 +63,21 @@ async def conv_load(ctx, conv_id: int) -> int:
             services.console.print_error(f"conv {conv_id} invalid")
             exit(-1)
 
-        _code, model_msgs = services.convs.msgs.load_by_conv_id(db_session=db_session, conv_id=conv_id)
+        user_id = conv_db.user_id
 
-        for model_msg in model_msgs:
-            output_struct = services.agents.output_model_msg(model_msg=model_msg)
-            output_nodes = output_struct.nodes
-            node_index = 0
+    await _conv_stream(conv_id=conv_id, user_id=user_id)
 
-            while node_index < len(output_nodes):
-                output_node = output_nodes[node_index]
-
-                if output_node.name in ["user-prompt"]:
-                    services.console.print_fragment_user(f"user: {output_node.text}", end="\n\n")
-                elif output_node.name in ["builtin-tool-call", "builtin-tool-return", "tool-call", "tool-return"]:
-                    services.console.print_fragment_tool(f"{output_node.name}: {output_node.text}", end="\n\n")
-                elif output_node.name in ["model-text"]:
-                    # collect model-text nodes
-                    node_index, text = services.agents.output_nodes_collect(
-                        output_nodes=output_nodes, name="model-text", index=node_index
-                    )
-                    services.console.print_fragment_model(text, end="\n\n")
-                elif output_node.name in ["model-end"]:
-                    # todo
-                    services.console.print_fragment_model("model-end", end="\n\n")
-
-                node_index += 1
-
-    await ctx.invoke(conv_start, user_id=conv_db.user_id, conv_id=conv_db.id, mode="async")
 
 @click.command()
-@click.option("--user-id", "user_id", default=1, required=False, help="user id")
-@click.option("--conv-id", "conv_id", default=0, required=False, help="conv id to resume")
-@click.option("--mode", "mode", default="async", required=False, help="streaming mode, async or sync")
-async def conv_start(user_id: int, conv_id: int, mode: str=typing.Literal["async", "sync"]) -> int:
+@click.option("--user-id", "user_id", default=1, type=int, required=False, help="user id")
+async def conv_start(user_id: int) -> int:
     """
-    Start or resume a conversation
+    Start a new conversation
     """
-    #
-    # the pydantic_ai framework distinguishes between tools and output types.
-    # 
-    # tools are used during the user turn to run and provide data for the query.
-    # output types are called during a user turn and end that turn with their output.
-    #
+    await _conv_stream(conv_id=0, user_id=user_id)
 
+
+async def _conv_stream(conv_id: int, user_id: int):
     logfire.configure(
         console=False,
         service_name=os.getenv("LOGFIRE_SERVICE_NAME"),
@@ -115,9 +86,9 @@ async def conv_start(user_id: int, conv_id: int, mode: str=typing.Literal["async
     logfire.instrument_pydantic_ai()
 
     agent_anth = services.agents.create_agent_general(
-        # builtins=pydantic_ai.WebSearchTool(max_uses=1, search_context_size="low"),
+        builtins=[pydantic_ai.WebSearchTool(max_uses=1, search_context_size="low")],
         model=services.agents.model_anthropic(),
-        tools=services.tools.list(),
+        # tools=services.tools.list(),
     )
 
     agent_places = services.agents.create_agent_places(
@@ -125,107 +96,143 @@ async def conv_start(user_id: int, conv_id: int, mode: str=typing.Literal["async
         output_types=services.places.functions.list(),
     )
 
-    msgs_history = []
+    channel_anth = services.agents.AgentChannel(
+        agent=agent_anth, conv_id=conv_id, iq=asyncio.Queue(), oq=asyncio.Queue(), user_id=user_id
+    )
 
-    while True:
-        user_query = input("user: ")
+    channel_task = asyncio.create_task(services.agents.stream_task(channel=channel_anth))
 
-        if re.match(r"^(bye|exit|quit)", user_query):
-            services.console.print_ok(f"\nconversation {conv_id} exiting")
-            break
+    print("")
 
-        if re.match(r"^(break|breakpoint|debug)", user_query):
-            services.console.print_ok(f"\nconversation {conv_id} debugger")
-            breakpoint()
+    try:
+        # get history block
+        while True:
+            kind: str
+            name: str
 
-        print("")
+            kind, name, msg = await channel_anth.oq.get()
 
-        with services.database.session.get() as db_session:
-            tool_use = services.places.functions.match_tool_use(db_session=db_session, query=user_query)
+            if kind in ["history-end", "history-start"]:
+                if kind == "history-end":
+                    break
+            elif kind == "history-msg" and name == "model-msg":
+                output_struct = services.agents.output_model_msg(model_msg=msg)
+                output_nodes = output_struct.nodes
+                node_index = 0
 
-            if tool_use:
-                # run agent with registered output tools
-                agent_result = await agent_places.run(user_prompt=user_query, deps={})
+                while node_index < len(output_nodes):
+                    output_node = output_nodes[node_index]
 
-                services.console.print_fragment_model(
-                    services.agents.output_tool(output=agent_result.output)
-                )
-                print("")
-            else:
-                if conv_id == 0:
-                    # create new conversation
-                    code, conv_db = services.convs.create(db_session=db_session, commit=1, name=f"c-{ulid.new().str}", user_id=user_id)
+                    if output_node.name in ["user-prompt"]:
+                        services.console.print_fragment_user(f"user: {output_node.text}", end="\n\n")
+                    elif output_node.name in ["builtin-tool-call", "builtin-tool-return", "tool-call", "tool-return"]:
+                        services.console.print_fragment_tool(f"{output_node.name}: {output_node.text}", end="\n\n")
+                    elif output_node.name in ["model-text"]:
+                        # collect model-text nodes
+                        node_index, text = services.agents.output_nodes_collect(
+                            output_nodes=output_nodes, name="model-text", index=node_index
+                        )
+                        services.console.print_fragment_model(text, end="\n\n")
+                    elif output_node.name in ["model-end"]:
+                        # todo
+                        services.console.print_fragment_model("model-end", end="\n\n")
+
+                    node_index += 1
+    except Exception as e:
+        services.console.print_error(f"channel exception - {e}")
+
+    msg_delta: (
+        pydantic_ai.messages.TextPartDelta
+        | pydantic_ai.messages.ThinkingPartDelta
+        | pydantic_ai.messages.ToolCallPartDelta
+    ) = None
+
+    msg_part: (
+        pydantic_ai.messages.TextPart
+        | pydantic_ai.messages.ToolCallPart
+        | pydantic_ai.messages.BuiltinToolCallPart
+        | pydantic_ai.messages.BuiltinToolReturnPart
+        | pydantic_ai.messages.ThinkingPart
+    ) = None
+
+    try:
+        turn_mode = "user"
+
+        # user input loop
+        while True:
+            user_prompt = input("user: ")
+
+            if re.match(r"^(bye|exit|quit)", user_prompt):
+                services.console.print_ok(f"\nconversation {channel_anth.conv_id} exiting")
+                break
+
+            if re.match(r"^(break|breakpoint|debug)", user_prompt):
+                services.console.print_ok(f"\nconversation {channel_anth.conv_id} debugger")
+                breakpoint()
+
+            with services.database.session.get() as db_session:
+                tool_use = services.places.functions.match_tool_use(db_session=db_session, query=user_prompt)
+
+                if tool_use:
+                    print("")
+                    # run agent with registered output tools
+                    agent_result = await agent_places.run(user_prompt=user_prompt, deps={})
+
+                    services.console.print_fragment_model(services.agents.output_tool(output=agent_result.output))
                 else:
-                    conv_db = services.convs.get_by_id(db_session=db_session, id=conv_id)
+                    if channel_anth.conv_id == 0:
+                        # create new conversation
+                        code, conv_db = services.convs.create(
+                            db_session=db_session, name=f"c-{ulid.new().str}", user_id=user_id
+                        )
+                        channel_anth.conv_id = conv_db.id
 
-                conv_id = conv_db.id
+                    await channel_anth.iq.put(["user-prompt", {"text": user_prompt, "request_id": ""}])
 
-                agent_deps = {
-                    "conv_id": conv_id,
-                    "user_id": user_id,
-                }
+                    turn_mode = "agent"
 
-                async with agent_anth.iter(user_prompt=user_query, message_history=msgs_history, deps=agent_deps) as agent_run:
-                    async for node in agent_run:
-                        if mode == "async" and pydantic_ai.Agent.is_model_request_node(node):
-                            # stream the request node
-                            async with node.stream(agent_run.ctx) as request_stream:
-                                async for event in request_stream:
-                                    services.console.print_fragment_model(s=services.agents.output_event_stream(event=event))
-                            # request node complete
-                            print("\n")
-                        elif mode == "async" and pydantic_ai.Agent.is_call_tools_node(node):
-                            # stream the tools node
-                            async with node.stream(agent_run.ctx) as handle_stream:
-                                async for event in handle_stream:
-                                    if isinstance(event, (pydantic_ai.messages.FunctionToolCallEvent, pydantic_ai.messages.BuiltinToolCallEvent)):
-                                        services.console.print_fragment_model(
-                                            s=f"tool-call:{event.part.tool_name} args:{event.part.args}, id:{event.part.tool_call_id}"
-                                        )
-                                    elif isinstance(event, pydantic_ai.messages.FunctionToolResultEvent):
-                                        # event.result.content contains the entire tool result, which can be pretty long
-                                        services.console.print_fragment_model(
-                                            s=f"tool-result:id:{event.tool_call_id}\n"
-                                        )
-                                    elif isinstance(event, pydantic_ai.messages.BuiltinToolResultEvent):
-                                        services.console.print_fragment_model(
-                                            s="tool-result:builtin\n"
-                                        )
- 
-                        output_struct = services.agents.output_nodes(node=node)
-                        output_nodes = output_struct.nodes
-                        node_index = 0
+                    print("")
 
-                        while node_index < len(output_nodes):
-                            output_node = output_nodes[node_index]
+                    while turn_mode == "agent":
+                        kind: str
+                        name: str
 
-                            if output_node.name in ["user-prompt"]:
-                                # this script is interactive, the user prompt is already on display
-                                pass
-                            elif output_node.name in ["builtin-tool-call", "builtin-tool-return", "tool-call", "tool-return"]:
-                                services.console.print_fragment_tool(f"{output_node.name}: {output_node.text}", end="\n\n")
-                            elif output_node.name in ["model-text"]:
-                                if mode == "sync":
-                                    # sync mode - collect model-text nodes
-                                    node_index, text = services.agents.output_nodes_collect(
-                                        output_nodes=output_nodes, name="model-text", index=node_index
-                                    )
-                                    services.console.print_fragment_model(text, end="\n\n")
-                            elif output_node.name in ["model-end"]:
-                                pass
+                        kind, name, msg = await channel_anth.oq.get()
 
-                            node_index += 1
+                        # print(f"kind: {kind}")
+                        # print(f"name: {name}")
+                        # print(msg)
+                        # print("")
 
-                    agent_result = agent_run.result
-                    model_msgs = agent_result.new_messages()
+                        if kind in ["agent-node"]:
+                            # name values literals:
+                            # user-prompt, model-request-start, model-request-end, tool-call-start, tool-call-end, turn-end
+                            if name in ["model-request-end", "tool-call-end"]:
+                                print("")
+                            elif name == "turn-end":
+                                turn_mode = "user"
+                        elif kind in ["stream-event"]:
+                            # name values literals:
+                            # model-request, tool-call
+                            if name == "model-request":
+                                if isinstance(msg, pydantic_ai.messages.PartDeltaEvent):
+                                    msg_delta = msg.delta
+                                    if isinstance(msg_delta, pydantic_ai.messages.TextPartDelta):
+                                        services.console.print_fragment_model(msg_delta.content_delta, end="")
+                                elif isinstance(msg, pydantic_ai.messages.PartStartEvent):
+                                    msg_part = msg.part
+                                    if isinstance(msg_part, pydantic_ai.messages.TextPart):
+                                        services.console.print_fragment_model(msg_part.content, end="")
+    except Exception as e:
+        services.console.print_error(f"channel exception - {e}")
 
-                    msgs_history.extend(model_msgs)
+    channel_task.cancel()
 
-                    services.convs.msgs.persist(
-                        db_session=db_session, conv_id=conv_db.id, user_id=user_id, model_msgs=model_msgs
-                    )
+    try:
+        await channel_task
+    except asyncio.CancelledError:
+        services.console.print_error("channel task cancelled")
 
-    return 0
 
 cli.add_command(conv_delete)
 cli.add_command(conv_load)
