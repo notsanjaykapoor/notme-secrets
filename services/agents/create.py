@@ -16,8 +16,8 @@ system_prompt_outputs = (
 
 
 def create_agent_general(
-    model: pydantic_ai.models, builtins: list = [], output_types: list = [str], tools: list = [], toolsets: list = []
-) -> pydantic_ai.Agent:
+    model: pydantic_ai.models.Model, builtins: list = [], output_types: list = [str], tools: list = [], toolsets: list = []
+) -> pydantic_ai.Agent[dict, str]:
     agent = pydantic_ai.Agent(
         builtin_tools=builtins,
         deps_type=dict,
@@ -31,7 +31,7 @@ def create_agent_general(
     return agent
 
 
-def create_agent_places(model: pydantic_ai.models, output_types: list) -> pydantic_ai.Agent:
+def create_agent_places(model: pydantic_ai.models.Model, output_types: list) -> pydantic_ai.Agent[dict, str]:
     agent = pydantic_ai.Agent(
         deps_type=dict,
         model=model,
@@ -43,7 +43,7 @@ def create_agent_places(model: pydantic_ai.models, output_types: list) -> pydant
     return agent
 
 
-def model_anthropic() -> pydantic_ai.models:
+def model_anthropic() -> pydantic_ai.models.anthropic.AnthropicModel:
     settings = pydantic_ai.models.ModelSettings(parallel_tool_calls=True)
 
     return pydantic_ai.models.anthropic.AnthropicModel(
@@ -53,7 +53,7 @@ def model_anthropic() -> pydantic_ai.models:
     )
 
 
-def model_gemini() -> pydantic_ai.models:
+def model_gemini() -> pydantic_ai.models.google.GoogleModel:
     return pydantic_ai.models.google.GoogleModel(
         model_name="gemini-1.5-flash",
         provider=pydantic_ai.providers.google.GoogleProvider(api_key=os.getenv("GOOGLE_GEMINI_KEY"), vertexai=False),

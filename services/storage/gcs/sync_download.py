@@ -49,7 +49,8 @@ def sync_download(
     blobs_list = services.storage.gcs.files_list(bucket_name=bucket_name, folder_name=folder_name)
 
     for blob in blobs_list:
-        secret_file = blob.name.split("/")[-1]
+        blob_name = str(blob.name)
+        secret_file = blob_name.split("/")[-1]
         secret_version = blob.generation
 
         if match_glob and not re.match(rf"{match_glob}", secret_file):

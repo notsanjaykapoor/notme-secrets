@@ -43,7 +43,7 @@ def sync_upload(
     cache_files_list_new = [s for s in cache_files_list if s.endswith(".new")]
 
     blobs_list = services.storage.gcs.files_list(bucket_name=bucket_name, folder_name=folder_name)
-    blobs_names = [blob.name.split("/")[-1] for blob in blobs_list]
+    blobs_names = [blob.name.split("/")[-1] for blob in blobs_list] # ty: ignore
 
     file_upload_list = []
 
@@ -75,7 +75,7 @@ def sync_upload(
             blob = services.storage.gcs.blob_get(bucket_name=bucket_name, blob_name=blob_name_dst)
 
             # create cache version file
-            cache_file_gpg_version = f"{cache_file_gpg}.{blob.generation}"
+            cache_file_gpg_version = f"{cache_file_gpg}.{blob.generation}" # ty: ignore
             file = open(f"{cache_org_dir}{cache_file_gpg_version}", "w")
             file.close()
 

@@ -19,6 +19,10 @@ def file_uri_parse(source_uri: str) -> tuple[str, str, str]:
     source_path = match[1]
 
     match = re.match(r"^(.+)\/([^\/]*)$", source_path)
+
+    if not match:
+        return "", "", ""
+
     source_dir = f"{match[1]}/"
     source_file = match[2]
 

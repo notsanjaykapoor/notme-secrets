@@ -15,7 +15,7 @@ def list_all(db_session: sqlmodel.Session, box: models.City | models.Region | No
         if box.type == models.box.TYPE_CITY:
             dataset = dataset.where(models.Place.city == box.name)
         else:
-            dataset = dataset.where(models.Place.country_code.in_(box.country_codes))
+            dataset = dataset.where(models.Place.country_code.in_(box.country_codes)) # ty: ignore
 
     db_result = db_session.exec(dataset).all()
 

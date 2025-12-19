@@ -11,7 +11,7 @@ MODEL_DEFAULT = "claude-sonnet-4-20250514"
 @dataclasses.dataclass
 class AnthropicMsgStruct:
     blocks_text: list[str]
-    blocks_tools: list[list[dict]]
+    blocks_tools: list[anthropic.types.ToolUseBlock]
     blocks_total: int
     msg_role: str
     msg_stop: str
@@ -95,7 +95,7 @@ def _anthropic_message_parse(
         blocks_tools=[],
         blocks_total=0,
         msg_role=msg.role,
-        msg_stop=msg.stop_reason,
+        msg_stop=str(msg.stop_reason),
     )
 
     for block in msg.content:

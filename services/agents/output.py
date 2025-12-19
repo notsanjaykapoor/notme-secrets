@@ -41,14 +41,15 @@ def output_event_stream(
         if isinstance(event.part, pydantic_ai.messages.ToolCallPart):
             return f"tool-call: {event.part.tool_name}"
         else:
-            return event.part.content
+            return str(event.part.content) # ty: ignore
     elif isinstance(event, pydantic_ai.messages.PartDeltaEvent):
         if isinstance(event.delta, pydantic_ai.messages.TextPartDelta):
             return event.delta.content_delta
         elif isinstance(event.delta, pydantic_ai.messages.ThinkingPartDelta):
+            event.delta = typing.cast(pydantic_ai.messages.ThinkingPartDelta, event)
             # todo
             # print("thinking delta: ", event.delta.content_delta)
-            return event.delta.content_delta
+            return str(event.delta.content_delta)
         elif isinstance(event.delta, pydantic_ai.messages.ToolCallPartDelta):
             # e.g. each args_delta contains a piece of the tool params
             # {"query":
@@ -63,8 +64,10 @@ def output_event_stream(
 
 def output_model_msg(model_msg: pydantic_ai.messages.ModelMessage) -> OutputStruct:
     if model_msg.kind == "request":
+        model_msg = typing.cast(pydantic_ai.messages.ModelRequest, model_msg)
         nodes = _output_model_request(msg=model_msg)
     elif model_msg.kind == "response":
+        model_msg = typing.cast(pydantic_ai.messages.ModelResponse, model_msg)
         nodes = _output_model_response(msg=model_msg)
 
     return OutputStruct(
@@ -75,8 +78,9 @@ def output_model_msg(model_msg: pydantic_ai.messages.ModelMessage) -> OutputStru
 
 def output_nodes(node: pydantic_ai._agent_graph.AgentNode) -> OutputStruct:
     if pydantic_ai.Agent.is_user_prompt_node(node):
+        node = typing.cast(pydantic_ai._agent_graph.UserPromptNode, node)
         kind = "request"
-        nodes = [OutputNode(name="user-prompt", text=node.user_prompt)]
+        nodes = [OutputNode(name="user-prompt", text=str(node.user_prompt))]
     elif pydantic_ai.Agent.is_model_request_node(node):
         kind = "request"
         nodes = _output_model_request(msg=node.request)
@@ -124,7 +128,7 @@ def output_tool(output: dict | str) -> str:
 
     if isinstance(output, dict):
         if "places" in output:
-            return _output_places_markdown(places=output.get("places"))
+            return _output_places_markdown(places=typing.cast(list[models.Place], output.get("places")))
         # default dict output
         return json.dumps(output)
 
@@ -148,16 +152,19 @@ def _output_model_request(msg: pydantic_ai.messages.ModelRequest) -> list[Output
 
     for part in msg.parts:
         if part.part_kind == "user-prompt":
-            node = OutputNode(name="user-prompt", text=part.content)
+            part = typing.cast(pydantic_ai.messages.UserPromptPart, part)
+            node = OutputNode(name="user-prompt", text=str(part.content))
             if len(output) == 0:
                 output.append("user:")
             output.append(part.content)
         elif part.part_kind == "tool-return":
+            part = typing.cast(pydantic_ai.messages.ToolReturnPart, part)
             node = OutputNode(name="tool-return", text=part.tool_name)
             if len(output) == 0:
                 output.append("tool:")
             output.append(f"tool return '{part.tool_name}'")
         elif part.part_kind == "system-prompt":
+            part = typing.cast(pydantic_ai.messages.SystemPromptPart, part)
             node = OutputNode(name="system-prompt", text=part.content)
         else:
             output.append(f"model request part '{part.part_kind}' todo")
@@ -185,12 +192,15 @@ def _output_model_response(msg: pydantic_ai.messages.ModelResponse) -> list[Outp
 
     for part in msg.parts:
         if part.part_kind == "text":
+            part = typing.cast(pydantic_ai.messages.TextPart, part)
             node = OutputNode(name="model-text", text=part.content)
             output.append(part.content)
         elif part.part_kind == "thinking":
+            part = typing.cast(pydantic_ai.messages.ThinkingPart, part)
             node = OutputNode(name="model-thinking", text=part.content)
             # output.append("thinking part todo")  # todo
         elif part.part_kind in ["builtin-tool-call", "tool-call"]:
+            part = typing.cast(pydantic_ai.messages.BuiltinToolCallPart | pydantic_ai.messages.ToolCallPart, part)
             node = OutputNode(name=part.part_kind, text=part.tool_name)
             if len(output) == 0:
                 if part.part_kind == "builtin-tool-call":
@@ -199,6 +209,7 @@ def _output_model_response(msg: pydantic_ai.messages.ModelResponse) -> list[Outp
                     output.append("tool:")
             output.append(f"tool call '{part.tool_name}'.")
         elif part.part_kind == "builtin-tool-return":
+            part = typing.cast(pydantic_ai.messages.BuiltinToolCallPart, part)
             node = OutputNode(name=part.part_kind, text=part.tool_name)
         else:
             output.append(f"tool part '{part.part_kind}' todo")

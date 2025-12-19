@@ -1,9 +1,11 @@
+import typing
+
 import models
 import services.database
 import services.places
 
 
-def list_by_brands_anywhere(brands: list[str]) -> dict[list[models.Place], int]:
+def list_by_brands_anywhere(brands: list[str]) -> dict[str, int | typing.Sequence[models.Place]]:
     """
     Search places by brand.
 
@@ -20,7 +22,7 @@ def list_by_brands_anywhere(brands: list[str]) -> dict[list[models.Place], int]:
     return _list_by_query(query=f"brands:{brands_str}")
 
 
-def list_by_brands_city(city: str, brands: list[str]) -> dict[list[models.Place], int]:
+def list_by_brands_city(city: str, brands: list[str]) -> dict[str, int | typing.Sequence[models.Place]]:
     """
     Search places by city and brand.
 
@@ -39,7 +41,7 @@ def list_by_brands_city(city: str, brands: list[str]) -> dict[list[models.Place]
     return _list_by_query(query=f"city:{city_normal} brands:{brands_str}")
 
 
-def list_by_brands_country(country: str, brands: list[str]) -> dict[list[models.Place], int]:
+def list_by_brands_country(country: str, brands: list[str]) -> dict[str, int | typing.Sequence[models.Place]]:
     """
     Search places by country and tags.
 
@@ -58,7 +60,7 @@ def list_by_brands_country(country: str, brands: list[str]) -> dict[list[models.
     return _list_by_query(query=f"country_code:{country_normal} brands:{brands_str}")
 
 
-def list_by_tags_city(city: str, tags: list[str]) -> dict[list[models.Place], int]:
+def list_by_tags_city(city: str, tags: list[str]) -> dict[str, int | typing.Sequence[models.Place]]:
     """
     Search places by city and tags.
 
@@ -77,7 +79,7 @@ def list_by_tags_city(city: str, tags: list[str]) -> dict[list[models.Place], in
     return _list_by_query(query=f"city:{city_normal} tags:{tags_str}")
 
 
-def list_by_tags_country(country: str, tags: list[str]) -> dict[list[models.Place], int]:
+def list_by_tags_country(country: str, tags: list[str]) -> dict[str, int | typing.Sequence[models.Place]]:
     """
     Search places by country and tags.
 
@@ -96,7 +98,7 @@ def list_by_tags_country(country: str, tags: list[str]) -> dict[list[models.Plac
     return _list_by_query(query=f"country_code:{country_normal} tags:{tags_str}")
 
 
-def _list_by_query(query: str, offset: int = 0, limit: int = 50, sort: str = "name+") -> dict[list[models.Place], int]:
+def _list_by_query(query: str, offset: int = 0, limit: int = 50, sort: str = "name+") -> dict[str, int | typing.Sequence[models.Place]]:
     with services.database.session.get() as db_session:
         places_struct = services.places.list(
             db_session=db_session,

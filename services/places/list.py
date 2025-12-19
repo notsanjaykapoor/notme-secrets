@@ -1,5 +1,6 @@
 import dataclasses
 import re
+import typing
 
 import sqlalchemy
 import sqlmodel
@@ -12,7 +13,7 @@ import services.regions
 @dataclasses.dataclass
 class Struct:
     code: int
-    objects: list[models.Place]
+    objects: typing.Sequence[models.Place]
     brands: list[str]
     tags: list[str]
     count: int
@@ -59,7 +60,7 @@ def list(
 
         if token["field"] in ["brand", "brands"]:
             values = [s.strip() for s in value.lower().split(",")]
-            dataset = dataset.where(model.brands.op("&&")(values))
+            dataset = dataset.where(model.brands.op("&&")(values)) # ty: ignore
             struct.brands = values
         elif token["field"] == "city":
             # always like query
@@ -73,7 +74,7 @@ def list(
             )
             if not region_db:
                 continue
-            dataset = dataset.where(model.country_code.in_(region_db.country_codes))
+            dataset = dataset.where(model.country_code.in_(region_db.country_codes)) # ty: ignore
         elif token["field"] in ["country", "country_code"]:
             if len(value) > 2:
                 # map country value to a country code
@@ -86,7 +87,7 @@ def list(
                 values = region_db.country_codes
             else:
                 values = [value]
-            dataset = dataset.where(model.country_code.in_(values))
+            dataset = dataset.where(model.country_code.in_(values)) # ty: ignore
         elif token["field"] == "name":
             # always like query
             value_normal = re.sub(r"~", "", value).lower()
@@ -97,7 +98,7 @@ def list(
             dataset = dataset.where(model.source_name == value)
         elif token["field"] in ["tag", "tags"]:
             values = [s.strip() for s in value.lower().split(",")]
-            dataset = dataset.where(model.tags.op("&&")(values))
+            dataset = dataset.where(model.tags.op("&&")(values)) # ty: ignore
             struct.tags = values
         elif token["field"] in ["uid", "user_id"]:
             dataset = dataset.where(model.user_id == int(value))
@@ -105,15 +106,15 @@ def list(
     db_query = dataset.offset(offset).limit(limit)
 
     if sort == "id+":
-        db_query = db_query.order_by(model.id.asc())
+        db_query = db_query.order_by(model.id.asc()) # ty: ignore
     elif sort == "id-":
-        db_query = db_query.order_by(model.id.desc())
+        db_query = db_query.order_by(model.id.desc()) # ty: ignore
     elif sort == "name+":
-        db_query = db_query.order_by(model.name.asc())
+        db_query = db_query.order_by(model.name.asc()) # ty: ignore
     elif sort == "name-":
-        db_query = db_query.order_by(model.name.desc())
+        db_query = db_query.order_by(model.name.desc()) # ty: ignore
     else:  # default is "id+"
-        db_query = db_query.order_by(model.id.asc())
+        db_query = db_query.order_by(model.id.asc()) # ty: ignore
 
     struct.objects = db_session.exec(db_query).all()
     struct.count = len(struct.objects)

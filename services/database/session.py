@@ -1,5 +1,6 @@
 import os
 import subprocess
+import typing
 
 import sqlalchemy
 import sqlmodel
@@ -19,7 +20,7 @@ def check(url: str = "") -> int:
     """
     returns 0 if database exists; 1 otherwise
     """
-    url = url or database_url
+    url = typing.cast(str, url or database_url)
 
     try:
         engine = sqlmodel.create_engine(url, echo=False, connect_args={})
@@ -31,7 +32,7 @@ def check(url: str = "") -> int:
 
 def create(url: str = "") -> int:
     """create database iff it doesn't exist"""
-    url = url or database_url
+    url = typing.cast(str, url or database_url)
 
     if check(url) == 0:
         return 0

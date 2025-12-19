@@ -18,7 +18,8 @@ def bucket_folders(bucket_name: str) -> list[str]:
     blobs_list = services.storage.gcs.blobs_list(bucket_name=bucket_name, prefix="", delimiter="")
 
     for blob in blobs_list:
-        folder_names.add(blob.name.split("/")[0])
+        blob_name = str(blob.name)
+        folder_names.add(blob_name.split("/")[0])
 
     return sorted(list(folder_names))
 

@@ -60,7 +60,7 @@ def name_remove_accents(name=str) -> str:
     """
     # Normalize the string to NFD (Normalization Form Canonical Decomposition)
     # This separates base characters from their combining diacritical marks.
-    nfkd_form = unicodedata.normalize("NFKD", name)
+    nfkd_form = unicodedata.normalize("NFKD", str(name))
 
     # Filter out characters that are combining diacritical marks ('Mn' category)
     # and join the remaining characters to form the new string.

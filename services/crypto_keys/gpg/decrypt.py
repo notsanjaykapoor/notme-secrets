@@ -24,4 +24,4 @@ def decrypt_with_time(key: models.CryptoKey, pgp_msg: str) -> tuple[str, float]:
     text = decrypt(key=key, pgp_msg=pgp_msg)
     t_secs = round((time.time() - t_start), 1)
 
-    return [text, t_secs]
+    return text, t_secs

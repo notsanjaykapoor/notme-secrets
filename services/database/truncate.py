@@ -6,7 +6,7 @@ from .session import table_names
 
 def truncate_tables(db_session: sqlmodel.Session, table_names: list[str]):
     for table_name in table_names:
-        db_session.execute(sqlalchemy.text(f"delete from {table_name}"))
+        db_session.exec(sqlalchemy.text(f"delete from {table_name}"))
     db_session.commit()
 
 

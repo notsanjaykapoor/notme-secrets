@@ -1,5 +1,6 @@
 import dataclasses
 import re
+import typing
 
 import sqlalchemy
 import sqlmodel
@@ -11,7 +12,7 @@ import services.mql
 @dataclasses.dataclass
 class Struct:
     code: int
-    objects: list[models.City]
+    objects: typing.Sequence[models.City]
     tags: list[str]
     count: int
     total: int
@@ -50,7 +51,7 @@ def list(db_session: sqlmodel.Session, query: str = "", offset: int = 0, limit: 
             dataset = dataset.where(sqlalchemy.func.lower(model.name).like("%" + value_normal + "%"))
         elif token["field"] in ["tags"]:
             values = [s.strip() for s in value.lower().split(",")]
-            dataset = dataset.where(model.tags.contains(values))
+            dataset = dataset.where(model.tags.contains(values)) # ty: ignore
             struct.tags = values
 
     struct.objects = db_session.exec(dataset.offset(offset).limit(limit).order_by(model.name)).all()

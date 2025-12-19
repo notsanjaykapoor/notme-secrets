@@ -87,7 +87,6 @@ class Place(sqlmodel.SQLModel, table=True):
     def city_slug(self) -> str:
         return re.sub(r"\s", "-", self.city)
 
-    @property
     def geo_json_compact(self, color: str) -> dict:
         return {
             "type": "Feature",

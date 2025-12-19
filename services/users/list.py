@@ -1,5 +1,6 @@
 import dataclasses
 import re
+import typing
 
 import sqlalchemy
 import sqlmodel
@@ -11,7 +12,7 @@ import services.mql
 @dataclasses.dataclass
 class Struct:
     code: int
-    objects: list[models.User]
+    objects: typing.Sequence[models.User]
     count: int
     total: int
     errors: list[str]
@@ -47,7 +48,7 @@ def list(db_session: sqlmodel.Session, query: str = "", offset: int = 0, limit: 
             value_normal = re.sub(r"~", "", value).lower()
             dataset = dataset.where(sqlalchemy.func.lower(model.email).like("%" + value_normal + "%"))
 
-    struct.objects = db_session.exec(dataset.offset(offset).limit(limit).order_by(model.id)).all()
+    struct.objects = db_session.exec(dataset.offset(offset).limit(limit).order_by(str(model.id))).all()
     struct.count = len(struct.objects)
     struct.total = db_session.scalar(sqlmodel.select(sqlalchemy.func.count("*")).select_from(dataset.subquery()))
 

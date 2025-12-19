@@ -1,5 +1,6 @@
 import dataclasses
 import re
+import typing
 
 import sqlalchemy
 import sqlmodel
@@ -11,12 +12,11 @@ import services.mql
 @dataclasses.dataclass
 class Struct:
     code: int
-    objects: list[models.Secret]
+    objects: typing.Sequence[models.Secret]
     tags: list[str]
     count: int
     total: int
     errors: list[str]
-
 
 def list(
     db_session: sqlmodel.Session,
@@ -62,7 +62,7 @@ def list(
             dataset = dataset.where(sqlalchemy.func.lower(model.name).like("%" + value_normal + "%"))
         elif token["field"] in ["tags"]:
             values = [s.strip() for s in value.lower().split(",")]
-            dataset = dataset.where(model.tags.contains(values))
+            dataset = dataset.where(model.tags.contains(values)) # ty: ignore
             struct.tags = values
         elif token["field"] in ["uid", "user_id"]:
             dataset = dataset.where(model.user_id == int(value))
@@ -70,11 +70,11 @@ def list(
     db_query = dataset.offset(offset).limit(limit)
 
     if sort == "name+":
-        db_query = db_query.order_by(model.name.asc())
+        db_query = db_query.order_by(model.name.asc()) # ty: ignore
     elif sort == "name-":
-        db_query = db_query.order_by(model.name.desc())
+        db_query = db_query.order_by(model.name.desc()) # ty: ignore
     else:  # default is "name+"
-        db_query = db_query.order_by(model.name.asc())
+        db_query = db_query.order_by(model.name.asc()) # ty: ignore
 
     struct.objects = db_session.exec(db_query).all()
     struct.count = len(struct.objects)

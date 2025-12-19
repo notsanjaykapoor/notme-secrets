@@ -122,7 +122,7 @@ def places_search_by_tag_city(location: str, tag: str) -> str:
         return f"{url}?{params}"
 
 
-def _city_get_or_create(db_session: sqlmodel.Session, location: str) -> models.City | None:
+def _city_get_or_create(db_session: sqlmodel.Session, location: str) -> models.City | models.Region | None:
     box = services.geo.get_by_name(db_session=db_session, name=location)
 
     if box:

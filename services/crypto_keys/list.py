@@ -1,5 +1,6 @@
 import dataclasses
 import re
+import typing
 
 import sqlalchemy
 import sqlmodel
@@ -11,7 +12,7 @@ import services.mql
 @dataclasses.dataclass
 class Struct:
     code: int
-    objects: list[models.CryptoKey]
+    objects: typing.Sequence[models.CryptoKey]
     count: int
     total: int
     errors: list[str]

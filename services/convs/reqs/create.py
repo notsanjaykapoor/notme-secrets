@@ -1,3 +1,5 @@
+import typing
+
 import sqlmodel
 
 import models
@@ -6,14 +8,16 @@ import services.convs
 
 def create(
     db_session: sqlmodel.Session, conv_id: int, request_id: str, state: str, user_id: int, data: dict = {}
-) -> tuple[int, int, models.ConvReq]:
+) -> tuple[int, int, models.ConvReq | None]:
     """
     Create conversation request database object.
     """
     if conv_id == 0:
         # create conversation
         code, conv_db = services.convs.create(db_session=db_session, name=f"c-{request_id}", user_id=user_id, tags=[])
-        conv_id = conv_db.id
+        if code != 0:
+            return code, 0, None
+        conv_id = typing.cast(int, conv_db.id)
     else:
         # use existing conversation
         pass

@@ -1,11 +1,13 @@
+import typing
+
 import sqlmodel
 
 import models
 
 
-def get_all_names_slugs(db_session: sqlmodel.Session) -> list[models.Region]:
+def get_all_names_slugs(db_session: sqlmodel.Session) -> typing.Sequence[tuple[str, str]]:
     db_select = sqlmodel.select(models.Region.name, models.Region.slug)
-    db_select = db_select.order_by(models.Region.name.asc())
+    db_select = db_select.order_by(models.Region.name.asc()) # ty: ignore
     return db_session.exec(db_select).all()
 
 

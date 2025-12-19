@@ -33,6 +33,9 @@ def list(org: str, query: str, offset: int, limit: int) -> Struct:
 
     for file in files:
         match = re.match(rf"({source_dir})(.+)\.gpg", file)
+        if not match:
+            continue
+
         file_name = match[2]  # e.g. notme/goog, without the .gpg extension
 
         if org:

@@ -1,3 +1,5 @@
+import typing
+
 import pydantic_ai.messages
 import sqlmodel
 
@@ -17,7 +19,7 @@ def load_by_conv_id(db_session: sqlmodel.Session, conv_id: int) -> tuple[int, li
     return _load_msgs(msgs_list=msgs_list)
 
 
-def _load_msgs(msgs_list: list[models.ConvMsg]) -> tuple[int, list[pydantic_ai.messages.ModelMessage]]:
+def _load_msgs(msgs_list: typing.Sequence[models.ConvMsg]) -> tuple[int, list[pydantic_ai.messages.ModelMessage]]:
     model_msgs = pydantic_ai.messages.ModelMessagesTypeAdapter.validate_python([msg.data for msg in msgs_list])
 
     return 0, model_msgs

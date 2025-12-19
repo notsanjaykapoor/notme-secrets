@@ -1,4 +1,5 @@
 import os
+import typing
 
 import anthropic
 
@@ -18,7 +19,7 @@ async def stream(query: str, tools: list[dict]):
     )
 
     try:
-        params = {
+        params: dict[str, typing.Any] = {
             "max_tokens": MAX_TOKENS_DEFAULT,
             "messages": [
                 {

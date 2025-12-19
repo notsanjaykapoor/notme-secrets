@@ -1,5 +1,6 @@
 import dataclasses
 import re
+import typing
 
 import sqlalchemy
 import sqlmodel
@@ -11,7 +12,7 @@ import services.mql
 @dataclasses.dataclass
 class Struct:
     code: int
-    objects: list[models.ConvMsg]
+    objects: typing.Sequence[models.ConvMsg]
     tags: list[str]
     count: int
     total: int
@@ -48,22 +49,22 @@ def list(db_session: sqlmodel.Session, query: str = "", offset: int = 0, limit: 
             dataset = dataset.where(model.conv_id == int(value))
         elif token["field"] in ["id", "ids"]:
             values = [int(i) for i in value.split(",")]
-            dataset = dataset.where(model.id.in_(values))
+            dataset = dataset.where(model.id.in_(values))  # ty: ignore
         elif token["field"] == "kind":
             # always like query
             value_normal = re.sub(r"~", "", value).lower()
             dataset = dataset.where(sqlalchemy.func.lower(model.kind).like("%" + value_normal + "%"))
         elif token["field"] in ["tags"]:
             values = [s.strip() for s in value.lower().split(",")]
-            dataset = dataset.where(model.tags.contains(values))
+            dataset = dataset.where(model.tags.contains(values))  # ty: ignore
             struct.tags = values
 
     dataset = dataset.offset(offset).limit(limit)
 
     if sort == "id+":
-        dataset = dataset.order_by(model.id.asc())
+        dataset = dataset.order_by(model.id.asc())  # ty: ignore
     elif sort == "id-":
-        dataset = dataset.order_by(model.id.desc())
+        dataset = dataset.order_by(model.id.desc())  # ty: ignore
 
     struct.objects = db_session.exec(dataset).all()
     struct.count = len(struct.objects)

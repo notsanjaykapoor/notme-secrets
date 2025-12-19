@@ -1,11 +1,13 @@
+import typing
+
 import sqlmodel
 
 import models
 
 
-def get_all_names_slugs(db_session: sqlmodel.Session) -> list[models.City]:
+def get_all_names_slugs(db_session: sqlmodel.Session) -> typing.Sequence[tuple[str, str, str]]:
     db_select = sqlmodel.select(models.City.country_code, models.City.name, models.City.slug)
-    db_select = db_select.order_by(models.City.name.asc())
+    db_select = db_select.order_by(models.City.name.asc()) # ty: ignore
     return db_session.exec(db_select).all()
 
 

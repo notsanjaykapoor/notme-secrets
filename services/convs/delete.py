@@ -13,7 +13,7 @@ def delete_by_id(db_session: sqlmodel.Session, id: int) -> tuple[int, list[int],
     conv_db = services.convs.get_by_id(db_session=db_session, id=id)
 
     if not conv_db:
-        return [404, [], []]
+        return 404, [], []
 
     reqs_query = f"conv_id:{id}"
     reqs_struct = services.convs.reqs.list(db_session=db_session, query=reqs_query, offset=0, limit=1024)

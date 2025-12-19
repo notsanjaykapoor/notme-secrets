@@ -75,10 +75,6 @@ def _google_addr_to_feature(addr: dict) -> dict:
     return feature
 
 
-def _region_bbox(bbox_object: dict) -> dict:
-    return [
-        bbox_object.get("southwest", {}).get("lng"),
-        bbox_object.get("southwest", {}).get("lat"),
-        bbox_object.get("northeast", {}).get("lng"),
-        bbox_object.get("northeast", {}).get("lat"),
-    ]
+def _region_bbox(bbox_object: dict) -> tuple[float, float, float, float]:
+    return bbox_object.get("southwest", {}).get("lng"), bbox_object.get("southwest", {}).get("lat"), bbox_object.get("northeast", {}).get("lng"), bbox_object.get("northeast", {}).get("lat")
+

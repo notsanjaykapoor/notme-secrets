@@ -34,4 +34,4 @@ def decrypt_with_time(key: models.CryptoKey, base64_text: str) -> tuple[str, flo
     text = decrypt(key=key, base64_text=base64_text)
     t_secs = round((time.time() - t_start), 1)
 
-    return [text, t_secs]
+    return text, t_secs

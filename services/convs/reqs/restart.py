@@ -1,10 +1,12 @@
+import typing
+
 import sqlmodel
 
 import models
 import services.convs.reqs
 
 
-def restart_list(db_session: sqlmodel.Session, offset: int = 0, limit: int = 50) -> list[models.ConvReq]:
+def restart_list(db_session: sqlmodel.Session, offset: int = 0, limit: int = 50) -> typing.Sequence[models.ConvReq]:
     """
     Get conversation requests in cancelled state.
     """
