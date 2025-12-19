@@ -4,7 +4,7 @@ import os
 import re
 
 import models
-import services.secrets
+import services.crypto_keys.gpg
 
 
 @dataclasses.dataclass
@@ -26,8 +26,8 @@ def list(org: str, query: str, offset: int, limit: int) -> Struct:
         errors=[],
     )
 
-    dir_uri = os.environ.get("SECRETS_FS_URI")
-    source_host, source_dir, _ = services.secrets.file_uri_parse(source_uri=dir_uri)
+    dir_uri = os.environ["SECRETS_FS_URI"]
+    source_host, source_dir, _ = services.crypto_keys.gpg.file_uri_parse(source_uri=dir_uri)
 
     files = sorted(glob.glob(f"{source_dir}{org}/*.gpg", recursive=True))
 

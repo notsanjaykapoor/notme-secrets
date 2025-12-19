@@ -2,7 +2,7 @@ import os
 import re
 
 import models
-import services.secrets
+import services.crypto_keys.gpg
 
 
 # deprecated
@@ -10,7 +10,7 @@ def decrypt(secret: models.SecretData) -> models.SecretData:
     """
     decrypt secret object using gpg key
     """
-    gpg = services.secrets.gpg_get(gpg_dir=os.environ.get("GPG_HOME_URI"))
+    gpg = services.crypto_keys.gpg.gpg_get(gpg_dir=os.environ["GPG_HOME_URI"])
 
     decrypted_data = gpg.decrypt_file(open(secret.path, "rb"))
     plaintext = str(decrypted_data)

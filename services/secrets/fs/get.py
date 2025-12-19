@@ -1,12 +1,12 @@
 import os
 
 import models
-import services.secrets
+import services.crypto_keys.gpg
 
 
 def get_by_name(org: str, name: str) -> models.SecretData | None:
-    dir_uri = os.environ.get("SECRETS_FS_URI")
-    source_host, source_dir, _ = services.secrets.file_uri_parse(source_uri=dir_uri)
+    dir_uri = os.environ["SECRETS_FS_URI"]
+    source_host, source_dir, _ = services.crypto_keys.gpg.file_uri_parse(source_uri=dir_uri)
 
     file_path = f"{source_dir}{org}/{name}"
 

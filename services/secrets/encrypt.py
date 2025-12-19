@@ -2,13 +2,12 @@ import os
 
 import gnupg
 
-import services.secrets
-
+import services.crypto_keys.gpg
 
 # deprecated
 def encrypt(password: str, user: str = "") -> gnupg.Crypt:
     """ """
-    gpg, gpg_key = services.secrets.gpg_key(gpg_dir=os.environ.get("GPG_HOME_URI"))
+    gpg, gpg_key = services.crypto_keys.gpg.gpg_key(gpg_dir=os.environ["GPG_HOME_URI"])
 
     data = [password]
 
