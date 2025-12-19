@@ -3,6 +3,7 @@ from .box import Box
 from .city import City
 from .conv_msg import ConvMsg
 from .conv_obj import ConvObj
+from .conv_req import ConvReq
 from .crypto_key import CryptoKey
 from .place import Place
 from .region import Region

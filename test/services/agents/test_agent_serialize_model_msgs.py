@@ -178,15 +178,18 @@ def test_serialize_model_msgs(db_session: sqlmodel.Session, user_1: models.User,
 
     json_list = services.agents.serialize_model_msgs(model_msgs=[model_response_1])
 
-    code, msg_db = services.convs.msgs.create(
+    code, msgs_list = services.convs.msgs.create(
         db_session=db_session,
         conv_id=conv_1.id,
-        data=json_list[0],
+        data_list=json_list,
         user_id=user_1.id,
         tags=[],
     )
 
     assert code == 0
+    assert len(msgs_list) == 1
+
+    msg_db = msgs_list[0]
     assert msg_db.id
     assert msg_db.data == json_list[0]
     assert msg_db.kind == "response"

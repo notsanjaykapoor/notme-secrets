@@ -4,7 +4,6 @@ import asyncio
 import os
 import re
 import sys
-import typing
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
 
@@ -16,9 +15,11 @@ import pydantic_ai
 import pydantic_ai.messages
 import ulid
 
+import models
 import services.agents
 import services.console
 import services.convs
+import services.convs.reqs
 import services.database.session
 import services.places.functions
 import services.tools
@@ -40,13 +41,13 @@ async def conv_delete(ctx, conv_ids: str) -> int:
 
     with services.database.session.get() as db_session:
         for conv_id in conv_ids:
-            code, msg_ids = services.convs.delete_by_id(db_session, id=conv_id)
+            code, reqs_ids, msg_ids = services.convs.delete_by_id(db_session, id=conv_id)
 
             if code != 0:
                 services.console.print_error(f"conv id {conv_id} delete error {code}")
                 continue
 
-            services.console.print_ok(f"conv_id {conv_id}, msg_ids {msg_ids} deleted")
+            services.console.print_ok(f"conv_id {conv_id}, reqs_ids {reqs_ids}, msg_ids {msg_ids} deleted")
 
 
 @click.command()
@@ -78,6 +79,12 @@ async def conv_start(user_id: int) -> int:
 
 
 async def _conv_stream(conv_id: int, user_id: int):
+    """
+    Stream a new or existing conversation.
+
+    If the conversation exists, show the conversation message history.  Then run a user driven loop
+    prompting for input and then streaming the response.
+    """
     logfire.configure(
         console=False,
         service_name=os.getenv("LOGFIRE_SERVICE_NAME"),
@@ -157,6 +164,7 @@ async def _conv_stream(conv_id: int, user_id: int):
 
     try:
         turn_mode = "user"
+        request_id = ""
 
         # user input loop
         while True:
@@ -170,11 +178,12 @@ async def _conv_stream(conv_id: int, user_id: int):
                 services.console.print_ok(f"\nconversation {channel_anth.conv_id} debugger")
                 breakpoint()
 
+            print("")
+
             with services.database.session.get() as db_session:
                 tool_use = services.places.functions.match_tool_use(db_session=db_session, query=user_prompt)
 
                 if tool_use:
-                    print("")
                     # run agent with registered output tools
                     agent_result = await agent_places.run(user_prompt=user_prompt, deps={})
 
@@ -187,11 +196,23 @@ async def _conv_stream(conv_id: int, user_id: int):
                         )
                         channel_anth.conv_id = conv_db.id
 
-                    await channel_anth.iq.put(["user-prompt", {"text": user_prompt, "request_id": ""}])
+                    # generate a new conv request object
+                    code, conv_id, req_db = services.convs.reqs.create(
+                        db_session=db_session,
+                        conv_id=channel_anth.conv_id,
+                        data={
+                            "user_prompt": user_prompt,
+                        },
+                        request_id=ulid.new().str,
+                        state=models.conv_req.STATE_PENDING,
+                        user_id=channel_anth.user_id,
+                    )
+
+                    request_id = req_db.request_id
+
+                    await channel_anth.iq.put(["user-prompt", {"text": user_prompt, "request_id": request_id}])
 
                     turn_mode = "agent"
-
-                    print("")
 
                     while turn_mode == "agent":
                         kind: str
@@ -223,15 +244,35 @@ async def _conv_stream(conv_id: int, user_id: int):
                                     msg_part = msg.part
                                     if isinstance(msg_part, pydantic_ai.messages.TextPart):
                                         services.console.print_fragment_model(msg_part.content, end="")
+    except asyncio.CancelledError as e:
+        services.console.print_error(f"channel request {request_id} cancelled - {e}")
+
+        # mark request as cancelled
+        services.convs.reqs.update_state(
+            db_session=db_session,
+            request_id=request_id,
+            state_from=models.conv_req.STATE_PENDING,
+            state_to=models.conv_req.STATE_CANCELLED,
+            conv_msg_ids=[],
+        )
     except Exception as e:
         services.console.print_error(f"channel exception - {e}")
+
+        # mark request as error
+        services.convs.reqs.update_state(
+            db_session=db_session,
+            request_id=request_id,
+            state_from=models.conv_req.STATE_PENDING,
+            state_to=models.conv_req.STATE_ERROR,
+            conv_msg_ids=[],
+        )
 
     channel_task.cancel()
 
     try:
         await channel_task
     except asyncio.CancelledError:
-        services.console.print_error("channel task cancelled")
+        services.console.print_error("channel task cancelled, normal exit")
 
 
 cli.add_command(conv_delete)

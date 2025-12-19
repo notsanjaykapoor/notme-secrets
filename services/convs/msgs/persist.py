@@ -22,10 +22,8 @@ def persist(
         # use the fallback serializer
         json_list = services.agents.serialize_model_msgs(model_msgs=model_msgs)
 
-    msgs_list = []
+    code, msgs_list = services.convs.msgs.create(
+        db_session, conv_id=conv_id, data_list=json_list, user_id=user_id, tags=[]
+    )
 
-    for json_data in json_list:
-        msg_db = services.convs.msgs.create(db_session, conv_id=conv_id, data=json_data, user_id=user_id, tags=[])
-        msgs_list.append(msg_db)
-
-    return 0, msgs_list
+    return code, msgs_list

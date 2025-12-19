@@ -5,7 +5,9 @@ import pydantic_ai
 
 import context
 import log
+import models
 import services.convs.msgs
+import services.convs.reqs
 import services.database
 
 logger = log.init("agent")
@@ -22,17 +24,18 @@ class AgentChannel:
 
 async def stream_task(channel: AgentChannel):
     """
-    Stream agent responses.
+    Task to stream a conversation.
 
-
+    The channel contains the context for the streaming session.
     """
     try:
         msgs_history = await _stream_history(channel=channel)
 
-        await _stream_user(channel=channel, msgs_history=msgs_history)
+        await _stream_user_loop(channel=channel, msgs_history=msgs_history)
     except Exception as e:
-        breakpoint()  #
         logger.error(f"{context.rid_get()} stream_task exception - {e}")
+
+    logger.info(f"{context.rid_get()} stream_task exiting")
 
 
 async def _stream_history(channel: AgentChannel) -> list[pydantic_ai.messages.ModelMessage]:
@@ -54,44 +57,58 @@ async def _stream_history(channel: AgentChannel) -> list[pydantic_ai.messages.Mo
     return msgs_history
 
 
-async def _stream_user(channel: AgentChannel, msgs_history: list[pydantic_ai.messages.ModelMessage]):
+async def _stream_user_loop(channel: AgentChannel, msgs_history: list[pydantic_ai.messages.ModelMessage]):
     kind: str
     msg: dict
 
-    kind, msg = await channel.iq.get()
+    while True:
+        kind, msg = await channel.iq.get()
 
-    if kind == "user-prompt":
-        text = msg.get("text")
-        request_id = msg.get("request_id")
+        if kind == "user-prompt":
+            text: str = msg.get("text")
+            request_id: str = msg.get("request_id")
 
-        async with channel.agent.iter(user_prompt=text, message_history=msgs_history, deps={}) as agent_run:
-            async for node in agent_run:
-                # can be 1 of 4 different node types
-                if pydantic_ai.Agent.is_model_request_node(node):
-                    await channel.oq.put(["agent-node", "model-request-start", node])
-                    # stream the model request node
-                    async with node.stream(agent_run.ctx) as request_stream:
-                        async for event in request_stream:
-                            await channel.oq.put(["stream-event", "model-request", event])
-                    await channel.oq.put(["agent-node", "model-request-end", None])
-                elif pydantic_ai.Agent.is_call_tools_node(node):
-                    await channel.oq.put(["agent-node", "tool-call-start", node])
-                    # stream the tools node
-                    async with node.stream(agent_run.ctx) as handle_stream:
-                        async for event in handle_stream:
-                            await channel.oq.put(["stream-event", "tool-call", event])
-                    await channel.oq.put(["agent-node", "tool-call-end", None])
-                elif pydantic_ai.Agent.is_user_prompt_node(node):
-                    await channel.oq.put(["agent-node", "user-prompt", node])
-                elif pydantic_ai.Agent.is_end_node(node):
-                    await channel.oq.put(["agent-node", "turn-end", node])
+            async with channel.agent.iter(user_prompt=text, message_history=msgs_history, deps={}) as agent_run:
+                async for node in agent_run:
+                    # can be 1 of 4 different node types
+                    if pydantic_ai.Agent.is_model_request_node(node):
+                        await channel.oq.put(["agent-node", "model-request-start", node])
+                        # stream the model request node
+                        async with node.stream(agent_run.ctx) as request_stream:
+                            async for event in request_stream:
+                                await channel.oq.put(["stream-event", "model-request", event])
+                        await channel.oq.put(["agent-node", "model-request-end", None])
+                    elif pydantic_ai.Agent.is_call_tools_node(node):
+                        await channel.oq.put(["agent-node", "tool-call-start", node])
+                        # stream the tools node
+                        async with node.stream(agent_run.ctx) as handle_stream:
+                            async for event in handle_stream:
+                                await channel.oq.put(["stream-event", "tool-call", event])
+                        await channel.oq.put(["agent-node", "tool-call-end", None])
+                    elif pydantic_ai.Agent.is_user_prompt_node(node):
+                        await channel.oq.put(["agent-node", "user-prompt", node])
+                    elif pydantic_ai.Agent.is_end_node(node):
+                        await channel.oq.put(["agent-node", "turn-end", node])
 
-            agent_result = agent_run.result
-            model_msgs = agent_result.new_messages()
+                agent_result = agent_run.result
+                model_msgs = agent_result.new_messages()
 
-            msgs_history.extend(model_msgs)
+                msgs_history.extend(model_msgs)
 
-            with services.database.session.get() as db_session:
-                services.convs.msgs.persist(
-                    db_session=db_session, conv_id=channel.conv_id, user_id=channel.user_id, model_msgs=model_msgs
-                )
+                with services.database.session.get() as db_session:
+                    code, msgs_list = services.convs.msgs.persist(
+                        db_session=db_session, conv_id=channel.conv_id, user_id=channel.user_id, model_msgs=model_msgs
+                    )
+
+                    if code == 0:
+                        state_to = models.conv_req.STATE_COMPLETED
+                    else:
+                        state_to = models.conv_req.STATE_ERROR
+
+                    services.convs.reqs.update_state(
+                        db_session=db_session,
+                        request_id=request_id,
+                        state_from=models.conv_req.STATE_PENDING,
+                        state_to=state_to,
+                        conv_msg_ids=[msg_db.id for msg_db in msgs_list],
+                    )

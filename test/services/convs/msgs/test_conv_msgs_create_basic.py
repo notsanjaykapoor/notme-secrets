@@ -1,4 +1,3 @@
-import pydantic_ai.messages
 import sqlmodel
 
 import models
@@ -7,7 +6,7 @@ import services.convs.msgs
 import services.database
 
 
-msg_1_request = {
+msg_1_basic = {
     "parts": [
         {
             "content": "You are a helpful agent.",
@@ -25,8 +24,7 @@ msg_1_request = {
     "kind": "request",
 }
 
-
-msg_1_response = {
+msg_2_basic = {
     "parts": [
         {
             "content": "Hello! I'm here to help you with any questions or tasks you might have. I have access to web search capabilities, so I can help you research information online if needed. What would you like to know or do today?",
@@ -57,49 +55,45 @@ msg_1_response = {
 }
 
 
-def test_convs_msgs_load_request(db_session: sqlmodel.Session, user_1: models.User, conv_1: models.ConvObj):
-    code, msg_1 = services.convs.msgs.create(
+def test_convs_msgs_create_basic(db_session: sqlmodel.Session, user_1: models.User, conv_1: models.ConvObj):
+    code, msgs_list = services.convs.msgs.create(
         db_session=db_session,
         conv_id=conv_1.id,
-        data=msg_1_request,
+        data_list=[msg_1_basic],
         user_id=user_1.id,
         tags=[],
     )
 
     assert code == 0
+    assert len(msgs_list) == 1
+
+    msg_1 = msgs_list[0]
+    assert msg_1.created_at
     assert msg_1.id
+    assert msg_1.kind == "request"
+    assert msg_1.parts_count == 2
+    assert msg_1.parts_names == ["system-prompt", "user-prompt"]
 
-    code, model_msgs_list = services.convs.msgs.load_by_conv_id(db_session=db_session, conv_id=conv_1.id)
-
-    assert code == 0
-    assert len(model_msgs_list) == 1
-
-    model_msg = model_msgs_list[0]
-
-    assert isinstance(model_msg, pydantic_ai.messages.ModelRequest)
-
-    services.database.truncate_tables(db_session=db_session, table_names=["conv_msgs"])
-
-
-def test_convs_msgs_load_response(db_session: sqlmodel.Session, user_1: models.User, conv_1: models.ConvObj):
-    code, msg_1 = services.convs.msgs.create(
+    code, msgs_list = services.convs.msgs.create(
         db_session=db_session,
         conv_id=conv_1.id,
-        data=msg_1_response,
+        data_list=[msg_2_basic],
         user_id=user_1.id,
         tags=[],
     )
 
     assert code == 0
-    assert msg_1.id
-
-    code, model_msgs_list = services.convs.msgs.load_by_conv_id(db_session=db_session, conv_id=conv_1.id)
-
     assert code == 0
-    assert len(model_msgs_list) == 1
+    assert len(msgs_list) == 1
 
-    model_msg = model_msgs_list[0]
-
-    assert isinstance(model_msg, pydantic_ai.messages.ModelResponse)
+    msg_2 = msgs_list[0]
+    assert msg_2.id
+    assert msg_2.kind == "response"
+    assert msg_2.model_name == "claude-sonnet-4-20250514"
+    assert msg_2.parts_count == 1
+    assert msg_2.parts_names == ["text"]
+    assert msg_2.provider_name == "anthropic"
+    assert msg_2.provider_response_id == "msg_01McFp61kMiRmAdnk3hkYntx"
+    assert msg_2.usage
 
     services.database.truncate_tables(db_session=db_session, table_names=["conv_msgs"])

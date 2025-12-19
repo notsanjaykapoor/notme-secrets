@@ -124,27 +124,33 @@ msg_4_tool = {
 
 
 def test_convs_msgs_create_tool(db_session: sqlmodel.Session, user_1: models.User, conv_1: models.ConvObj):
-    code, msg_1 = services.convs.msgs.create(
+    code, msgs_list = services.convs.msgs.create(
         db_session=db_session,
         conv_id=conv_1.id,
-        data=msg_1_tool,
+        data_list=[msg_1_tool],
         user_id=user_1.id,
         tags=[],
     )
 
     assert code == 0
+    assert len(msgs_list) == 1
+
+    msg_1 = msgs_list[0]
     assert msg_1.id
     assert msg_1.kind == "request"
 
-    code, msg_2 = services.convs.msgs.create(
+    code, msgs_list = services.convs.msgs.create(
         db_session=db_session,
         conv_id=conv_1.id,
-        data=msg_2_tool,
+        data_list=[msg_2_tool],
         user_id=user_1.id,
         tags=[],
     )
 
     assert code == 0
+    assert len(msgs_list) == 1
+
+    msg_2 = msgs_list[0]
     assert msg_2.id
     assert msg_2.kind == "response"
     assert msg_2.model_name == "claude-sonnet-4-20250514"
@@ -155,30 +161,36 @@ def test_convs_msgs_create_tool(db_session: sqlmodel.Session, user_1: models.Use
     assert msg_2.tools_map == {"toolu_01Rc4uQeh77va88XtgArAvKM": "parallel_ai_search"}
     assert msg_2.usage
 
-    code, msg_3 = services.convs.msgs.create(
+    code, msgs_list = services.convs.msgs.create(
         db_session=db_session,
         conv_id=conv_1.id,
-        data=msg_3_tool,
+        data_list=[msg_3_tool],
         user_id=user_1.id,
         tags=[],
     )
 
     assert code == 0
+    assert len(msgs_list) == 1
+
+    msg_3 = msgs_list[0]
     assert msg_3.id
     assert msg_3.kind == "request"
     assert msg_3.parts_count == 1
     assert msg_3.parts_names == ["tool-return"]
     assert msg_3.tools_map == {"toolu_01Rc4uQeh77va88XtgArAvKM": "parallel_ai_search"}
 
-    code, msg_4 = services.convs.msgs.create(
+    code, msgs_list = services.convs.msgs.create(
         db_session=db_session,
         conv_id=conv_1.id,
-        data=msg_4_tool,
+        data_list=[msg_4_tool],
         user_id=user_1.id,
         tags=[],
     )
 
     assert code == 0
+    assert len(msgs_list) == 1
+
+    msg_4 = msgs_list[0]
     assert msg_4.id
     assert msg_4.kind == "response"
     assert msg_4.parts_count == 1

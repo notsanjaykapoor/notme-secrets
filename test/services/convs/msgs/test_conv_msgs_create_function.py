@@ -64,27 +64,33 @@ msg_3_function = {
 
 
 def test_convs_msgs_create_function(db_session: sqlmodel.Session, user_1: models.User, conv_1: models.ConvObj):
-    code, msg_1 = services.convs.msgs.create(
+    code, msgs_list = services.convs.msgs.create(
         db_session=db_session,
         conv_id=conv_1.id,
-        data=msg_1_function,
+        data_list=[msg_1_function],
         user_id=user_1.id,
         tags=[],
     )
 
     assert code == 0
+    assert len(msgs_list) == 1
+
+    msg_1 = msgs_list[0]
     assert msg_1.id
     assert msg_1.kind == "request"
 
-    code, msg_2 = services.convs.msgs.create(
+    code, msgs_list = services.convs.msgs.create(
         db_session=db_session,
         conv_id=conv_1.id,
-        data=msg_2_function,
+        data_list=[msg_2_function],
         user_id=user_1.id,
         tags=[],
     )
 
     assert code == 0
+    assert len(msgs_list) == 1
+
+    msg_2 = msgs_list[0]
     assert msg_2.id
     assert msg_2.kind == "response"
     assert msg_2.model_name == "gemini-1.5-flash"
@@ -94,15 +100,18 @@ def test_convs_msgs_create_function(db_session: sqlmodel.Session, user_1: models
     assert msg_2.provider_response_id == "S2C4aLGhDauM_PUP0I3uwQk"
     assert msg_2.tools_map == {"pyd_ai_3e1fc982020c4b1fa4997f7378772256": "final_result_list_by_tags_city"}
 
-    code, msg_3 = services.convs.msgs.create(
+    code, msgs_list = services.convs.msgs.create(
         db_session=db_session,
         conv_id=conv_1.id,
-        data=msg_3_function,
+        data_list=[msg_3_function],
         user_id=user_1.id,
         tags=[],
     )
 
     assert code == 0
+    assert len(msgs_list) == 1
+
+    msg_3 = msgs_list[0]
     assert msg_3.id
     assert msg_3.kind == "request"
     assert msg_3.parts_count == 1
