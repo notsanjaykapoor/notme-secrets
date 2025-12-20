@@ -56,7 +56,7 @@ def oauth_login():
 
     try:
         flow = google_auth_oauthlib.flow.Flow.from_client_config(
-            services.utils.base64_to_json(s=os.environ.get("OAUTH_SECRETS_BASE64")),
+            services.utils.base64_to_json(s=os.environ["OAUTH_SECRETS_BASE64"]),
             scopes=oauth_scopes,
         )
 
@@ -90,7 +90,7 @@ def oauth_login_oauth2callback(
         # exchange authorization code for access token
 
         flow = google_auth_oauthlib.flow.Flow.from_client_config(
-            services.utils.base64_to_json(s=os.environ.get("OAUTH_SECRETS_BASE64")),
+            services.utils.base64_to_json(s=os.environ["OAUTH_SECRETS_BASE64"]),
             scopes=oauth_scopes,
             state=state,
         )

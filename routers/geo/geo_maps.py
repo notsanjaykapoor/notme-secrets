@@ -77,7 +77,6 @@ def geo_maps(
 
 @app.get("/geo/maps/resolve", response_class=fastapi.responses.HTMLResponse)
 def geo_maps_resolve(
-    request: fastapi.Request,
     box_name: str,
     user_id: int = fastapi.Depends(main_shared.get_user_id),
     db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
@@ -122,11 +121,12 @@ def geo_maps_box(
 
     logger.info(f"{context.rid_get()} maps box '{box_name}' query '{query}' try")
 
-    try:
-        box = services.geo.get_by_slug(db_session=db_session, slug=box_name)
-        geo_api_path = f"/geo/api/box/{box.slug}"
-    except Exception as e:
-        logger.error(f"{context.rid_get()} maps box '{box_name}' exception '{e}'")
+    box = services.geo.get_by_slug(db_session=db_session, slug=box_name)
+
+    if not box:
+        return fastapi.responses.RedirectResponse("/geo/maps")
+
+    geo_api_path = f"/geo/api/box/{box.slug}"
 
     mapbox_token = os.getenv("MAPBOX_TOKEN")
 
@@ -182,6 +182,9 @@ def geo_maps_box_tileset(
             query_norm = query
 
         box = services.geo.get_by_slug(db_session=db_session, slug=box_name)
+
+        if not box:
+            return fastapi.responses.RedirectResponse("/geo/maps")
 
         places_query = f"{query_norm} {box.type}:{box.name} user_id:{user_id}".strip()
         places_struct = services.places.list(

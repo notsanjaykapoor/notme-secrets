@@ -1,12 +1,14 @@
 import models
 import services.goog_places
-import services.mapbox
 
 
-def geo_search_by_name(city: models.City, name: str) -> tuple[int, list[dict]]:
+def geo_search_by_name(box: models.City | models.Region, name: str) -> tuple[int, list[dict]]:
     """
     Geo search place by name and location.
     """
-    geo_list = services.goog_places.search_by_city(city=city, query=name)
+    if box.type == models.box.TYPE_CITY:
+        geo_list = services.goog_places.search_by_city(city=box, query=name)
+    else: # region, todo
+        geo_list = []
 
     return 0, geo_list

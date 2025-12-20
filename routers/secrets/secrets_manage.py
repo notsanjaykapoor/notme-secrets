@@ -59,6 +59,13 @@ def secrets_create(
                 user_id=user_id,
             )
 
+        if not user_key:
+            response = fastapi.responses.JSONResponse(content={"response": "error"})
+            response.headers["HX-Redirect"] = "/secrets"
+            return response
+
+        assert user_key.id
+
         # create cipher text from raw data
         data = {"passw": secret_struct.password, "user": secret_struct.user}
 

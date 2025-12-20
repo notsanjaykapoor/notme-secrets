@@ -41,6 +41,11 @@ def bookmarks_create(
 
     user = services.users.get_by_id(db_session=db_session, id=user_id)
 
+    if not user:
+        return fastapi.responses.RedirectResponse("/bookmarks")
+
+    assert user.id
+
     logger.info(f"{context.rid_get()} bookmarks create '{bm_struct.name}' try")
 
     bm = services.bookmarks.create(
@@ -51,10 +56,16 @@ def bookmarks_create(
         uri=bm_struct.uri,
     )
 
-    logger.info(f"{context.rid_get()} bookmarks create '{bm_struct.name}' ok - id {bm.id}")
+    if not bm:
+        logger.info(f"{context.rid_get()} bookmarks create error")
 
-    response = fastapi.responses.JSONResponse(content={"response": "ok"})
-    response.headers["HX-Redirect"] = f"/bookmarks/{bm.id}/edit"
+        response = fastapi.responses.JSONResponse(content={"response": "error"})
+        response.headers["HX-Redirect"] = "/bookmarks"
+    else:
+        logger.info(f"{context.rid_get()} bookmarks create '{bm_struct.name}' ok - id {bm.id}")
+
+        response = fastapi.responses.JSONResponse(content={"response": "ok"})
+        response.headers["HX-Redirect"] = f"/bookmarks/{bm.id}/edit"
 
     return response
 
@@ -73,9 +84,12 @@ def bookmarks_edit(
 
     bm = services.bookmarks.get_by_id(db_session=db_session, id=bookmark_id)
 
+    if not bm:
+        return fastapi.responses.RedirectResponse("/bookmarks")
+
     logger.info(f"{context.rid_get()} bookmarks {bm.id} edit try")
 
-    referer_path = request.headers.get("referer")
+    referer_path = request.headers.get("referer") or ""
 
     if "new" in referer_path:
         referer_path = _bookmarks_post_create_path(bm=bm)
@@ -123,11 +137,12 @@ def bookmarks_edit_categories(
 
     user = services.users.get_by_id(db_session=db_session, id=user_id)
 
+    bm = services.bookmarks.get_by_id(db_session=db_session, id=bookmark_id)
+    assert bm
+
+    logger.info(f"{context.rid_get()} bookmarks {bm.id} edit categories {edit_op} '{categories}' try")
+
     try:
-        bm = services.bookmarks.get_by_id(db_session=db_session, id=bookmark_id)
-
-        logger.info(f"{context.rid_get()} bookmarks {bm.id} edit categories {edit_op} '{categories}' try")
-
         categories_mod = [s.lower().strip() for s in categories.split(",")]
 
         if edit_op == "add":
@@ -177,11 +192,12 @@ def bookmarks_edit_links(
 
     user = services.users.get_by_id(db_session=db_session, id=user_id)
 
+    bm = services.bookmarks.get_by_id(db_session=db_session, id=bookmark_id)
+    assert bm
+
+    logger.info(f"{context.rid_get()} bookmarks {bm.id} links {edit_op} '{link}' try")
+
     try:
-        bm = services.bookmarks.get_by_id(db_session=db_session, id=bookmark_id)
-
-        logger.info(f"{context.rid_get()} bookmarks {bm.id} links {edit_op} '{link}' try")
-
         if edit_op == "add":
             if not link.startswith("https://"):
                 raise ValueError("link invalid")
@@ -227,11 +243,12 @@ def bookmarks_edit_name(
 
     user = services.users.get_by_id(db_session=db_session, id=user_id)
 
+    bm = services.bookmarks.get_by_id(db_session=db_session, id=bookmark_id)
+    assert bm
+
+    logger.info(f"{context.rid_get()} bookmarks {bm.id} edit name try")
+
     try:
-        bm = services.bookmarks.get_by_id(db_session=db_session, id=bookmark_id)
-
-        logger.info(f"{context.rid_get()} bookmarks {bm.id} edit name try")
-
         bm.name = name
 
         db_session.add(bm)
@@ -272,11 +289,12 @@ def bookmarks_edit_notes(
 
     user = services.users.get_by_id(db_session=db_session, id=user_id)
 
+    bm = services.bookmarks.get_by_id(db_session=db_session, id=bookmark_id)
+    assert bm
+
+    logger.info(f"{context.rid_get()} bookmarks {bm.id} edit notes try")
+
     try:
-        bm = services.bookmarks.get_by_id(db_session=db_session, id=bookmark_id)
-
-        logger.info(f"{context.rid_get()} bookmarks {bm.id} edit notes try")
-
         bm.notes = notes
 
         db_session.add(bm)
@@ -321,11 +339,16 @@ def bookmarks_edit_tags(
 
     user = services.users.get_by_id(db_session=db_session, id=user_id)
 
+    bm = services.bookmarks.get_by_id(db_session=db_session, id=bookmark_id)
+
+    if not bm:
+        return fastapi.responses.RedirectResponse("/bookmarks")
+
+    assert bm.id
+
+    logger.info(f"{context.rid_get()} bookmarks {bm.id} edit tags {edit_op} '{tags}' try")
+
     try:
-        bm = services.bookmarks.get_by_id(db_session=db_session, id=bookmark_id)
-
-        logger.info(f"{context.rid_get()} bookmarks {bm.id} edit tags {edit_op} '{tags}' try")
-
         tags_mod = [tag.lower().strip() for tag in tags.split(",")]
 
         if edit_op == "add":
@@ -371,11 +394,16 @@ def bookmarks_edit_uri(
 
     user = services.users.get_by_id(db_session=db_session, id=user_id)
 
+    bm = services.bookmarks.get_by_id(db_session=db_session, id=bookmark_id)
+
+    if not bm:
+        return fastapi.responses.RedirectResponse("/bookmarks")
+
+    assert bm.id
+
+    logger.info(f"{context.rid_get()} bookmarks {bm.id} edit uri try")
+
     try:
-        bm = services.bookmarks.get_by_id(db_session=db_session, id=bookmark_id)
-
-        logger.info(f"{context.rid_get()} bookmarks {bm.id} edit uri try")
-
         bm.uri = uri
 
         db_session.add(bm)

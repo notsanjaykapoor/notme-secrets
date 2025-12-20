@@ -39,6 +39,9 @@ def keys_list(
 
     user = services.users.get_by_id(db_session=db_session, id=user_id)
 
+    if not user:
+        return fastapi.responses.RedirectResponse("/keys")
+
     logger.info(f"{context.rid_get()} keys user {user.id} list")
 
     try:
@@ -52,7 +55,10 @@ def keys_list(
         keys_total = list_result.total
 
         # map each key to count of secrets
-        keys_map = {key.id: services.secrets.count_by_key(db_session=db_session, key_id=key.id) for key in keys_list}
+        keys_map = {}
+        for key in keys_list:
+            assert key.id
+            keys_map[key.id] = services.secrets.count_by_key(db_session=db_session, key_id=key.id)
 
         query_code = 0
         query_result = f"query '{query}' returned {len(keys_list)} results"

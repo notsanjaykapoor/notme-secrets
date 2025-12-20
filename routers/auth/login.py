@@ -35,10 +35,9 @@ class UserPassStruct(pydantic.BaseModel):
 @app.post("/login")
 def users_login(
     request: fastapi.Request,
-    user_struct: UserPassStruct = None,
+    user_struct: UserPassStruct,
     db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
     user_id: int = fastapi.Depends(main_shared.get_user_id),
-    challenge_ts: typing.Annotated[str | None, fastapi.Cookie()] = "",
 ):
     """
     user login page

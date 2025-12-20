@@ -35,6 +35,11 @@ def geo_api_query(
 
     user = services.users.get_by_id(db_session=db_session, id=user_id)
 
+    box = services.geo.get_by_slug(db_session=db_session, slug=box_name)
+
+    if not box:
+        return fastapi.responses.RedirectResponse("/geo")
+
     logger.info(f"{context.rid_get()} api query '{query}' box '{box_name}' try")
 
     geo_list = []
@@ -44,10 +49,8 @@ def geo_api_query(
     query_result = ""
 
     try:
-        box = services.geo.get_by_slug(db_session=db_session, slug=box_name)
-
         if query:
-            query_code, geo_list = services.places.geo_search_by_name(city=box, name=query)
+            query_code, geo_list = services.places.geo_search_by_name(box=box, name=query)
             query_result = f"query '{query}' returned {len(geo_list)} results"
 
             # get current places to cross reference vs additions list

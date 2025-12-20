@@ -1,0 +1,4 @@
+<input type="textarea" id="place-name-input" name="val" placeholder="name" value="{{ place.name }}"
+    autocomplete="off" hx-get="{{ places_name_path }}/mod" hx-target="#place-name"
+    hx-trigger="input changed delay:1000ms"
+    class="peer px-0 w-full bg-transparent pt-2 pb-1.5 font-sans font-bold text-center text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-blue-gray-200 focus:border-sky-400 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50">

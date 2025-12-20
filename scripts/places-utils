@@ -48,7 +48,7 @@ def add(name: str, city_name: str, country_code: str, email: str) -> list[str]:
             services.console.print_error(f"city '{city_name}' not found")
             exit(-1)
 
-        code, geo_list = services.places.geo_search_by_name(city=city_db, name=name)
+        code, geo_list = services.places.geo_search_by_name(box=city_db, name=name)
 
         if code != 0:
             services.console.print_error(f"geo search '{name}' error")

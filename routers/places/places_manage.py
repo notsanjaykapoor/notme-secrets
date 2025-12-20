@@ -1,6 +1,9 @@
+import typing
+
 import fastapi
 import fastapi.responses
 import fastapi.templating
+import psycopg2
 import sqlmodel
 
 import context
@@ -42,10 +45,17 @@ def places_add(
 
     user = services.users.get_by_id(db_session=db_session, id=user_id)
 
+    if not user:
+        return fastapi.responses.RedirectResponse("/places")
+
     logger.info(f"{context.rid_get()} places add box '{box_name}' source '{source_name}' try")
 
     try:
         box = services.geo.get_by_slug(db_session=db_session, slug=box_name)
+
+        if not box:
+            logger.error(f"{context.rid_get()} places add box '{box_name}' not found")
+            return fastapi.responses.RedirectResponse("/places")
 
         if source_name == models.place.SOURCE_GOOGLE:
             geo_json = services.goog_places.get_by_id(goog_id=source_id)
@@ -62,8 +72,12 @@ def places_add(
 
             if not city:
                 _, city = services.cities.create(db_session=db_session, name=city_name, country_code=country_code)
+
+            if not city:
+                logger.error(f"{context.rid_get()} places add city create '{city_name}' error")
+                return fastapi.responses.RedirectResponse("/places")
         else:
-            city = box
+            city = typing.cast(models.City, box)
 
         code, place_db = services.places.create(
             db_session=db_session,
@@ -72,6 +86,10 @@ def places_add(
             geo_json=geo_json,
             name=geo_json.get("properties", {}).get("name"),
         )
+
+        if not place_db:
+            logger.error(f"{context.rid_get()} places create error {code}")
+            return fastapi.responses.RedirectResponse("/places")
 
         place_id = place_db.id
         add_code = code
@@ -115,6 +133,9 @@ def places_edit(
 
     place_db = services.places.get_by_id(db_session=db_session, id=place_id)
 
+    if not place_db:
+        return fastapi.responses.RedirectResponse("/places")
+
     brands_match_list = sorted(list(services.places.brands.list_all(db_session=db_session)))
     brands_match_list = sorted(set(brands_match_list) - set(place_db.brands))
 
@@ -136,6 +157,7 @@ def places_edit(
                 "brands_match_list": brands_match_list,
                 "place": place_db,
                 "places_brands_path": f"/places/{place_db.id}/brands",
+                "places_name_path": f"/places/{place_db.id}/name",
                 "places_notes_path": f"/places/{place_db.id}/notes",
                 "places_tags_path": f"/places/{place_db.id}/tags",
                 "places_website_path": f"/places/{place_db.id}/website",
@@ -147,7 +169,7 @@ def places_edit(
         )
 
         if "HX-Request" in request.headers:
-            response.headers["HX-Push-Url"] = f"{request.url.path}?query={query}"
+            response.headers["HX-Push-Url"] = f"{request.url.path}"
     except Exception as e:
         logger.error(f"{context.rid_get()} places edit render exception '{e}'")
         return templates.TemplateResponse(request, "500.html", {})
@@ -171,6 +193,9 @@ def places_brands_search(
     logger.info(f"{context.rid_get()} places {place_id} brands 'search' '{name}' try")
 
     place_db = services.places.get_by_id(db_session=db_session, id=place_id)
+
+    if not place_db:
+        return fastapi.responses.RedirectResponse("/places")
 
     brand_search = name
 
@@ -220,6 +245,9 @@ def places_brands_update(
 
     place_db = services.places.get_by_id(db_session=db_session, id=place_id)
 
+    if not place_db:
+        return fastapi.responses.RedirectResponse("/places")
+
     brands_mod = [s.lower().strip() for s in value.split(",")]
 
     if edit_op == "add":
@@ -253,6 +281,50 @@ def places_brands_update(
     return response
 
 
+@app.get("/places/{place_id}/name/mod", response_class=fastapi.responses.JSONResponse)
+def places_name_update(
+    request: fastapi.Request,
+    place_id: int,
+    val: str,
+    user_id: int = fastapi.Depends(main_shared.get_user_id),
+    db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
+):
+    if user_id == 0:
+        return fastapi.responses.RedirectResponse("/login")
+
+    logger.info(f"{context.rid_get()} places {place_id} edit name try")
+
+    place_db = services.places.get_by_id(db_session=db_session, id=place_id)
+
+    if not place_db:
+        return fastapi.responses.RedirectResponse("/places")
+
+    try:
+        place_db.name = val
+        db_session.add(place_db)
+        db_session.commit()
+    except Exception as e:
+        db_session.rollback()
+        place_db.name = f"{e}"
+
+    try:
+        response = templates.TemplateResponse(
+            request,
+            "places/edit_name.html",
+            {
+                "place": place_db,
+                "places_name_path": f"/places/{place_db.id}/name",
+            },
+        )
+    except Exception as e:
+        logger.error(f"{context.rid_get()} places edit render exception '{e}'")
+        return templates.TemplateResponse(request, "500.html", {})
+
+    logger.info(f"{context.rid_get()} places {place_id} edit name ok")
+
+    return response
+
+
 @app.get("/places/{place_id}/notes/mod", response_class=fastapi.responses.JSONResponse)
 def places_notes_update(
     request: fastapi.Request,
@@ -268,8 +340,10 @@ def places_notes_update(
 
     place_db = services.places.get_by_id(db_session=db_session, id=place_id)
 
-    place_db.notes = val
+    if not place_db:
+        return fastapi.responses.RedirectResponse("/places")
 
+    place_db.notes = val
     db_session.add(place_db)
     db_session.commit()
 
@@ -305,6 +379,9 @@ def places_tags_search(
     logger.info(f"{context.rid_get()} places {place_id} tags 'search' '{name}' try")
 
     place_db = services.places.get_by_id(db_session=db_session, id=place_id)
+
+    if not place_db:
+        return fastapi.responses.RedirectResponse("/places")
 
     tag_search = name
 
@@ -354,6 +431,9 @@ def places_tags_update(
 
     place_db = services.places.get_by_id(db_session=db_session, id=place_id)
 
+    if not place_db:
+        return fastapi.responses.RedirectResponse("/places")
+
     tags_mod = [s.lower().strip() for s in value.split(",")]
 
     if edit_op == "add":
@@ -401,6 +481,9 @@ def places_website_update(
     logger.info(f"{context.rid_get()} places {place_id} edit website try")
 
     place_db = services.places.get_by_id(db_session=db_session, id=place_id)
+
+    if not place_db:
+        return fastapi.responses.RedirectResponse("/places")
 
     if val == "" or val.startswith("https:"):
         place_db.website = val

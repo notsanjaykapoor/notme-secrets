@@ -43,6 +43,9 @@ def secrets_list(
 
     user = services.users.get_by_id(db_session=db_session, id=user_id)
 
+    if not user:
+        return fastapi.responses.RedirectResponse("/login")
+
     logger.info(f"{context.rid_get()} secrets user {user.id} list")
 
     try:
@@ -111,16 +114,17 @@ def secrets_blur(
     if user_id == 0:
         return fastapi.responses.RedirectResponse("/login")
 
-    try:
-        secret_db = services.secrets.get_by_id_user(
-            db_session=db_session,
-            id=secret_id,
-            user_id=user_id,
-        )
+    secret_db = services.secrets.get_by_id_user(
+        db_session=db_session,
+        id=secret_id,
+        user_id=user_id,
+    )
+
+    if not secret_db:
+        logger.error(f"{context.rid_get()} secret invalid, blur error")
+        raise Exception("secret invalid")
+    else:
         logger.info(f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' blur ok")
-    except Exception as e:
-        secret_db = None
-        logger.error(f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' blur exception '{e}'")
 
     secret_data = models.SecretData
 
@@ -150,25 +154,30 @@ def secrets_decrypt(
     if user_id == 0:
         return fastapi.responses.RedirectResponse("/login")
 
+    secret_db = services.secrets.get_by_id_user(
+        db_session=db_session,
+        id=secret_id,
+        user_id=user_id,
+    )
+
+    if not secret_db:
+        logger.error(f"{context.rid_get()} secret invalid")
+        return fastapi.responses.RedirectResponse("/secrets")
+
+    # get specific user key
+    user_key = services.crypto_keys.get_by_id_user(
+        db_session=db_session,
+        id=secret_db.key_id,
+        user_id=user_id,
+    )
+
+    if not user_key:
+        logger.error(f"{context.rid_get()} crypto key invalid")
+        return fastapi.responses.RedirectResponse("/secrets")
+
     try:
-        secret_db = services.secrets.get_by_id_user(
-            db_session=db_session,
-            id=secret_id,
-            user_id=user_id,
-        )
-
-        if not secret_db:
-            raise "secret invalid"
-
-        # get specific user key
-        user_key = services.crypto_keys.get_by_id_user(
-            db_session=db_session,
-            id=secret_db.key_id,
-            user_id=user_id,
-        )
-
         logger.info(
-            f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' decrypt '{user_key.type}' try"
+            f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' decrypt '{str(user_key.type)}' try"
         )
 
         if user_key.type == models.crypto_key.TYPE_GPG_SYM:
@@ -187,7 +196,7 @@ def secrets_decrypt(
         )
 
         logger.info(
-            f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' decrypt '{user_key.type}' ok - cipher {t_secs}s"
+            f"{context.rid_get()} secrets user '{user_id}' name '{secret_db.name}' decrypt '{user_key.type}' in {t_secs}s ok"
         )
     except Exception as e:
         secret_data = None

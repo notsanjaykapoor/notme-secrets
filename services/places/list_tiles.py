@@ -1,7 +1,9 @@
+import typing
+
 import models
 
 
-def list_tiles(places: list[models.Place]) -> list[dict]:
+def list_tiles(places: typing.Sequence[models.Place]) -> list[dict]:
     """
     Convert list of places to list of tiles that can be consumed by mapbox.
     """

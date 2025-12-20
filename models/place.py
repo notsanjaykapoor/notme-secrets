@@ -62,6 +62,10 @@ class Place(sqlmodel.SQLModel, table=True):
     website: str = sqlmodel.Field(index=False, nullable=True, default="")
 
     @property
+    def address(self) -> str:
+        return self.geo_json.get("properties", {}).get("address", "").lower()
+
+    @property
     def brands_count(self) -> int:
         return len(self.brands)
 
@@ -72,12 +76,12 @@ class Place(sqlmodel.SQLModel, table=True):
     def brands_string_max(self, limit: int) -> str:
         return ", ".join(self.brands[0:limit])
 
-        if len(self.brands) <= limit:
-            return self.brands_string
+        # if len(self.brands) <= limit:
+        #     return self.brands_string
 
-        brands_str = ", ".join(self.brands[0:limit])
-        brands_more = len(self.brands) - limit
-        return f"{brands_str} +{brands_more}"
+        # brands_str = ", ".join(self.brands[0:limit])
+        # brands_more = len(self.brands) - limit
+        # return f"{brands_str} +{brands_more}"
 
     @property
     def city_country(self) -> str:

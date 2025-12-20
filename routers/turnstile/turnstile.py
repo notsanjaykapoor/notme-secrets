@@ -65,7 +65,7 @@ def turnstile_verify(request: fastapi.Request, turnstile_struct: TurnstileStruct
 
     if turnstile_response.status_code != 200:
         logger.error(f"{context.rid_get()} turnstile error")
-        return fastapi.responses.JSONResponse(content={"code": response.status_code}, status_code=200)
+        return fastapi.responses.JSONResponse(content={"code": turnstile_response.status_code}, status_code=200)
 
     site_response = turnstile_response.json()
 
