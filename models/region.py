@@ -10,6 +10,7 @@ import sqlalchemy.dialects.postgresql
 import sqlmodel
 
 ASIA_CODES = ["am", "az", "in", "jp", "kr", "lk", "ph", "pk", "qa", "sg", "tw", "vn"]
+GB_CODES = ["gb"]
 
 NA_CODES = ["ca", "us", "mx"]
 EU_CODES = [

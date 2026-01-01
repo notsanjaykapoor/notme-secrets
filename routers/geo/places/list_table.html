@@ -77,7 +77,7 @@
     <table class="w-10/12">
         <thead class="font-normal text-left text-xs leading-6 text-zinc-800">
             <tr class="">
-                <th class="p-4">name</th>
+                <th class="p-4 min-w-48">name</th>
                 <th class="p-4 min-w-32">tags</th>
                 <th class="p-4 min-w-48">brands</th>
                 <th class="p-4 w-10">website</th>
@@ -89,15 +89,15 @@
         <tbody>
             {% for place in places_list %}
 
-            {% set brands_extra = place.brands_count - 5 %}
+            {% set brands_extra = place.brands_count - brands_limit %}
 
             <tr class="group hover:bg-zinc-50 odd:bg-white even:bg-slate-50 text-left text-xs">
-                <td class="p-4 font-semibold">
+                <td class="p-4 font-semibold text-xs/7">
                     {{ place.name }}
                 </td>
                 <td class="p-4 font-normal text-slate-400 text-xs/7">{{ place.tags_string }}</td>
                 <td class="p-4 font-normal text-slate-400 text-xs/7">
-                    {{ place.brands_string_max(limit=5) }}
+                    {{ place.brands_string_max(limit=brands_limit) }}
                     {% if brands_extra > 0 %}
                     <span class="text-[11px]">
                         +{{ brands_extra }}

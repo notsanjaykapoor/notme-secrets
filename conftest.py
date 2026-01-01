@@ -119,6 +119,31 @@ def city_chi_fixture(db_session: sqlmodel.Session):
     services.database.truncate_tables(db_session=db_session, table_names=["cities"])
 
 
+@pytest.fixture(name="city_london")
+def city_london_fixture(db_session: sqlmodel.Session):
+    city = models.City(
+        country_code="gb",
+        data={},
+        geo_json={},
+        lat=51.5072178,
+        lon=-0.1275862,
+        name="london",
+        slug="london",
+        source_id="",
+        source_name="google",
+        tags=[],
+    )
+
+    db_session.add(city)
+    db_session.commit()
+
+    assert city.id
+
+    yield city
+
+    services.database.truncate_tables(db_session=db_session, table_names=["cities"])
+
+
 @pytest.fixture(name="city_tokyo")
 def city_tokyo_fixture(db_session: sqlmodel.Session):
     city = models.City(
@@ -130,7 +155,7 @@ def city_tokyo_fixture(db_session: sqlmodel.Session):
         name="tokyo",
         slug="tokyo",
         source_id="",
-        source_name="openstreetmap",
+        source_name="google",
         tags=[],
     )
 

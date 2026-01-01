@@ -141,6 +141,7 @@ def geo_places_list(
                 "box": box,
                 "brands_all_list": brands_all_list,
                 "brands_cur_list": brands_cur_list,
+                "brands_limit": 10,
                 "cities_count": cities_count,
                 "cities_names_slugs": cities_names_slugs,
                 "geo_api_path": geo_api_path,

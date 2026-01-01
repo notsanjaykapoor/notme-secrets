@@ -25,11 +25,7 @@ def address_components_city_country(
     country_code = ""
 
     for addr_component in addr_components:
-        # first check 'locality', then check 'administrative_area_level_1'
-
-        if "locality" in addr_component.get("types", []):
-            locality_name = addr_component.get("longText", "").lower() or addr_component.get("long_name", "").lower()
-            locality_name = name_remove_accents(name=locality_name)
+        # parse addr_component based on type
 
         if "administrative_area_level_1" in addr_component.get("types", []):
             area_name = addr_component.get("longText", "").lower() or addr_component.get("long_name", "").lower()
@@ -38,9 +34,20 @@ def address_components_city_country(
         if "country" in addr_component.get("types", []):
             country_code = addr_component.get("shortText", "").lower() or addr_component.get("short_name", "").lower()
 
+        if "locality" in addr_component.get("types", []):
+            locality_name = addr_component.get("longText", "").lower() or addr_component.get("long_name", "").lower()
+            locality_name = name_remove_accents(name=locality_name)
+
+        if "postal_town" in addr_component.get("types", []):
+            town_name = addr_component.get("longText", "").lower() or addr_component.get("long_name", "").lower()
+            town_name = name_remove_accents(name=town_name)
+
     if country_code in models.region.ASIA_CODES:
         city_name = area_name
         city_key = "administrative_area_level_1"
+    elif country_code in models.region.GB_CODES:
+        city_name = town_name
+        city_key = "postal_town"
     else:
         city_name = locality_name
         city_key = "locality"

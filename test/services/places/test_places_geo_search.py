@@ -1,5 +1,4 @@
 import pytest
-import sqlmodel
 
 import models
 import services.places
@@ -15,6 +14,23 @@ def test_places_geo_search_chi(city_chi: models.City):
     assert len(geo_list) == 1
     assert geo_list[0].get("geometry").get("type") == "Point"
     assert geo_list[0].get("properties").get("name") == "Bavette's Bar & Boeuf"
+    assert geo_list[0].get("properties").get("source_id")
+    assert geo_list[0].get("properties").get("source_name") == "google"
+
+
+@pytest.mark.skip(reason="minimize geo search requests")
+def test_places_geo_search_london(city_london: models.City):
+    assert city_london.name == "london"
+
+    code, geo_list = services.places.geo_search_by_name(box=city_london, name="moukimou")
+
+    assert code == 0
+    assert len(geo_list) == 1
+    assert geo_list[0].get("geometry").get("type") == "Point"
+    assert geo_list[0].get("properties").get("city") == "london"
+    assert geo_list[0].get("properties").get("lat")
+    assert geo_list[0].get("properties").get("lon")
+    assert geo_list[0].get("properties").get("name") == "Mouki mou"
     assert geo_list[0].get("properties").get("source_id")
     assert geo_list[0].get("properties").get("source_name") == "google"
 
