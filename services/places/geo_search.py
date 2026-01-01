@@ -1,3 +1,5 @@
+import typing
+
 import models
 import services.goog_places
 
@@ -7,7 +9,7 @@ def geo_search_by_name(box: models.City | models.Region, name: str) -> tuple[int
     Geo search place by name and location.
     """
     if box.type == models.box.TYPE_CITY:
-        geo_list = services.goog_places.search_by_city(city=box, query=name)
+        geo_list = services.goog_places.search_by_city(city=typing.cast(models.City, box), query=name)
     else: # region, todo
         geo_list = []
 

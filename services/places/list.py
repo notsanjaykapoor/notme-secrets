@@ -6,6 +6,7 @@ import sqlalchemy
 import sqlmodel
 
 import models
+import services.cities
 import services.mql
 import services.regions
 
@@ -92,6 +93,13 @@ def list(
             # always like query
             value_normal = re.sub(r"~", "", value).lower()
             dataset = dataset.where(sqlalchemy.func.lower(model.name).like("%" + value_normal + "%"))
+        elif token["field"] == "near":
+            # map value to a city or region
+            value_normal = value.lower()
+            value_db = _area_get(db_session=db_session, name=value_normal)
+
+            if value_db:
+                pass #
         elif token["field"] == "source_id":
             dataset = dataset.where(model.source_id == value)
         elif token["field"] == "source_name":
@@ -121,3 +129,12 @@ def list(
     struct.total = db_session.scalar(sqlmodel.select(sqlalchemy.func.count("*")).select_from(dataset.subquery()))
 
     return struct
+
+
+def _area_get(db_session: sqlmodel.Session, name: str) -> models.City | models.Region | None:
+    area_db = services.regions.get_by_name(db_session=db_session, name=name)
+    
+    if not area_db:
+        area_db = services.cities.get_by_name(db_session=db_session, name=name)
+
+    return area_db

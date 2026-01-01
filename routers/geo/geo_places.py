@@ -9,6 +9,7 @@ import main_shared
 import routers.utils
 import services.cities
 import services.geo
+import services.mql
 import services.places
 import services.places.brands
 import services.places.tags
@@ -45,10 +46,18 @@ def geo_places_list(
     # normalize query
     query_scope = ""
     query_scope_default = "name:"
+
     if query and ":" not in query:
         query_norm = f"{query_scope_default}{query}".strip()
     else:
         query_norm = query
+
+    # find and extract 'near' token from query if it exists
+    find_struct = services.mql.find(query=query_norm, tokens=["near"])
+
+    if find_struct.tokens_match:
+        box_name = find_struct.tokens_match[0].get("value")
+        query_norm = " ".join(find_struct.tokens_other)
 
     logger.info(f"{context.rid_get()} places list query '{query_norm}' box '{box_name}' try")
 
@@ -62,12 +71,11 @@ def geo_places_list(
     cities_names_slugs = services.cities.get_all_names_slugs(db_session=db_session)
     cities_count = len(cities_names_slugs)
 
-    if box_name:
-        if box := services.geo.get_by_slug(db_session=db_session, slug=box_name):
-            query_scope = f"{box.type}:{box.name}"
-            query_prompt = f"search places near {box.name}"
-            geo_map_path = f"/geo/maps/box/{box.slug}"
-            geo_api_path = f"/geo/api/box/{box.slug}"
+    if box := services.geo.get_by_slug(db_session=db_session, slug=box_name):
+        query_scope = f"{box.type}:{box.name}"
+        query_prompt = f"search places near {box.name}"
+        geo_map_path = f"/geo/maps/box/{box.slug}"
+        geo_api_path = f"/geo/api/box/{box.slug}"
 
     try:
         places_struct = services.places.list(
