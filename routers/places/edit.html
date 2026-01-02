@@ -19,8 +19,10 @@
 </div>
 
 <div class="flex flex-row mx-auto mt-5">
-    <div class="w-full font-bold text-center text-sm/7 text-slate-500">
-        {{ place.address}}
+    <div class="w-full font-bold text-center text-sm/7">
+        <a href="{{place.google_maps_link}}" class="text-blue-700 font-bold" target="_blank">
+            {{ place.address}}
+        </a>
         <br/>
         {{ place.city }}, {{ place.country_code }}
     </div>

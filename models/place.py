@@ -106,6 +106,10 @@ class Place(sqlmodel.SQLModel, table=True):
         }
 
     @property
+    def google_maps_link(self) -> str:
+        return f"https://maps.google.com//?q={self.lat},{self.lon}"
+
+    @property
     def lat_f(self) -> float:
         return float(self.lat)
 

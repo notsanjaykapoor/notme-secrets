@@ -56,8 +56,11 @@ def geo_places_list(
     find_struct = services.mql.find(query=query_norm, tokens=["near"])
 
     if find_struct.tokens_match:
-        box_name = find_struct.tokens_match[0].get("value")
+        # near token removed from query, and used to set box_name
         query_norm = " ".join(find_struct.tokens_other)
+        if not box_name:
+            # query param box name takes precedence over near param
+            box_name = find_struct.tokens_match[0].get("value")
 
     logger.info(f"{context.rid_get()} places list query '{query_norm}' box '{box_name}' try")
 

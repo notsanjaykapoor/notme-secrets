@@ -18,7 +18,7 @@
             {% if box %}
             <button class="rounded-full text-xs font-bold text-white bg-blue-700 w-1/4 py-1 px-3 mr-5">
                 {{ box.name }}
-                <a href="/geo/places">
+                <a href="/geo/places?query={{query}}">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                         class="float-right ml-2 size-4">
                         <path
@@ -31,7 +31,7 @@
                 class="block ml-0 mr-10 px-0 pb-0 w-1/4 text-xs text-slate-400 bg-transparent border-0 border-b border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-sky-400 peer disabled:border-0 disabled:bg-blue-gray-50">
                 <option class="text-xs" selected>search city</option>
                 {% for city in cities_names_slugs %}
-                <option value="/geo/places/box/{{ city.slug }}">
+                <option value="/geo/places/box/{{ city.slug }}?query={{query}}">
                     {{ city.name }}, {{ city.country_code }}
                 </option>
                 {% endfor %}
@@ -41,7 +41,7 @@
             <input type="search" id="places-search" name="query" value="{{ query }}" placeholder="{{ query_prompt }}"
                 autocomplete="off" hx-get="{{ request_path }}" hx-target="#places-table"
                 hx-trigger="input changed delay:750ms, search"
-                class="px-0 py-2.5 mx-0 h-full w-full border-b bg-transparent font-sans outline outline-0 transition-all placeholder-shown:border-blue-gray-200 focus:border-blue-300 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50">
+                class="px-0 py-2.5 mx-0 h-full w-1/2 border-b bg-transparent font-sans outline outline-0 transition-all placeholder-shown:border-blue-gray-200 focus:border-blue-300 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50">
         </div>
     </div>
     <div class="w-1/12"></div>
