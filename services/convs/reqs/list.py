@@ -37,7 +37,7 @@ def list(db_session: sqlmodel.Session, query: str = "", offset: int = 0, limit: 
     query_normalized = query
 
     if query and ":" not in query:
-        query_normalized = f"id:{query}"
+        query_normalized = f"prompt:{query}"
 
     struct_tokens = services.mql.parse(query_normalized)
 
@@ -49,9 +49,14 @@ def list(db_session: sqlmodel.Session, query: str = "", offset: int = 0, limit: 
         elif token["field"] in ["id", "ids"]:
             values = [int(i) for i in value.split(",")]
             dataset = dataset.where(model.id.in_(values))  # ty: ignore
+        elif token["field"] in ["prompt"]:
+            value_norm = f"%{value}%"
+            dataset = dataset.filter(sqlalchemy.text(f"data->>'user_prompt' ilike '{value_norm}'"))
         elif token["field"] in ["request_id", "request_ids"]:
             values = [s for s in value.split(",")]
             dataset = dataset.where(model.request_id.in_(values))  # ty: ignore
+        elif token["field"] in ["state"]:
+            dataset = dataset.where(model.state == value)
 
     dataset = dataset.offset(offset).limit(limit)
 

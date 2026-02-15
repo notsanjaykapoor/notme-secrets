@@ -55,12 +55,20 @@ def geo_places_list(
     # find and extract 'near' token from query if it exists
     find_struct = services.mql.find(query=query_norm, tokens=["near"])
 
-    if find_struct.tokens_match:
+    if find_struct.tokens_match and not box_name:
         # near token removed from query, and used to set box_name
         query_norm = " ".join(find_struct.tokens_other)
-        if not box_name:
-            # query param box name takes precedence over near param
-            box_name = find_struct.tokens_match[0].get("value")
+        box_name = find_struct.tokens_match[0].get("value")
+
+        # redirect to geo path with box
+        redirect_path = f"/geo/places/box/{box_name}?query={query_norm}"
+
+        if "HX-Request" in request.headers:
+            response = templates.TemplateResponse(request, "geo/places/list.html")
+            response.headers["HX-Redirect"] = redirect_path
+            return response
+        else:
+            return fastapi.responses.RedirectResponse(redirect_path)
 
     logger.info(f"{context.rid_get()} places list query '{query_norm}' box '{box_name}' try")
 

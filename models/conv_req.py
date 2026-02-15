@@ -37,3 +37,16 @@ class ConvReq(sqlmodel.SQLModel, table=True):
         default_factory=lambda: datetime.datetime.now(datetime.UTC),
     )
     user_id: int = sqlmodel.Field(index=True, nullable=False)
+
+
+    @property
+    def prompt(self) -> str:
+        return self.data.get("user_prompt") or ""
+
+    @property
+    def msgs_count(self) -> int:
+        return len(self.conv_msgs)
+
+    @property
+    def msgs_str(self) -> str:
+        return ",".join([str(id) for id in self.conv_msgs])

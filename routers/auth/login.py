@@ -35,14 +35,13 @@ class UserPassStruct(pydantic.BaseModel):
 @app.post("/login")
 def users_login(
     request: fastapi.Request,
-    user_struct: UserPassStruct,
+    user_struct: UserPassStruct = UserPassStruct(email="", password=""),
     db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
     user_id: int = fastapi.Depends(main_shared.get_user_id),
 ):
     """
     user login page
     """
-    user_struct = user_struct or UserPassStruct(email="", password="")
     user_email = user_struct.email
     user_pass = user_struct.password
 

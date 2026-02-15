@@ -19,10 +19,10 @@ def address_components_city_country(
     Note that the address components objects returned from the new google places api uses camel case (e.g. longText)
     while the google geocode api uses snake case (e.g. long_name).
     """
-    locality_name = ""
     area_name = ""
     city_name = ""
     country_code = ""
+    locality_name = ""
 
     for addr_component in addr_components:
         # parse addr_component based on type
@@ -48,9 +48,12 @@ def address_components_city_country(
     elif country_code in models.region.GB_CODES:
         city_name = town_name
         city_key = "postal_town"
-    else:
+    elif locality_name: # check locality first
         city_name = locality_name
         city_key = "locality"
+    elif area_name: # then check area
+        city_name = area_name
+        city_key = "administrative_area_level_1"
 
     if not city_name:
         # whoops, this probably means we need to look at a higher level administrative area for the "city" name

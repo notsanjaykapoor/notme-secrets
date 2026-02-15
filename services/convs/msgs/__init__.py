@@ -1,4 +1,4 @@
 from .create import create
 from .list import list
-from .load import load_by_conv_id
+from .load import load_msgs, load_by_conv_id
 from .persist import persist

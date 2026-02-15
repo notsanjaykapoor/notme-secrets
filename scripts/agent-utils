@@ -53,9 +53,9 @@ async def conv_delete(ctx, conv_ids: str) -> int:
 @click.command()
 @click.pass_context
 @click.option("--id", "conv_id", default=None, type=int, required=True, help="conv id")
-async def conv_load(ctx, conv_id: int) -> int:
+async def conv_get(ctx, conv_id: int) -> int:
     """
-    Load an existing conversation
+    Get an existing conversation
     """
     with services.database.session.get() as db_session:
         conv_db = services.convs.get_by_id(db_session, id=conv_id)
@@ -276,7 +276,7 @@ async def _conv_stream(conv_id: int, user_id: int):
 
 
 cli.add_command(conv_delete)
-cli.add_command(conv_load)
+cli.add_command(conv_get)
 cli.add_command(conv_start)
 
 if __name__ == "__main__":

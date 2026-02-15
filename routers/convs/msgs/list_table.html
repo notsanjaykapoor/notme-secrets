@@ -1,0 +1,21 @@
+{% for msg_block in msgs_blocks %}
+
+{% if msg_block.get("role") == "user" %}
+
+<div class="w-full mt-10">
+    <button class="w-3/5 h-100 p-6 text-black text-left text-sm transition-colors duration-150 bg-slate-0 rounded-lg focus:shadow-outline hover:bg-slate-200">
+        user: {{ msg_block.get("text") }}
+    </button>
+</div>
+
+{% else %}
+
+<div class="w-full mt-10">
+    <button class="w-4/5 mr-10 h-100 p-6 text-white text-left text-sm transition-colors duration-150 bg-slate-700 rounded-lg focus:shadow-outline hover:bg-slate-800">
+        agent: {{ msg_block.get("text") }}
+    </button>
+</div>
+
+{% endif %}
+
+{% endfor %}
