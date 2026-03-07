@@ -30,6 +30,7 @@ class ConvMsg(sqlmodel.SQLModel, table=True):
         default=[],
         sa_column=sqlmodel.Column(sqlalchemy.dialects.postgresql.ARRAY(sqlmodel.String())),
     )
+    tools_count: int = sqlmodel.Field(index=True, default=0)
     tools_map: dict = sqlmodel.Field(default_factory=dict, sa_column=sqlmodel.Column(sqlmodel.JSON))
     updated_at: datetime.datetime = sqlmodel.Field(
         sa_column=sqlalchemy.Column(
@@ -43,5 +44,17 @@ class ConvMsg(sqlmodel.SQLModel, table=True):
     user_id: int = sqlmodel.Field(index=True, nullable=False)
 
     @property
-    def tags_string(self) -> str:
+    def parts_names_str(self) -> str:
+        return ", ".join(self.parts_names)
+
+    @property
+    def tags_str(self) -> str:
         return ", ".join(self.tags)
+
+    @property
+    def tools_ids_str(self) -> str:
+        return ", ".join(list(self.tools_map.keys()))
+
+    @property
+    def tools_names_str(self) -> str:
+        return ", ".join(list(self.tools_map.values()))

@@ -18,23 +18,33 @@
     <table class="w-10/12">
         <thead class="font-normal text-left text-xs leading-6 text-center text-zinc-800">
             <tr class="">
-                <th class="p-4 text-left text-xs/7">prompt</th>
-                <th class="p-4">conv id</th>
-                <th class="p-4">conv msgs</th>
-                <th class="p-4 ">id</th>
+                <th class="p-4 text-left text-xs/7">prompt / conv_id / req_id</th>
+                <th class="p-2">conv msgs</th>
+                <th class="p-2 ">req id</th>
+                <th class="p-2 "></th>
             </tr>
         </thead>
         <tbody>
             {% for conv_req in conv_reqs_list %}
-            <tr class="group hover:bg-zinc-50 odd:bg-white even:bg-slate-50 text-center text-xs">
+            <tr class="group hover:bg-zinc-50 odd:bg-white even:bg-slate-50 text-center text-xs/7">
                 <td class="p-4 font-normal text-left">
-                    <a href="/convs/{{conv_req.conv_id}}/msgs/{{conv_req.msgs_str}}" class="font-bold text-blue-700">
+                    <a href="/convs/msgs?query=conv_id:{{conv_req.conv_id}} ids:{{conv_req.msgs_str}}" class="font-bold text-blue-700">
                         {{ conv_req.prompt }}
                     </a>
+                    <br/>
+                    <span class="text-slate-400">
+                    <a href="/convs/msgs?query=conv_id:{{conv_req.conv_id}}" class="font-bold text-blue-700">
+                        {{ conv_req.conv_id }}
+                    </a> : {{ conv_req.request_id }}
+                    </span>
                 </td>
-                <td class="p-4 font-normal">{{ conv_req.conv_id }}</td>
-                <td class="p-4 font-normal">{{ conv_req.msgs_count }}</td>
-                <td class="p-4 font-normal">{{ conv_req.id }}</td>
+                <td class="p-2 font-normal">{{ conv_req.msgs_count }}</td>
+                <td class="p-2 font-normal">{{ conv_req.id }}</td>
+                <td class="p-2 font-normal">
+                    {% if conv_req.msgs_count == 0 %}
+                        <a class="font-bold text-blue-700" href="">x</a>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>

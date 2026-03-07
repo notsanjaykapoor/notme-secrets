@@ -38,6 +38,7 @@ def create(
             provider_name=data.get("provider_name") or "",
             provider_response_id=data.get("provider_response_id") or "",
             tags=sorted(tags),
+            tools_count=len(tools_map),
             tools_map=tools_map,
             usage=data.get("usage") or {},
             user_id=user_id,

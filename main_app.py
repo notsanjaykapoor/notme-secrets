@@ -17,6 +17,7 @@ import main_shared
 import routers.auth.login
 import routers.auth.login_oauth
 import routers.auth.logout
+import routers.convs.convs_msgs
 import routers.convs.convs_reqs
 import routers.bookmarks.bookmarks_list
 import routers.bookmarks.bookmarks_manage
@@ -61,6 +62,7 @@ app = fastapi.FastAPI(lifespan=lifespan)
 app.include_router(routers.auth.login.app)
 app.include_router(routers.auth.login_oauth.app)
 app.include_router(routers.auth.logout.app)
+app.include_router(routers.convs.convs_msgs.app)
 app.include_router(routers.convs.convs_reqs.app)
 app.include_router(routers.bookmarks.bookmarks_list.app)
 app.include_router(routers.bookmarks.bookmarks_manage.app)

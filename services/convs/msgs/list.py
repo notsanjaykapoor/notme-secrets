@@ -58,6 +58,9 @@ def list(db_session: sqlmodel.Session, query: str = "", offset: int = 0, limit: 
             values = [s.strip() for s in value.lower().split(",")]
             dataset = dataset.where(model.tags.contains(values))  # ty: ignore
             struct.tags = values
+        elif token["field"] in ["tools_count", "tools.c"]:
+            dataset = dataset.where(model.tools_count >= int(value))
+
 
     dataset = dataset.offset(offset).limit(limit)
 

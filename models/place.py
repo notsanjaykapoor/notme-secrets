@@ -65,6 +65,17 @@ class Place(sqlmodel.SQLModel, table=True):
     def address(self) -> str:
         return self.geo_json.get("properties", {}).get("address", "").lower()
 
+    def as_dict(self) -> dict:
+        return {
+            "city": self.city,
+            "country_code": self.country_code,
+            "lat": self.lat,
+            "lon": self.lon,
+            "name": self.name,
+            "tags": self.tags,
+            "website": self.website or "",
+        }
+
     @property
     def brands_count(self) -> int:
         return len(self.brands)

@@ -1,21 +1,55 @@
-{% for msg_block in msgs_blocks %}
-
-{% if msg_block.get("role") == "user" %}
-
-<div class="w-full mt-10">
-    <button class="w-3/5 h-100 p-6 text-black text-left text-sm transition-colors duration-150 bg-slate-0 rounded-lg focus:shadow-outline hover:bg-slate-200">
-        user: {{ msg_block.get("text") }}
-    </button>
+<div class="flex flex-row mt-5">
+    <div class="w-1/12"></div>
+    <div class="w-10/12">
+        {% if query_code == 0 %}
+        <p class="text-xs font-bold text-black-700">
+            {{query_result}}
+        </p>
+        {% else %}
+        <p class="text-xs font-bold text-red-700">
+            {{query_result}}
+        </p>
+        {% endif %}
+    </div>
 </div>
 
-{% else %}
 
-<div class="w-full mt-10">
-    <button class="w-4/5 mr-10 h-100 p-6 text-white text-left text-sm transition-colors duration-150 bg-slate-700 rounded-lg focus:shadow-outline hover:bg-slate-800">
-        agent: {{ msg_block.get("text") }}
-    </button>
+<div class="flex flex-row mt-10">
+    <div class="w-1/12"></div>
+    <table class="w-10/12">
+        <thead class="font-normal text-left text-xs leading-6 text-center text-zinc-800">
+            <tr class="">
+                <th class="p-2 min-w-50 text-left text-xs/7">parts</th>
+                <th class="p-2">tools</th>
+                <th class="p-2">kind / model</th>
+                <th class="p-2">c.id</th>
+                <th class="p-2">id</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for msg in msgs_list %}
+            <tr class="group hover:bg-zinc-50 odd:bg-white even:bg-slate-50 text-center text-xs/7">
+                <td class="p-2 min-w-80 font-normal text-left">
+                    {{ msg.parts_names_str }}
+                </td>
+                <td class="p-2 min-w-48 font-normal">
+                    {{ msg.tools_ids_str }}
+                    <br/>
+                    <span class="text-slate-400">
+                    {{ msg.tools_names_str }}
+                    </span>
+                </td>
+                <td class="p-2 min-w-64 font-normal">
+                    {{ msg.kind }}
+                    <br/>
+                    <span class="text-slate-400">
+                    {{ msg.model_name }}
+                    </span>
+                </td>
+                <td class="p-2 font-normal">{{ msg.conv_id }}</td>
+                <td class="p-2 font-normal">{{ msg.id }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
-
-{% endif %}
-
-{% endfor %}

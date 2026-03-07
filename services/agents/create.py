@@ -16,7 +16,7 @@ system_prompt_outputs = (
 
 
 def create_agent_general(
-    model: pydantic_ai.models.Model, builtins: list = [], output_types: list = [str], tools: list = [], toolsets: list = []
+    model: pydantic_ai.models.Model, builtins: list = [], output_types: list = [str], tools: list[pydantic_ai.Tool] = []
 ) -> pydantic_ai.Agent[dict, str]:
     agent = pydantic_ai.Agent(
         builtin_tools=builtins,
@@ -25,7 +25,6 @@ def create_agent_general(
         output_type=output_types,
         system_prompt=system_prompt_general,
         tools=tools,
-        toolsets=toolsets,
     )
 
     return agent
@@ -55,6 +54,6 @@ def model_anthropic() -> pydantic_ai.models.anthropic.AnthropicModel:
 
 def model_gemini() -> pydantic_ai.models.google.GoogleModel:
     return pydantic_ai.models.google.GoogleModel(
-        model_name="gemini-1.5-flash",
+        model_name="gemini-3.5-flash",
         provider=pydantic_ai.providers.google.GoogleProvider(api_key=os.getenv("GOOGLE_GEMINI_KEY"), vertexai=False),
     )
