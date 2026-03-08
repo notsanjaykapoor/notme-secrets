@@ -8,7 +8,11 @@ def delete_by_id(db_session: sqlmodel.Session, id: int) -> tuple[int, list[int],
     """
     Delete conversation and all related messages.
 
-    Returns tuple with status code and list of deleted message ids.
+    A conversation has a few associated objects.  Each conversation can have 1+ conv reqs, 
+    which represent a user request.  Each request can have 1+ conv msgs, which are the agent 
+    request and response messages for each turn.
+
+    Returns tuple with status code and list of deleted conv reqs and msgs ids.
     """
     conv_db = services.convs.get_by_id(db_session=db_session, id=id)
 

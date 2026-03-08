@@ -242,7 +242,7 @@ def crypto_key_kms_1_fixture(db_session: sqlmodel.Session, user_1: models.User):
     services.database.truncate_tables(db_session=db_session, table_names=["crypto_keys"])
 
 
-@pytest.fixture(name="place_1")
+@pytest.fixture(name="place_chi_1")
 def place_1_fixture(db_session: sqlmodel.Session, user_1: models.User, city_chi: models.City):
     code, place_db = services.places.create(
         db_session=db_session,
@@ -250,6 +250,25 @@ def place_1_fixture(db_session: sqlmodel.Session, user_1: models.User, city_chi:
         city=city_chi,
         geo_json={},
         name="Place 1",
+        tags=["fashion"],
+    )
+
+    assert code == 0
+
+    yield place_db
+
+    services.database.truncate_tables(db_session=db_session, table_names=["places"])
+
+
+@pytest.fixture(name="place_tokyo_1")
+def place_tokyo_1_fixture(db_session: sqlmodel.Session, user_1: models.User, city_tokyo: models.City):
+    code, place_db = services.places.create(
+        db_session=db_session,
+        brands=["klasica"],
+        user=user_1,
+        city=city_tokyo,
+        geo_json={},
+        name="Place Tokyo 1",
         tags=["fashion"],
     )
 

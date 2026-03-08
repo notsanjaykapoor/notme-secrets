@@ -1,0 +1,50 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.insert(1, os.path.join(sys.path[0], ".."))
+
+import dot_init
+
+import asyncclick as click
+import logfire
+import pydantic_ai
+import pydantic_ai.messages
+import ulid
+
+import services.console
+import services.convs
+import services.convs.reqs
+import services.database.session
+
+@click.group()
+def cli():
+    pass
+
+
+@click.command()
+@click.pass_context
+@click.option("--ids", "conv_ids",  type=str, required=True, help="conv ids")
+async def conv_delete(ctx, conv_ids: str) -> int:
+    """
+    Delete an existing conversation.
+    """
+    conv_ids = [int(id) for id in conv_ids.split(",")]
+
+    with services.database.session.get() as db_session:
+        for conv_id in conv_ids:
+            code, reqs_ids, msg_ids = services.convs.delete_by_id(db_session, id=conv_id)
+
+            if code != 0:
+                services.console.print_error(f"conv id {conv_id} delete error {code}")
+                continue
+
+            services.console.print_ok(f"conv_id {conv_id}, reqs_ids {reqs_ids}, msg_ids {msg_ids} deleted")
+
+
+cli.add_command(conv_delete)
+
+if __name__ == "__main__":
+    cli()
+

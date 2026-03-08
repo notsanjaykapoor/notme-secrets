@@ -21,33 +21,11 @@ import services.console
 import services.convs
 import services.convs.reqs
 import services.database.session
-import services.places.functions
-import services.tools
-
+import services.places.tools
 
 @click.group()
 def cli():
     pass
-
-
-@click.command()
-@click.pass_context
-@click.option("--ids", "conv_ids", default=None, type=str, required=True, help="conv id")
-async def conv_delete(ctx, conv_ids: str) -> int:
-    """
-    Delete an existing conversation
-    """
-    conv_ids = [int(id) for id in conv_ids.split(",")]
-
-    with services.database.session.get() as db_session:
-        for conv_id in conv_ids:
-            code, reqs_ids, msg_ids = services.convs.delete_by_id(db_session, id=conv_id)
-
-            if code != 0:
-                services.console.print_error(f"conv id {conv_id} delete error {code}")
-                continue
-
-            services.console.print_ok(f"conv_id {conv_id}, reqs_ids {reqs_ids}, msg_ids {msg_ids} deleted")
 
 
 @click.command()
@@ -95,13 +73,13 @@ async def _conv_stream(conv_id: int, user_id: int):
     agent_anth = services.agents.create_agent_general(
         builtins=[pydantic_ai.WebSearchTool(max_uses=1, search_context_size="low")],
         model=services.agents.model_anthropic(),
-        # tools=services.tools.list(),
+        tools=services.places.tools.list(),
     )
 
-    agent_places = services.agents.create_agent_places(
-        model=services.agents.model_gemini(),
-        output_types=services.places.functions.list(),
-    )
+    # agent_places = services.agents.create_agent_places(
+    #     model=services.agents.model_gemini(),
+    #     output_types=services.places.functions.list(),
+    # )
 
     channel_anth = services.agents.AgentChannel(
         agent=agent_anth, conv_id=conv_id, iq=asyncio.Queue(), oq=asyncio.Queue(), user_id=user_id
@@ -170,80 +148,74 @@ async def _conv_stream(conv_id: int, user_id: int):
         while True:
             user_prompt = input("user: ")
 
-            if re.match(r"^(bye|exit|quit)", user_prompt):
+            user_prompt_norm = user_prompt.replace("\\", "").replace("/", "")
+
+            if re.match(r"^(bye|exit|quit|q)", user_prompt_norm):
                 services.console.print_ok(f"\nconversation {channel_anth.conv_id} exiting")
                 break
 
-            if re.match(r"^(break|breakpoint|debug)", user_prompt):
+            if re.match(r"^(break|breakpoint|debug)", user_prompt_norm):
                 services.console.print_ok(f"\nconversation {channel_anth.conv_id} debugger")
                 breakpoint()
 
             print("")
 
             with services.database.session.get() as db_session:
-                tool_use = services.places.functions.match_tool_use(db_session=db_session, query=user_prompt)
-
-                if tool_use:
-                    # run agent with registered output tools
-                    agent_result = await agent_places.run(user_prompt=user_prompt, deps={})
-
-                    services.console.print_fragment_model(services.agents.output_tool(output=agent_result.output))
-                else:
-                    if channel_anth.conv_id == 0:
-                        # create new conversation
-                        code, conv_db = services.convs.create(
-                            db_session=db_session, name=f"c-{ulid.new().str}", user_id=user_id
-                        )
-                        channel_anth.conv_id = conv_db.id
-
-                    # generate a new conv request object
-                    code, conv_id, req_db = services.convs.reqs.create(
-                        db_session=db_session,
-                        conv_id=channel_anth.conv_id,
-                        data={
-                            "user_prompt": user_prompt,
-                        },
-                        request_id=ulid.new().str,
-                        state=models.conv_req.STATE_PENDING,
-                        user_id=channel_anth.user_id,
+                if channel_anth.conv_id == 0:
+                    # create new conversation
+                    code, conv_db = services.convs.create(
+                        db_session=db_session, name=f"c-{ulid.new().str}", user_id=user_id
                     )
+                    channel_anth.conv_id = conv_db.id
 
-                    request_id = req_db.request_id
+                # generate a new conv request object
+                code, conv_id, req_db = services.convs.reqs.create(
+                    db_session=db_session,
+                    conv_id=channel_anth.conv_id,
+                    data={
+                        "user_prompt": user_prompt_norm,
+                    },
+                    request_id=f"r-{ulid.new().str}",
+                    state=models.conv_req.STATE_PENDING,
+                    user_id=channel_anth.user_id,
+                )
 
-                    await channel_anth.iq.put(["user-prompt", {"text": user_prompt, "request_id": request_id}])
+                request_id = req_db.request_id
 
-                    turn_mode = "agent"
+                await channel_anth.iq.put(["user-prompt", {"text": user_prompt_norm, "request_id": request_id}])
 
-                    while turn_mode == "agent":
-                        kind: str
-                        name: str
+                turn_mode = "agent"
 
-                        kind, name, msg = await channel_anth.oq.get()
+                while turn_mode == "agent":
+                    kind: str
+                    name: str
 
-                        # print(f"kind: {kind}")
-                        # print(f"name: {name}")
-                        # print(msg)
-                        # print("")
+                    kind, name, msg = await channel_anth.oq.get()
 
-                        if kind in ["agent-node"]:
-                            # name values literals:
-                            # user-prompt, model-request-start, model-request-end, tool-call-start, tool-call-end, turn-end
-                            if name in ["model-request-end", "tool-call-end"]:
-                                print("")
-                            elif name == "turn-end":
-                                turn_mode = "user"
-                        elif kind in ["stream-event"]:
-                            # name values literals:
-                            # model-request, tool-call
-                            if name == "model-request":
-                                if isinstance(msg, pydantic_ai.messages.PartDeltaEvent):
-                                    msg_delta = msg.delta
-                                    if isinstance(msg_delta, pydantic_ai.messages.TextPartDelta):
-                                        services.console.print_fragment_model(msg_delta.content_delta, end="")
-                                elif isinstance(msg, pydantic_ai.messages.PartStartEvent):
-                                    msg_part = msg.part
-                                    if isinstance(msg_part, pydantic_ai.messages.TextPart):
-                                        services.console.print_fragment_model(msg_part.content, end="")
+                    # print(f"kind: {kind}")
+                    # print(f"name: {name}")
+                    # print(msg)
+                    # print("")
+
+                    if kind in ["agent-node"]:
+                        # name values literals:
+                        # user-prompt, model-request-start, model-request-end, tool-call-start, tool-call-end, turn-end
+                        if name in ["model-request-end", "tool-call-end"]:
+                            print("")
+                        elif name == "turn-end":
+                            turn_mode = "user"
+                    elif kind in ["stream-event"]:
+                        # name values literals:
+                        # model-request, tool-call
+                        if name == "model-request":
+                            if isinstance(msg, pydantic_ai.messages.PartDeltaEvent):
+                                msg_delta = msg.delta
+                                if isinstance(msg_delta, pydantic_ai.messages.TextPartDelta):
+                                    services.console.print_fragment_model(msg_delta.content_delta, end="")
+                            elif isinstance(msg, pydantic_ai.messages.PartStartEvent):
+                                msg_part = msg.part
+                                if isinstance(msg_part, pydantic_ai.messages.TextPart):
+                                    services.console.print_fragment_model(msg_part.content, end="")
     except asyncio.CancelledError as e:
         services.console.print_error(f"channel request {request_id} cancelled - {e}")
 
@@ -275,7 +247,6 @@ async def _conv_stream(conv_id: int, user_id: int):
         services.console.print_error("channel task cancelled, normal exit")
 
 
-cli.add_command(conv_delete)
 cli.add_command(conv_get)
 cli.add_command(conv_start)
 

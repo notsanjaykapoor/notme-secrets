@@ -12,6 +12,7 @@ def create(
     city: models.City,
     geo_json: dict,
     name: str,
+    brands: list[str] = [],
     tags: list[str] = [],
 ) -> tuple[int, models.Place | None]:
     """
@@ -65,6 +66,7 @@ def create(
 
     place_db = models.Place(
         bbox=bbox,
+        brands=brands,
         city=city.name,
         country_code=country_code,
         data={},
