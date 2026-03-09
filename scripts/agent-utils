@@ -110,6 +110,8 @@ async def _conv_stream(conv_id: int, user_id: int):
 
                     if output_node.name in ["user-prompt"]:
                         services.console.print_fragment_user(f"user: {output_node.text}", end="\n\n")
+                    elif output_node.name in ["model-thinking", "thinking"]:
+                        services.console.print_fragment_thinking(f"{output_node.name}: {output_node.text}", end="\n\n")
                     elif output_node.name in ["builtin-tool-call", "builtin-tool-return", "tool-call", "tool-return"]:
                         services.console.print_fragment_tool(f"{output_node.name}: {output_node.text}", end="\n\n")
                     elif output_node.name in ["model-text"]:
@@ -121,6 +123,10 @@ async def _conv_stream(conv_id: int, user_id: int):
                     elif output_node.name in ["model-end"]:
                         # todo
                         services.console.print_fragment_model("model-end", end="\n\n")
+                    elif output_node.name in ["system-prompt"]:
+                        services.console.print_fragment_system(f"system: {output_node.text}", end="\n\n")
+                    else:
+                        services.console.print_error(f"node name {output_node.name} not recognized")
 
                     node_index += 1
     except Exception as e:
@@ -204,6 +210,8 @@ async def _conv_stream(conv_id: int, user_id: int):
                             print("")
                         elif name == "turn-end":
                             turn_mode = "user"
+                        else:
+                            services.console.print_error(f"kind 'agent-node' name '{name}' not recognized")
                     elif kind in ["stream-event"]:
                         # name values literals:
                         # model-request, tool-call
@@ -216,6 +224,10 @@ async def _conv_stream(conv_id: int, user_id: int):
                                 msg_part = msg.part
                                 if isinstance(msg_part, pydantic_ai.messages.TextPart):
                                     services.console.print_fragment_model(msg_part.content, end="")
+                            else:
+                                services.console.print_error(f"kind {kind} name '{name}' not recognized")
+                        else:
+                            services.console.print_error(f"kind {kind} not recognized")
     except asyncio.CancelledError as e:
         services.console.print_error(f"channel request {request_id} cancelled - {e}")
 

@@ -43,7 +43,11 @@ def create_agent_places(model: pydantic_ai.models.Model, output_types: list) -> 
 
 
 def model_anthropic() -> pydantic_ai.models.anthropic.AnthropicModel:
-    settings = pydantic_ai.models.ModelSettings(parallel_tool_calls=True)
+    settings = pydantic_ai.models.ModelSettings(
+        anthropic_effort="high",
+        anthropic_thinking={"type": "adaptive"},
+        parallel_tool_calls=True,
+    )
 
     return pydantic_ai.models.anthropic.AnthropicModel(
         model_name=services.anthropic.query.MODEL_DEFAULT,

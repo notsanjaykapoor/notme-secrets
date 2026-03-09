@@ -28,17 +28,19 @@
             {% for conv_req in conv_reqs_list %}
             <tr class="group hover:bg-zinc-50 odd:bg-white even:bg-slate-50 text-center text-xs/7">
                 <td class="p-4 font-normal text-left">
-                    <a href="/convs/msgs?query=conv_id:{{conv_req.conv_id}} ids:{{conv_req.msgs_str}}" class="font-bold text-blue-700">
-                        {{ conv_req.prompt }}
-                    </a>
+                    {{ conv_req.prompt }}
                     <br/>
                     <span class="text-slate-400">
-                    <a href="/convs/msgs?query=conv_id:{{conv_req.conv_id}}" class="font-bold text-blue-700">
+                    <a href="/convs/reqs?query=conv_id:{{conv_req.conv_id}}" class="font-bold text-blue-700" title="filter by conv">
                         {{ conv_req.conv_id }}
                     </a> : {{ conv_req.request_id }}
                     </span>
                 </td>
-                <td class="p-2 font-normal">{{ conv_req.msgs_count }}</td>
+                <td class="p-2 font-normal">
+                    <a href="/convs/msgs?query=conv_id:{{conv_req.conv_id}} ids:{{conv_req.msgs_str}}" class="font-bold text-blue-700" title="show conv msgs">
+                        {{ conv_req.msgs_count }}
+                    </a>
+                </td>
                 <td class="p-2 font-normal">{{ conv_req.id }}</td>
                 <td class="p-2 font-normal">
                     {% if conv_req.msgs_count == 0 %}

@@ -10,6 +10,14 @@ def print_fragment_model(s: str, end: str = ""):
     print("\x1b[1;36m" + s + "\x1b[0m", end=end, flush=True)
 
 
+def print_fragment_system(s: str, end: str = ""):
+    print("\x1b[1;33m" + s + "\x1b[0m", end=end, flush=True)
+
+
+def print_fragment_thinking(s: str, end: str = ""):
+    print("\x1b[1;33m" + s + "\x1b[0m", end=end, flush=True)
+
+
 def print_fragment_tool(s: str, end: str = ""):
     print("\x1b[1;33m" + s + "\x1b[0m", end=end, flush=True)
 

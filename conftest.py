@@ -144,6 +144,31 @@ def city_london_fixture(db_session: sqlmodel.Session):
     services.database.truncate_tables(db_session=db_session, table_names=["cities"])
 
 
+@pytest.fixture(name="city_paris")
+def city_paris_fixture(db_session: sqlmodel.Session):
+    city = models.City(
+        country_code="fr",
+        data={},
+        geo_json={},
+        lat=48.8534951,
+        lon=-2.3483915,
+        name="paris",
+        slug="paris",
+        source_id="",
+        source_name="google",
+        tags=[],
+    )
+
+    db_session.add(city)
+    db_session.commit()
+
+    assert city.id
+
+    yield city
+
+    services.database.truncate_tables(db_session=db_session, table_names=["cities"])
+
+
 @pytest.fixture(name="city_tokyo")
 def city_tokyo_fixture(db_session: sqlmodel.Session):
     city = models.City(
@@ -243,14 +268,43 @@ def crypto_key_kms_1_fixture(db_session: sqlmodel.Session, user_1: models.User):
 
 
 @pytest.fixture(name="place_chi_1")
-def place_1_fixture(db_session: sqlmodel.Session, user_1: models.User, city_chi: models.City):
+def place_chi_1_fixture(db_session: sqlmodel.Session, user_1: models.User, city_chi: models.City):
     code, place_db = services.places.create(
         db_session=db_session,
-        user=user_1,
         city=city_chi,
-        geo_json={},
+        geo_json={
+            "properties": {
+                "source_id": "chi_id",
+                "source_name": "google",
+            }
+        },
         name="Place 1",
         tags=["fashion"],
+        user=user_1,
+    )
+
+    assert code == 0
+
+    yield place_db
+
+    services.database.truncate_tables(db_session=db_session, table_names=["places"])
+
+
+@pytest.fixture(name="place_paris_1")
+def place_paris_1_fixture(db_session: sqlmodel.Session, user_1: models.User, city_paris: models.City):
+    code, place_db = services.places.create(
+        db_session=db_session,
+        brands=["klasica"],
+        city=city_paris,
+        geo_json={
+            "properties": {
+                "source_id": "paris_id",
+                "source_name": "google",
+            }
+        },
+        name="Place Paris 1",
+        tags=["fashion"],
+        user=user_1,
     )
 
     assert code == 0
@@ -265,11 +319,16 @@ def place_tokyo_1_fixture(db_session: sqlmodel.Session, user_1: models.User, cit
     code, place_db = services.places.create(
         db_session=db_session,
         brands=["klasica"],
-        user=user_1,
         city=city_tokyo,
-        geo_json={},
+        geo_json={
+            "properties": {
+                "source_id": "tokyo_id",
+                "source_name": "google",
+            }
+        },
         name="Place Tokyo 1",
         tags=["fashion"],
+        user=user_1,
     )
 
     assert code == 0

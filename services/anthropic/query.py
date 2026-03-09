@@ -5,7 +5,10 @@ import anthropic
 import anthropic.types.message
 
 MAX_TOKENS_DEFAULT = 1024
-MODEL_DEFAULT = "claude-sonnet-4-20250514"
+
+MODEL_DEFAULT = "claude-sonnet-4-6"
+MODEL_OPUS = "claude-opus-4-6"
+MODEL_SONNET = "claude-sonnet-4-6"
 
 
 @dataclasses.dataclass

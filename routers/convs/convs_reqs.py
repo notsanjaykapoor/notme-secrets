@@ -27,10 +27,10 @@ app = fastapi.APIRouter(
 @app.get("/convs/reqs", response_class=fastapi.responses.HTMLResponse)
 def convs_reqs_list(
     request: fastapi.Request,
-    user_id: int = fastapi.Depends(main_shared.get_user_id),
     query: str = "",
     offset: int = 0,
     limit: int = 50,
+    user_id: int = fastapi.Depends(main_shared.get_user_id),
     db_session: sqlmodel.Session = fastapi.Depends(main_shared.get_db),
 ):
     if user_id == 0:

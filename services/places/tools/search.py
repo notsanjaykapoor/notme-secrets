@@ -20,12 +20,12 @@ async def search_by_city(ctx: pydantic_ai.RunContext[str], city: str, brands: li
     if brands:
         brands_norm = _brands_filter(brands=brands)
         brands_str = ",".join([s.lower() for s in brands_norm if s])
-        query = f"brands:{brands_str}"
+        query = f"{query} brands:{brands_str}"
 
     if tags:
         tags_norm = _tags_filter(tags=tags)
         tags_str = ",".join([s.lower() for s in tags_norm if s])
-        query = f"tags:{tags_str}"
+        query = f"{query} tags:{tags_str}"
 
     return await _list_by_query(query=query)
 
@@ -45,12 +45,12 @@ async def search_by_country(ctx: pydantic_ai.RunContext[str], country: str, bran
     if brands:
         brands_norm = _brands_filter(brands=brands)
         brands_str = ",".join([s.lower() for s in brands_norm if s])
-        query = f"brands:{brands_str}"
+        query = f"{query} brands:{brands_str}"
 
     if tags:
         tags_norm = _tags_filter(tags=tags)
         tags_str = ",".join([s.lower() for s in tags_norm if s])
-        query = f"tags:{tags_str}"
+        query = f"{query} tags:{tags_str}"
 
     return await _list_by_query(query=query)
 
